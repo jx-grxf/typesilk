@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en" data-theme="noir">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="A typing test that glides. Spring-driven type, real keyboard sound and a coach for your weak keys." />
+    <meta name="theme-color" content="#0d0c0b" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230d0c0b'/%3E%3Crect x='14.5' y='5' width='3' height='22' fill='%23ff4f1f'/%3E%3C/svg%3E" />
+    <title>typesilk</title>
+  </head>
+  <body>
+    <header class="chrome">
+      <div class="logo">typesilk</div>
+      <div class="meta">
+        <span id="streak"></span>
+        <span id="level"><b></b><span class="level-track"><span class="level-fill"></span></span></span>
+        <button id="open-settings" type="button">settings</button>
+      </div>
+    </header>
+
+    <main id="main">
+      <section id="typing">
+        <div id="combo" aria-hidden="true"></div>
+        <div id="anchor"><div id="hud"></div></div>
+        <div id="viewport">
+          <div id="scroller">
+            <div id="words"></div>
+            <div id="ghost" aria-hidden="true"></div>
+            <div id="caret" aria-hidden="true"></div>
+          </div>
+        </div>
+        <div id="flow-track" aria-hidden="true"><div id="flow-line"></div></div>
+      </section>
+      <section id="results" aria-live="polite"></section>
+    </main>
+
+    <footer class="chrome">
+      <nav id="controls-left" aria-label="test setup"></nav>
+      <div class="hint"><kbd>tab</kbd> restart &nbsp; <kbd>esc</kbd> <span id="esc-label">settings</span></div>
+      <nav id="controls-right" aria-label="language"></nav>
+    </footer>
+
+    <div id="backdrop"></div>
+    <aside id="panel" aria-label="settings" inert>
+      <div class="panel-head"><h2>Settings</h2><button id="close-settings" type="button">close</button></div>
+      <div id="panel-body"></div>
+    </aside>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
