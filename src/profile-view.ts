@@ -1,5 +1,7 @@
 import { summary, yearGrid, type Cell, type Days } from "./activity";
+import { BADGES, badgeCard, medal, RARITIES, showcase } from "./badges";
 import { renderHeatmap } from "./heatmap";
+import { buildChart } from "./results";
 import { levelOf, type Profile } from "./profile";
 import type { Language } from "./words";
 
@@ -133,22 +135,75 @@ function records(profile: Profile): HTMLElement {
   return section;
 }
 
+const FLAME = '<svg class="flame" viewBox="0 0 16 20" aria-hidden="true"><path d="M8 1c.6 3.2 3.4 4.9 4.9 7.8 1.6 3.2.4 7.9-4.9 9.7-5.3-1.8-6.5-6.5-4.9-9.7.7 1.6 1.8 2.4 2.9 2.6C5.2 8.4 6.3 4.2 8 1z"/></svg>';
+
+function figure(label: string, value: string, note = ""): string {
+  return `<div class="figure"><dt>${label}</dt><dd>${value}</dd>${note ? `<small>${note}</small>` : ""}</div>`;
+}
+
 export function renderProfile(root: HTMLElement, profile: Profile, language: Language): void {
   root.replaceChildren();
   const head = document.createElement("header");
   head.className = "profile-head";
   const typedMs = Object.values(profile.days).reduce((sum, day) => sum + day.ms, 0);
-  head.innerHTML = `<h2>Your typing</h2><dl>
-    <div><dt>level</dt><dd>${levelOf(profile.xp)}</dd></div>
-    <div><dt>streak</dt><dd>${profile.streakDays} ${profile.streakDays === 1 ? "day" : "days"}</dd></div>
-    <div><dt>runs</dt><dd>${number.format(profile.tests)}</dd></div>
-    <div><dt>words</dt><dd>${number.format(Math.round(profile.totalChars / 5))}</dd></div>
-    <div><dt>typed</dt><dd>${minutes(typedMs)}</dd></div>
-  </dl>`;
+  const earned = BADGES.filter((badge) => profile.badges[badge.id]).length;
+  const firstDay = Object.keys(profile.days).sort()[0];
+  const since = firstDay
+    ? `typing since ${new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", year: "numeric" }).format(new Date(firstDay))}`
+    : "your first run starts the record";
+  const best = Math.max(0, ...Object.values(profile.bests).map((b) => b.wpm));
+  const recent = profile.history.slice(-10).map((run) => run.wpm);
+  const average = recent.length > 0 ? recent.reduce((a, b) => a + b, 0) / recent.length : 0;
+  const { longest } = summary(profile.days);
+  const today = new Date();
+  const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+  const lit = profile.lastDay === todayKey ? " lit" : "";
+
+  head.innerHTML = `<div class="identity">
+      <span class="avatar" aria-hidden="true">Y</span>
+      <div class="who"><h2>You</h2><p>Level ${levelOf(profile.xp)} · ${earned} of ${BADGES.length} badges · ${since}</p></div>
+      <div class="showcase"></div>
+    </div>
+    <dl class="figures">
+      ${figure("best", best > 0 ? `${Math.round(best)}<small>wpm</small>` : "–")}
+      ${figure("last ten", average > 0 ? `${Math.round(average)}<small>wpm</small>` : "–", "average speed")}
+      ${figure("streak", `<span class="streak-figure${lit}">${FLAME}${profile.streakDays}</span>`, `longest ${Math.max(longest, profile.streakDays)}`)}
+      ${figure("dailies", number.format(Object.keys(profile.dailies).length))}
+      ${figure("runs", number.format(profile.tests))}
+      ${figure("words", number.format(Math.round(profile.totalChars / 5)))}
+      ${figure("typed", minutes(typedMs))}
+      ${figure("level", String(levelOf(profile.xp)))}
+    </dl>`;
+  const shelf = head.querySelector(".showcase")!;
+  for (const badge of showcase(profile)) {
+    const item = document.createElement("span");
+    item.title = `${badge.name}: ${badge.description}`;
+    item.append(medal(badge, true));
+    shelf.append(item);
+  }
+  const badges = document.createElement("section");
+  badges.className = "badges";
+  const badgesTitle = document.createElement("h3");
+  badgesTitle.textContent = "Badges";
+  const grid = document.createElement("div");
+  grid.className = "badge-grid";
+  for (const badge of [...BADGES].sort((a, b) => RARITIES.indexOf(a.rarity) - RARITIES.indexOf(b.rarity))) {
+    grid.append(badgeCard(badge, profile));
+  }
+  badges.append(badgesTitle, grid);
   const back = document.createElement("p");
   back.className = "again";
   back.innerHTML = "<kbd>esc</kbd> back to typing";
-  const parts = [head, renderActivity(profile.days), records(profile), renderHeatmap(profile.keys, language), back];
+  const speeds = profile.history.slice(-60).map((run) => run.wpm);
+  const progress = speeds.length >= 3
+    ? buildChart(speeds, {
+      title: "Speed over your last runs",
+      description: "Words per minute of each recent run, oldest first",
+      tick: (i) => `#${i + 1}`,
+      point: (i) => `run ${i + 1}`,
+    })
+    : null;
+  const parts = [head, renderActivity(profile.days), ...(progress ? [progress] : []), badges, records(profile), renderHeatmap(profile.keys, language), back];
   parts.forEach((part, i) => {
     part.classList.add("rise");
     part.style.animationDelay = `${i * 60}ms`;
