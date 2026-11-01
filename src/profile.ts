@@ -1,3 +1,4 @@
+import type { Days } from "./activity";
 import type { HistoryEntry, KeyStats } from "./training";
 
 const KEY = "typesilk.profile";
@@ -15,6 +16,8 @@ export type Profile = {
   bests: Record<string, Best>;
   keys: KeyStats;
   history: HistoryEntry[];
+  /** Activity per local day, only from runs that look like a person typed them. */
+  days: Days;
 };
 
 export type RunResult = {
@@ -36,7 +39,7 @@ export type RunReward = {
 };
 
 export function emptyProfile(): Profile {
-  return { xp: 0, tests: 0, totalChars: 0, streakDays: 0, lastDay: null, bests: {}, keys: {}, history: [] };
+  return { xp: 0, tests: 0, totalChars: 0, streakDays: 0, lastDay: null, bests: {}, keys: {}, history: [], days: {} };
 }
 
 export function loadProfile(): Profile {

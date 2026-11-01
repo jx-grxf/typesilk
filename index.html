@@ -12,8 +12,10 @@
     <header class="chrome">
       <div class="logo">typesilk</div>
       <div class="meta">
-        <span id="streak"></span>
-        <span id="level"><b></b><span class="level-track"><span class="level-fill"></span></span></span>
+        <a id="profile-link" href="/me" aria-label="your profile">
+          <span id="streak"></span>
+          <span id="level"><b></b><span class="level-track"><span class="level-fill"></span></span></span>
+        </a>
         <button id="open-settings" type="button">settings</button>
       </div>
     </header>
@@ -32,6 +34,7 @@
         <div id="flow-track" aria-hidden="true"><div id="flow-line"></div></div>
       </section>
       <section id="results" aria-live="polite"></section>
+      <section id="profile" aria-label="your typing"></section>
       <section id="touch-note">
         <p class="touch-title">typesilk needs a keyboard.</p>
         <p class="touch-text">Connect one to your phone or tablet and press any key, or open this page on a computer.</p>
