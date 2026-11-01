@@ -116,3 +116,22 @@ describe("spring", () => {
     expect(duration).toBeGreaterThan(100);
   });
 });
+
+describe("free mode", () => {
+  it("takes whatever is typed as the text and counts it all", () => {
+    const engine = new TypingEngine([], true);
+    type(engine, "anything goes ");
+    expect(engine.words).toEqual(["anything", "goes", ""]);
+    expect(engine.correctChars).toBe(14);
+    expect(engine.accuracy).toBe(100);
+  });
+
+  it("shrinks the word on backspace", () => {
+    const engine = new TypingEngine([], true);
+    type(engine, "abc");
+    expect(engine.backspace()).toMatchObject({ kind: "delete", charIndex: 2, extra: true });
+    expect(engine.word).toBe("ab");
+    engine.backspace(true);
+    expect(engine.word).toBe("");
+  });
+});

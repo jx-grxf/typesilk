@@ -15,6 +15,8 @@ export type ResultData = {
   trend: number | null;
   progress: number[];
   streakDays: number;
+  /** Author and work of a quote. */
+  source: string | null;
 };
 
 const SVG = "http://www.w3.org/2000/svg";
@@ -148,6 +150,12 @@ export function renderResults(root: HTMLElement, data: ResultData): void {
   badge.className = "badge";
   badge.textContent = badgeText(data);
   headline.append(hero, badge);
+  if (data.source) {
+    const source = document.createElement("p");
+    source.className = "source";
+    source.textContent = data.source;
+    headline.append(source);
+  }
 
   const stats = document.createElement("div");
   stats.className = "stats";

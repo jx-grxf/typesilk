@@ -23,6 +23,9 @@ typesilk retargets one continuous spring instead, so speed carries over from key
 | --- | --- |
 | **time** | 15, 30 or 60 seconds |
 | **words** | 25, 50 or 100 words |
+| **quote** | A passage from a public-domain book, short, medium or long |
+| **zen** | No text at all, type whatever you like, `shift` + `enter` ends it |
+| **custom** | Paste your own text, optionally shuffled |
 | **perfect** | One mistake ends the run |
 | **endless** | Runs until you press `esc` |
 | **train** | Words built around your weakest keys |

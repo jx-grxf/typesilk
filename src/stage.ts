@@ -242,6 +242,20 @@ export class Stage {
     }
   }
 
+  /** Zen mode: a typed letter that is its own target. */
+  addTyped(wordIndex: number, ch: string): void {
+    const word = this.wordEls[wordIndex];
+    if (!word) return;
+    const letter = el("span", "l ok");
+    letter.textContent = ch;
+    word.append(letter);
+    this.measureWords(wordIndex);
+    this.measureLetters(wordIndex);
+    if (this.letterFx) {
+      letter.animate([{ transform: "translateY(0.1em)", opacity: 0 }, { transform: "none", opacity: 1 }], PRESS);
+    }
+  }
+
   removeExtra(wordIndex: number): void {
     const word = this.wordEls[wordIndex];
     word?.lastElementChild?.remove();

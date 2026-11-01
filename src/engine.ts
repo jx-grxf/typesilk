@@ -25,8 +25,9 @@ export class TypingEngine {
   streak = 0;
   private committedChars = 0;
 
-  constructor(words: string[]) {
-    this.words = [...words];
+  /** In free mode there is no target text: whatever you type becomes the word. */
+  constructor(words: string[], readonly free = false) {
+    this.words = free ? [""] : [...words];
   }
 
   get word(): string {
@@ -58,6 +59,12 @@ export class TypingEngine {
     const { word, input, wordIndex } = this;
     if (wordIndex >= this.words.length) return { kind: "ignored" };
     const charIndex = input.length;
+    if (this.free) {
+      this.words[wordIndex] = input + ch;
+      this.inputs[wordIndex] = input + ch;
+      this.count(true);
+      return { kind: "char", wordIndex, charIndex, correct: true, extra: false };
+    }
     const extra = charIndex >= word.length;
     if (charIndex >= word.length + MAX_EXTRA) return { kind: "ignored" };
     const correct = !extra && word[charIndex] === ch;
@@ -74,6 +81,7 @@ export class TypingEngine {
     this.committedChars += positionalMatches(input, word) + (perfect ? 1 : 0);
     this.wordIndex++;
     this.inputs[this.wordIndex] = "";
+    if (this.free) this.words.push("");
     return { kind: "commit", wordIndex, perfect, typedLength: input.length };
   }
 
@@ -82,10 +90,15 @@ export class TypingEngine {
     if (input.length > 0) {
       if (wholeWord) {
         this.inputs[wordIndex] = "";
+        if (this.free) this.words[wordIndex] = "";
         return { kind: "clear", wordIndex, previous: input };
       }
       const charIndex = input.length - 1;
       this.inputs[wordIndex] = input.slice(0, -1);
+      if (this.free) {
+        this.words[wordIndex] = input.slice(0, -1);
+        return { kind: "delete", wordIndex, charIndex, extra: true };
+      }
       return { kind: "delete", wordIndex, charIndex, extra: charIndex >= word.length };
     }
     const previous = wordIndex - 1;
