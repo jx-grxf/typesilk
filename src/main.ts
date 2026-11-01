@@ -409,6 +409,8 @@ function panelOpen(): boolean {
 function setPanel(open: boolean): void {
   document.body.classList.toggle("panel-open", open);
   panelEl.inert = !open;
+  // rows slide in one after another, so the panel reads top to bottom as it opens
+  if (open) [...$("panel-body").children].forEach((row, i) => (row as HTMLElement).style.setProperty("--i", String(i)));
   if (open) requestAnimationFrame(() => segments.forEach((seg) => seg.sync()));
 }
 
@@ -543,14 +545,16 @@ function profileOpen(): boolean {
 function showProfile(push = true): void {
   if (state === "running") void restart();
   if (panelOpen()) setPanel(false);
-  renderProfile(profileEl, profile, settings.language);
-  profileEl.scrollTop = 0;
-  document.body.classList.add("show-profile");
+  void withTransition(() => {
+    renderProfile(profileEl, profile, settings.language);
+    profileEl.scrollTop = 0;
+    document.body.classList.add("show-profile");
+  });
   if (push && location.pathname !== "/me") history.pushState(null, "", "/me");
 }
 
 function hideProfile(push = true): void {
-  document.body.classList.remove("show-profile");
+  void withTransition(() => document.body.classList.remove("show-profile"));
   if (push && location.pathname === "/me") history.pushState(null, "", "/");
 }
 
@@ -678,7 +682,9 @@ function change(patch: Partial<Settings>): void {
   if (patch.mode === "custom" && settings.customText.trim() === "" && !("customText" in patch)) openCustom();
   Object.assign(settings, patch);
   saveSettings(settings);
-  applySettings();
+  // a theme change crossfades the whole page instead of repainting colour by colour
+  if ("theme" in patch) void withTransition(applySettings);
+  else applySettings();
   if ("soundPack" in patch) void sound.use(settings.soundPack).then(() => sound.preview());
   renderMeta();
   if (TEST_KEYS.some((key) => key in patch)) void restart();
@@ -804,7 +810,7 @@ if (window.matchMedia("(hover: none) and (pointer: coarse)").matches) {
 
 async function boot(): Promise<void> {
   if (/Mac|iPhone|iPad/.test(navigator.platform)) {
-    $("palette-key").textContent = "⌘k";
+    document.querySelectorAll(".palette-key").forEach((key) => { key.textContent = "⌘k"; });
     $("custom-key").textContent = "⌘ enter";
   }
   const version = $<HTMLAnchorElement>("version");
