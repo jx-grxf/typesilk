@@ -3,6 +3,7 @@ import { dailyNumber, dailyWords } from "../src/daily";
 import { CLEAR_WORD, replay } from "../src/replay";
 import { LANGUAGES, registerWords, type Language } from "../src/words";
 import { validDisplayName, validUsername } from "./names";
+import { isDevice, readProfile, resetProfile, writeProfile } from "./profile";
 import { signTicket, verifyTicket } from "./ticket";
 
 export type Env = {
@@ -25,6 +26,7 @@ const OAUTH_COOKIE = "__Host-typesilk_oauth";
 const SESSION_SECONDS = 30 * 24 * 3600;
 const OAUTH_SECONDS = 600;
 const MAX_BODY_BYTES = 128 * 1024;
+const MAX_PROFILE_BYTES = 256 * 1024;
 const MAX_KEYS = 8000;
 const TICKET_MS = 26 * 3600 * 1000;
 const BOARD_SIZE = 100;
@@ -87,11 +89,11 @@ async function currentUser(request: Request, env: Env): Promise<SessionUser | nu
   ).bind(await sha256(token), Date.now()).first<SessionUser>();
 }
 
-async function readJson(request: Request): Promise<Record<string, unknown> | null> {
+async function readJson(request: Request, maxBytes = MAX_BODY_BYTES): Promise<Record<string, unknown> | null> {
   const length = Number(request.headers.get("Content-Length") ?? 0);
-  if (length > MAX_BODY_BYTES) return null;
+  if (length > maxBytes) return null;
   const text = await request.text();
-  if (text.length > MAX_BODY_BYTES) return null;
+  if (text.length > maxBytes) return null;
   try {
     const value = JSON.parse(text) as unknown;
     return typeof value === "object" && value !== null && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
@@ -360,6 +362,24 @@ async function readBoard(request: Request, env: Env, daily: number, language: La
   });
 }
 
+async function handleProfile(request: Request, env: Env, url: URL): Promise<Response> {
+  const method = request.method;
+  if (method !== "GET" && method !== "POST" && method !== "DELETE") return fail("method_not_allowed", 405);
+  if (!env.TICKET_SECRET) return fail("signin_off", 503);
+  const user = await currentUser(request, env);
+  if (!user) return fail("signin_required", 401);
+  if (method === "DELETE") return json({ epoch: await resetProfile(env.DB, user.id) });
+  if (method === "GET") {
+    const device = url.searchParams.get("device");
+    if (!isDevice(device)) return fail("bad_request", 400);
+    return json(await readProfile(env.DB, user.id, device));
+  }
+  const body = await readJson(request, MAX_PROFILE_BYTES);
+  if (!body || !isDevice(body.device) || !Number.isInteger(body.epoch)) return fail("bad_request", 400);
+  const { stale, ...shared } = await writeProfile(env.DB, user.id, body.device, body.epoch as number, body.profile);
+  return json(shared, stale ? 409 : 200);
+}
+
 async function handleApi(request: Request, env: Env, url: URL): Promise<Response> {
   const path = url.pathname;
   const method = request.method;
@@ -391,6 +411,8 @@ async function handleApi(request: Request, env: Env, url: URL): Promise<Response
     return readBoard(request, env, Number(board[1]), board[2]);
   }
 
+  if (path === "/api/profile") return handleProfile(request, env, url);
+
   const known = ["/api/me", "/api/logout", "/api/daily/ticket", "/api/daily/runs"];
   if (!known.includes(path)) return fail("not_found", 404);
   if (method !== "POST" && !(path === "/api/me" && method === "DELETE")) return fail("method_not_allowed", 405);
@@ -406,6 +428,7 @@ async function handleApi(request: Request, env: Env, url: URL): Promise<Response
   if (path === "/api/me" && method === "DELETE") {
     await env.DB.batch([
       env.DB.prepare("DELETE FROM daily_runs WHERE user_id = ?").bind(user.id),
+      env.DB.prepare("DELETE FROM profile_shares WHERE user_id = ?").bind(user.id),
       env.DB.prepare("DELETE FROM sessions WHERE user_id = ?").bind(user.id),
       env.DB.prepare("DELETE FROM identities WHERE user_id = ?").bind(user.id),
       env.DB.prepare("DELETE FROM users WHERE id = ?").bind(user.id),

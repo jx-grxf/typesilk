@@ -35,7 +35,8 @@ export function weakKeys(stats: KeyStats, count = 4): string[] {
     .map((entry) => entry.key);
 }
 
-export type HistoryEntry = { key: string; wpm: number };
+/** `at` is missing on runs from before sync; merged histories put those first. */
+export type HistoryEntry = { key: string; wpm: number; at?: number };
 
 /** Average of the last few runs against the few before; null until there's enough to compare. */
 export function trend(history: HistoryEntry[], key: string, size = 5): number | null {

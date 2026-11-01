@@ -74,7 +74,7 @@ export function buildPanel(
   root: HTMLElement,
   s: Settings,
   change: (patch: Partial<Settings>) => void,
-  resetProfile: () => void,
+  reset: { prompt(): string; run(): Promise<boolean> },
 ): Segment[] {
   const segments: Segment[] = [];
   const seg = <T,>(options: Option<T>[], value: T, on: (v: T) => void): HTMLElement => {
@@ -98,19 +98,20 @@ export function buildPanel(
   volume.setAttribute("aria-label", "volume");
   volume.addEventListener("input", () => change({ volume: Number(volume.value) }));
 
-  const reset = document.createElement("button");
-  reset.type = "button";
-  reset.className = "danger";
-  reset.textContent = "reset";
-  reset.addEventListener("click", () => {
-    if (reset.dataset.armed) {
-      resetProfile();
-      reset.textContent = "done";
-      delete reset.dataset.armed;
-    } else {
-      reset.dataset.armed = "1";
-      reset.textContent = "really?";
+  const resetButton = document.createElement("button");
+  resetButton.type = "button";
+  resetButton.className = "danger";
+  resetButton.textContent = "reset";
+  resetButton.addEventListener("click", () => {
+    if (!resetButton.dataset.armed) {
+      resetButton.dataset.armed = "1";
+      resetButton.textContent = reset.prompt();
+      return;
     }
+    delete resetButton.dataset.armed;
+    void reset.run().then((done) => {
+      resetButton.textContent = done ? "done" : "failed, try again";
+    });
   });
 
   root.append(
@@ -182,7 +183,7 @@ export function buildPanel(
     )),
     row("Volume", "", volume),
     group("Data"),
-    row("Progress", "clears level, streak and records", reset),
+    row("Progress", "clears level, streak and records", resetButton),
   );
   return segments;
 }

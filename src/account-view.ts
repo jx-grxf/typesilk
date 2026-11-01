@@ -94,7 +94,7 @@ function agreement(): HTMLElement {
   return note;
 }
 
-export function openSignIn(message = "Sign in to rank on the daily."): void {
+export function openSignIn(message = "Sign in to rank on the daily and see your stats on every device."): void {
   const foot = document.createElement("div");
   foot.className = "account-foot";
   foot.append(closeButton("close"));
@@ -187,7 +187,7 @@ export function openDeleteAccount(): void {
     });
   });
   foot.append(closeButton("keep it"), remove);
-  const note = text("p", "account-note", "This removes your account and all your ranked runs. Your local stats stay in this browser.");
+  const note = text("p", "account-note", "This removes your account, your ranked runs and the stats synced to it. This browser keeps the runs typed here.");
   showDialog(text("h2", "account-title", "Delete your account?"), note, foot);
 }
 
@@ -205,7 +205,7 @@ export function renderAccountRow(root: HTMLElement): void {
   row.className = "account-row";
   if (!user) {
     if (signInProviders().length === 0) return;
-    row.append(text("span", "", "Rank on the daily:"), signInLinks(), agreement());
+    row.append(text("span", "", "Rank on the daily and sync your stats:"), signInLinks(), agreement());
   } else {
     const who = text("span", "account-who", "");
     who.append(avatarNode(user.username ?? user.id), user.displayName ?? "");

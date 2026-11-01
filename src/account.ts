@@ -10,9 +10,20 @@ export const PROVIDER_NAMES: Record<Provider, string> = { github: "GitHub", goog
 let account: Account | null = null;
 let providers: Provider[] = [];
 const tickets = new Map<string, Promise<string | null>>();
+let beforeSignOut: () => Promise<void> = async () => {};
+let afterDelete: () => void = () => {};
 
 export const currentAccount = (): Account | null => account;
 export const signInProviders = (): Provider[] => providers;
+
+/** Runs while the session still exists, so anything waiting can still be sent. */
+export function onBeforeSignOut(task: () => Promise<void>): void {
+  beforeSignOut = task;
+}
+
+export function onAccountDeleted(task: () => void): void {
+  afterDelete = task;
+}
 
 async function post(path: string, body: unknown = {}, method = "POST"): Promise<{ ok: boolean; status: number; data: Record<string, unknown> }> {
   const response = await fetch(path, {
@@ -23,16 +34,21 @@ async function post(path: string, body: unknown = {}, method = "POST"): Promise<
   return { ok: response.ok, status: response.status, data: (await response.json()) as Record<string, unknown> };
 }
 
-/** The site works without any of this, so a failed request just leaves you signed out. */
-export async function loadAccount(): Promise<void> {
+/**
+ * The site works without any of this, so a failed request just leaves you signed out.
+ * Resolves to false when the server couldn't be asked, which is not the same as being signed out.
+ */
+export async function loadAccount(): Promise<boolean> {
   try {
     const response = await fetch("/api/me");
-    if (!response.ok) return;
+    if (!response.ok) return false;
     const me = (await response.json()) as { user: Account | null; providers: Provider[] };
     account = me.user;
     providers = me.providers;
+    return true;
   } catch (error) {
     console.warn("account unavailable", error);
+    return false;
   }
 }
 
@@ -50,6 +66,7 @@ export async function saveNames(username: string, displayName: string): Promise<
 }
 
 export async function signOut(): Promise<void> {
+  await beforeSignOut().catch(() => {});
   await post("/api/logout");
   account = null;
   tickets.clear();
@@ -62,6 +79,7 @@ export async function deleteAccount(): Promise<boolean> {
   if (gone) {
     account = null;
     tickets.clear();
+    afterDelete();
   }
   return gone;
 }

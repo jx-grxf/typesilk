@@ -12,6 +12,7 @@
   "include": [
     "./index.ts",
     "./names.ts",
+    "./profile.ts",
     "./ticket.ts"
   ]
 }

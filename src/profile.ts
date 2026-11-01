@@ -2,7 +2,6 @@ import type { Days } from "./activity";
 import type { Dailies } from "./daily";
 import type { HistoryEntry, KeyStats } from "./training";
 
-const KEY = "typesilk.profile";
 const MIN_CHARS_FOR_RECORD = 10;
 const HISTORY_LIMIT = 400;
 
@@ -49,22 +48,6 @@ export function emptyProfile(): Profile {
   return { xp: 0, tests: 0, totalChars: 0, streakDays: 0, lastDay: null, bests: {}, keys: {}, history: [], days: {}, dailies: {}, badges: {}, quotes: 0, languages: [] };
 }
 
-export function loadProfile(): Profile {
-  try {
-    return { ...emptyProfile(), ...JSON.parse(localStorage.getItem(KEY) ?? "{}") };
-  } catch {
-    return emptyProfile();
-  }
-}
-
-export function saveProfile(profile: Profile): void {
-  localStorage.setItem(KEY, JSON.stringify(profile));
-}
-
-export function clearProfile(): void {
-  localStorage.removeItem(KEY);
-}
-
 export function levelOf(xp: number): number {
   return Math.floor((xp / 40) ** (1 / 1.6)) + 1;
 }
@@ -80,7 +63,7 @@ export function levelProgress(xp: number): number {
   return (xp - start) / (xpForLevel(level + 1) - start);
 }
 
-function dayNumber(day: string): number {
+export function dayNumber(day: string): number {
   const [year = 0, month = 1, date = 1] = day.split("-").map(Number);
   return Date.UTC(year, month - 1, date) / 86400000;
 }
@@ -98,7 +81,7 @@ export function localDay(date = new Date()): string {
 }
 
 /** Updates the profile in place. Records need a finished run; xp is earned either way. */
-export function applyRun(profile: Profile, run: RunResult, today: string): RunReward {
+export function applyRun(profile: Profile, run: RunResult, today: string, now = Date.now()): RunReward {
   const levelBefore = levelOf(profile.xp);
   const previous = profile.bests[run.key];
   const previousBest = previous?.wpm ?? null;
@@ -121,7 +104,7 @@ export function applyRun(profile: Profile, run: RunResult, today: string): RunRe
   profile.tests++;
   profile.totalChars += run.chars;
   if (run.countsForRecord && run.chars >= MIN_CHARS_FOR_RECORD) {
-    profile.history.push({ key: run.key, wpm: run.wpm });
+    profile.history.push({ key: run.key, wpm: run.wpm, at: now });
     if (profile.history.length > HISTORY_LIMIT) profile.history.shift();
   }
 
