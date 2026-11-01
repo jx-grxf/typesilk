@@ -25,6 +25,8 @@ export type ResultData = {
   language: Language;
   /** Short name of the setup for the share image, like "time 30 · english". */
   setup: string;
+  /** Set on the daily: whether this was the first try, and what that first try was. */
+  daily: { number: number; first: boolean; firstWpm: number | null } | null;
 };
 
 let currentCard: CardData | null = null;
@@ -151,7 +153,9 @@ function countUp(node: HTMLElement, target: number): void {
 }
 
 function badgeText(data: ResultData): string {
-  const { reward, failedAt } = data;
+  const { reward, failedAt, daily } = data;
+  if (daily?.first) return `Daily #${daily.number} done. Same words for everyone today.`;
+  if (daily) return `Practice run. Your first try at daily #${daily.number} was ${Math.round(daily.firstWpm ?? 0)} wpm.`;
   if (failedAt) return `Broken at word ${failedAt.word} of ${failedAt.total}.`;
   if (reward.isBest) return `New best, up ${Math.round(data.wpm - (reward.previousBest ?? 0))} wpm.`;
   if (reward.previousBest === null) {

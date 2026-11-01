@@ -5,7 +5,9 @@ import { effectiveSize, WORD_LIST_SIZES, type Language, type WordListSize } from
 const KEY = "typesilk.settings";
 
 export const MODES = ["time", "words", "quote", "zen", "custom", "perfect", "endless", "train"] as const;
-export type Mode = (typeof MODES)[number];
+/** The daily lives in the header, not in the mode bar. */
+export type Mode = (typeof MODES)[number] | "daily";
+export const GOALS = [0, 100, 300, 500, 1000] as const;
 export const THEMES = ["noir", "paper", "forest", "klein"] as const;
 export type Theme = (typeof THEMES)[number];
 export const LAYOUTS = ["tape", "lines", "classic"] as const;
@@ -36,6 +38,8 @@ export type Settings = {
   caret: CaretStyle;
   caretMotion: CaretMotion;
   liveStats: boolean;
+  /** Words per day; 0 turns the goal off. */
+  dailyGoal: number;
   focusMode: boolean;
   letterFx: boolean;
   flowLine: boolean;
@@ -63,6 +67,7 @@ export const DEFAULTS: Settings = {
   caret: "line",
   caretMotion: "snappy",
   liveStats: false,
+  dailyGoal: 300,
   focusMode: true,
   letterFx: true,
   flowLine: true,
@@ -76,7 +81,8 @@ export function loadSettings(): Settings {
   try {
     const stored = { ...DEFAULTS, ...JSON.parse(localStorage.getItem(KEY) ?? "{}") } as Settings;
     if (!THEMES.includes(stored.theme)) stored.theme = DEFAULTS.theme;
-    if (!MODES.includes(stored.mode)) stored.mode = DEFAULTS.mode;
+    if (!MODES.includes(stored.mode as (typeof MODES)[number]) && stored.mode !== "daily") stored.mode = DEFAULTS.mode;
+    if (!(GOALS as readonly number[]).includes(stored.dailyGoal)) stored.dailyGoal = DEFAULTS.dailyGoal;
     if (!WORD_LIST_SIZES.includes(stored.wordList)) stored.wordList = DEFAULTS.wordList;
     if (!SOUND_PACKS.includes(stored.soundPack)) stored.soundPack = DEFAULTS.soundPack;
     if (!QUOTE_LENGTHS.includes(stored.quoteLength)) stored.quoteLength = DEFAULTS.quoteLength;

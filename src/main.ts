@@ -5,6 +5,7 @@ import "@fontsource-variable/jetbrains-mono/wght-italic.css";
 import "./tokens.css";
 import "./style.css";
 import { plausible, recordDay } from "./activity";
+import { dailyKey, dailyNumber, dailyWords } from "./daily";
 import { consistency, rollingWpm, TypingEngine, wpm } from "./engine";
 import { FlowMeter } from "./flow";
 import { applyRun, clearProfile, emptyProfile, levelOf, levelProgress, loadProfile, localDay, saveProfile } from "./profile";
@@ -12,7 +13,7 @@ import { renderProfile, setupName } from "./profile-view";
 import { renderResults, shareResult } from "./results";
 import { type Command, Palette } from "./palette";
 import { customWords, pickQuote, QUOTE_LENGTHS, type Quote } from "./quotes";
-import { CARET_MOTIONS, CARETS, FONTS, LAYOUTS, loadSettings, MODES, recordKey, saveSettings, THEMES, type Mode, type Settings } from "./settings";
+import { CARET_MOTIONS, CARETS, FONTS, GOALS, LAYOUTS, loadSettings, MODES, recordKey, saveSettings, THEMES, type Mode, type Settings } from "./settings";
 import { Sound, SOUND_PACKS } from "./sound";
 import { applySpringTokens } from "./spring";
 import { Stage } from "./stage";
@@ -103,7 +104,9 @@ function newTest(): void {
   trainingKeys = mode === "train" ? weakKeys(profile.keys, 5) : [];
   nextWords = () => [];
   let words: string[] = [];
-  if (mode === "quote") {
+  if (mode === "daily") {
+    words = dailyWords(dailyNumber(), settings.language);
+  } else if (mode === "quote") {
     currentQuote = pickQuote(settings.language, settings.quoteLength, currentQuote);
     words = currentQuote.text.split(" ");
   } else if (mode === "custom") {
@@ -115,7 +118,7 @@ function newTest(): void {
     const counted = mode === "words" || mode === "perfect" || mode === "train";
     words = nextWords(counted ? settings.count : CHUNK * 2);
   }
-  fixedLength = mode === "words" || mode === "perfect" || mode === "train" || mode === "quote" || mode === "custom"
+  fixedLength = mode === "words" || mode === "perfect" || mode === "train" || mode === "quote" || mode === "custom" || mode === "daily"
     ? words.length
     : 0;
   engine = new TypingEngine(words, mode === "zen");
@@ -146,7 +149,8 @@ async function fontsReady(): Promise<void> {
   await Promise.all([
     document.fonts.load(`400 64px "${family}"`),
     document.fonts.load(`italic 400 64px "${family}"`),
-    loadWords(settings.language, settings.wordList),
+    // the daily draws from the 1k list, and everyone has to get the same words
+    loadWords(settings.language, settings.mode === "daily" ? "1k" : settings.wordList),
   ]);
 }
 
@@ -207,6 +211,7 @@ function renderHud(): void {
   if (settings.mode === "time") text = String(Math.max(0, Math.ceil(settings.time - ms / 1000)));
   else if (!isFixedLength()) text = `${Math.floor(ms / 1000)}s`;
   else text = `${Math.min(engine.wordIndex, fixedLength)}/${fixedLength}`;
+  if (settings.mode === "daily" && state !== "running") text = `daily #${dailyNumber()}`;
   if (settings.mode === "train" && state !== "running") {
     text = trainingKeys.length > 0 ? `training ${trainingKeys.join(" ")}` : "no weak keys yet";
   }
@@ -240,6 +245,11 @@ function finish(durationMs: number, failedAtWord: number | null = null): void {
   const series = rollingWpm(samples);
   const key = recordKey(settings);
   const failed = failedAtWord !== null;
+  const firstToday = profile.lastDay !== localDay();
+  const daily = settings.mode === "daily" ? dailyNumber() : null;
+  const dailyEntry = daily === null ? null : dailyKey(daily, settings.language);
+  const firstDaily = dailyEntry !== null && !profile.dailies[dailyEntry] && !failed;
+  if (dailyEntry !== null && firstDaily) profile.dailies[dailyEntry] = { wpm: rate, accuracy: engine.accuracy };
   const reward = applyRun(
     profile,
     {
@@ -248,7 +258,7 @@ function finish(durationMs: number, failedAtWord: number | null = null): void {
       accuracy: engine.accuracy,
       chars,
       series: samples,
-      countsForRecord: !failed && durationMs >= 5000 && settings.mode !== "zen" && settings.mode !== "custom",
+      countsForRecord: !failed && durationMs >= 5000 && settings.mode !== "zen" && settings.mode !== "custom" && settings.mode !== "daily",
     },
     localDay(),
   );
@@ -257,7 +267,7 @@ function finish(durationMs: number, failedAtWord: number | null = null): void {
     recordDay(profile.days, localDay(), { chars, ms: durationMs, wpm: rate });
   }
   saveProfile(profile);
-  renderMeta();
+  renderMeta(firstToday);
 
   // the timer above the text grows into the big number on the results page
   void withTransition(() => {
@@ -278,7 +288,8 @@ function finish(durationMs: number, failedAtWord: number | null = null): void {
       source: settings.mode === "quote" && currentQuote ? `${currentQuote.author}, ${currentQuote.work}` : null,
       keys: profile.keys,
       language: settings.language,
-      setup: setupName(recordKey(settings)),
+      setup: daily === null ? setupName(recordKey(settings)) : `daily #${daily} · ${settings.language}`,
+    daily: daily === null ? null : { number: daily, first: firstDaily, firstWpm: profile.dailies[dailyEntry!]?.wpm ?? null },
     });
     document.body.classList.add("show-results");
   });
@@ -419,6 +430,7 @@ function commands(): Command[] {
     list.push({ group, label: on ? "turn off" : "turn on", run: () => change({ [key]: !on } as Partial<Settings>) });
   };
   list.push({ group: "test", label: "restart", run: () => void restart() });
+  list.push({ group: "test", label: `daily #${dailyNumber()}`, current: settings.mode === "daily", run: () => change({ mode: "daily" }) });
   if (weakKeys(profile.keys).length > 0) list.push({ group: "test", label: "train weak keys", run: () => change({ mode: "train" }) });
   pick("mode", "mode", MODES);
   pick("time", "time", [15, 30, 60], (v) => `${v} seconds`);
@@ -444,6 +456,7 @@ function commands(): Command[] {
   pick("text size", "textSize", SIZES.map((size) => size.value), (v) => SIZES.find((size) => size.value === v)!.label);
   pick("caret", "caret", CARETS);
   pick("caret movement", "caretMotion", CARET_MOTIONS);
+  pick("daily goal", "dailyGoal", GOALS, (v) => (v === 0 ? "off" : `${v} words`));
   toggle("focus", "focusMode");
   toggle("live stats", "liveStats");
   toggle("letter motion", "letterFx");
@@ -542,6 +555,11 @@ function hideProfile(push = true): void {
 }
 
 window.addEventListener("popstate", () => (location.pathname === "/me" ? showProfile(false) : hideProfile(false)));
+$("daily-link").addEventListener("click", (event) => {
+  (event.currentTarget as HTMLElement).blur();
+  if (settings.mode === "daily") void restart();
+  else change({ mode: "daily" });
+});
 $("profile-link").addEventListener("click", (event) => {
   event.preventDefault();
   (event.currentTarget as HTMLElement).blur();
@@ -662,6 +680,7 @@ function change(patch: Partial<Settings>): void {
   saveSettings(settings);
   applySettings();
   if ("soundPack" in patch) void sound.use(settings.soundPack).then(() => sound.preview());
+  renderMeta();
   if (TEST_KEYS.some((key) => key in patch)) void restart();
   else if ("caret" in patch) {
     stage.caretTo(engine.wordIndex, engine.input.length);
@@ -669,14 +688,41 @@ function change(patch: Partial<Settings>): void {
   }
 }
 
-function renderMeta(): void {
+function renderMeta(flare = false): void {
   const level = $("level");
   level.querySelector("b")!.textContent = `Level ${levelOf(profile.xp)}`;
   level.querySelector<HTMLElement>(".level-fill")!.style.transform = `scaleX(${levelProgress(profile.xp)})`;
   const today = localDay();
   const yesterday = localDay(new Date(Date.now() - 86400000));
-  const alive = profile.lastDay === today || profile.lastDay === yesterday;
-  $("streak").textContent = alive && profile.streakDays > 0 ? `${profile.streakDays} day streak` : "";
+  const typedToday = profile.lastDay === today;
+  const alive = typedToday || profile.lastDay === yesterday;
+
+  const streak = $("streak");
+  streak.hidden = !(alive && profile.streakDays > 0);
+  streak.querySelector("b")!.textContent = String(profile.streakDays);
+  streak.classList.toggle("lit", typedToday);
+  streak.title = typedToday
+    ? `${profile.streakDays}-day streak, today is in`
+    : `${profile.streakDays}-day streak, type today to keep it`;
+  if (flare && typedToday) {
+    streak.classList.remove("flare");
+    void streak.offsetWidth;
+    streak.classList.add("flare");
+  }
+
+  const goal = $("goal");
+  const words = profile.days[today]?.words ?? 0;
+  goal.hidden = settings.dailyGoal === 0;
+  goal.classList.toggle("done", words >= settings.dailyGoal);
+  goal.title = `${words} of ${settings.dailyGoal} words today`;
+  goal.querySelector<HTMLElement>(".goal-fill")!.style.transform = `scaleX(${Math.min(words / Math.max(settings.dailyGoal, 1), 1)})`;
+
+  const daily = $("daily-link");
+  const number = dailyNumber();
+  const done = profile.dailies[dailyKey(number, settings.language)];
+  daily.textContent = `daily #${number}`;
+  daily.classList.toggle("open", !done);
+  daily.title = done ? `Your first try today: ${Math.round(done.wpm)} wpm` : "Today's words, the same for everyone";
 }
 
 function buildControls(): void {
