@@ -56,12 +56,14 @@ export async function signOut(): Promise<void> {
 }
 
 export async function deleteAccount(): Promise<boolean> {
-  const { ok } = await post("/api/me", {}, "DELETE");
-  if (ok) {
+  const { ok, status } = await post("/api/me", {}, "DELETE");
+  // 401 means the session is already gone, for example deleted from another device
+  const gone = ok || status === 401;
+  if (gone) {
     account = null;
     tickets.clear();
   }
-  return ok;
+  return gone;
 }
 
 /** Asked for before the first key, because the server won't rank a run older than its ticket. */
