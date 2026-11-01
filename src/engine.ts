@@ -1,4 +1,6 @@
 export const MAX_EXTRA = 8;
+/** A run ended after one key would otherwise show thousands of wpm. */
+export const MIN_RATE_MS = 1000;
 
 export type KeyResult =
   | { kind: "ignored" }

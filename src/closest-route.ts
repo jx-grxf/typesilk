@@ -1,4 +1,4 @@
-export const ROUTES = ["/", "/about", "/de", "/me"] as const;
+export const ROUTES = ["/", "/about", "/daily", "/datenschutz", "/de", "/impressum", "/me", "/nutzungsbedingungen", "/privacy", "/terms"] as const;
 
 export type TypedLetter = { char: string; wrong: boolean };
 export type RouteMatch = { letters: TypedLetter[]; route: string | null };

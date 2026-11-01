@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en" data-theme="noir">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Privacy | typesilk</title>
+    <meta name="description" content="What typesilk stores about you, and how to delete it." />
+    <link rel="canonical" href="https://typesilk.com/privacy" />
+    <link rel="alternate" hreflang="en" href="https://typesilk.com/privacy" />
+    <link rel="alternate" hreflang="de" href="https://typesilk.com/datenschutz" />
+    <link rel="alternate" hreflang="x-default" href="https://typesilk.com/privacy" />
+    <meta name="theme-color" content="#0d0c0b" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-48.png" sizes="48x48" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="typesilk" />
+    <meta property="og:title" content="Privacy | typesilk" />
+    <meta property="og:description" content="What typesilk stores about you, and how to delete it." />
+    <meta property="og:url" content="https://typesilk.com/privacy" />
+    <meta property="og:image" content="https://typesilk.com/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script>
+      try {
+        const { theme } = JSON.parse(localStorage.getItem("typesilk.settings") ?? "{}");
+        if (["noir", "paper", "forest", "klein"].includes(theme)) document.documentElement.dataset.theme = theme;
+      } catch {}
+    </script>
+    <link rel="stylesheet" href="/src/page.css" />
+  </head>
+  <body>
+    <header class="page-head">
+      <a class="logo" href="/">typesilk</a>
+      <nav aria-label="language"><a href="/datenschutz" hreflang="de" lang="de">Deutsch</a></nav>
+    </header>
+    <main class="page-body">
+      <h1>Privacy</h1>
+      <p class="lead">Typing on typesilk needs no account. Without one, your runs, settings and profile stay in your browser and never reach our database.</p>
+
+      <section>
+        <h2>Who is responsible</h2>
+        <p>Johannes Grof, Mettersdorf am Saßbach, Austria, <a href="mailto:contact@johannesgrof.me">contact@johannesgrof.me</a>.</p>
+      </section>
+
+      <section>
+        <h2>If you sign in</h2>
+        <p>Signing in with GitHub or Google is optional. Without it you only miss the leaderboard. We store:</p>
+        <ul>
+          <li>the account id your provider gives us, which tells us it's you again</li>
+          <li>the username and display name you choose, both public on the leaderboard</li>
+          <li>your ranked daily runs: speed, accuracy, duration, date and a fingerprint of the keystrokes that catches copied runs</li>
+          <li>a hash of your session token</li>
+        </ul>
+        <p>We don't ask for your email address. We don't store your real name or photo from Google, or your picture from GitHub. If your GitHub profile has a public name, we suggest it as your display name and you can change it before anything is public. Your keystrokes are sent to check a run and then discarded.</p>
+        <p>We process this to provide the leaderboard you asked for (Art. 6(1)(b) GDPR). Runs that look automated are hidden from the board automatically. If that happens to you by mistake, write to us and a person will look at it.</p>
+      </section>
+
+      <section>
+        <h2>How long we keep it</h2>
+        <p>Account data and ranked runs stay until you delete your account. Sessions end after 30 days or when you sign out. Deleted data can remain in database backups for up to 30 days.</p>
+      </section>
+
+      <section>
+        <h2>Cookies and browser storage</h2>
+        <p>Signing in sets two cookies that the sign-in can't work without: one for up to 10 minutes during sign-in, and one for up to 30 days that keeps you signed in. Your browser also keeps your settings and stats in local storage. There are no ads, no analytics and no tracking cookies. Fonts are served from this site.</p>
+      </section>
+
+      <section>
+        <h2>Who processes the data</h2>
+        <p>The site and database run on Cloudflare, which acts as our processor under its data processing addendum. It handles your IP address and request data to deliver the site, limit abuse and keep it secure (Art. 6(1)(f) GDPR). Cloudflare can process data outside the EU, including in the US, where it's certified under the EU-US Data Privacy Framework.</p>
+        <p>During sign-in, GitHub or Google handles your login as its own controller under <a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement">GitHub's</a> or <a href="https://policies.google.com/privacy">Google's</a> privacy policy. We don't share your data with anyone else or sell it.</p>
+      </section>
+
+      <section>
+        <h2>Deleting your data</h2>
+        <p>Your profile page has a <i>delete account</i> button. It removes your account and ranked runs straight away. Your local stats are separate: clear this site's data in your browser or use the reset in settings.</p>
+      </section>
+
+      <section>
+        <h2>Your rights</h2>
+        <p>You can ask for access, correction, deletion, restriction or a copy of your data, and object to processing. Write to the address above. You can also complain to the Austrian data protection authority (<a href="https://www.dsb.gv.at">dsb.gv.at</a>).</p>
+      </section>
+    </main>
+    <footer class="page-foot">
+      <span><a href="https://johannesgrof.me">Johannes Grof</a></span>
+      <nav aria-label="legal"><a href="/impressum">imprint</a><a href="/privacy">privacy</a><a href="/terms">terms</a></nav>
+    </footer>
+  </body>
+</html>

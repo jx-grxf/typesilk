@@ -50,7 +50,7 @@
           <span id="goal" hidden><span class="goal-track"><span class="goal-fill"></span></span></span>
           <span id="level"><b></b><span class="level-track"><span class="level-fill"></span></span></span>
         </a>
-        <a id="profile-button" href="/me" aria-label="your profile"><span class="mini-avatar" aria-hidden="true">Y</span>profile</a>
+        <a id="profile-button" href="/me" aria-label="your profile"><span class="mini-avatar" aria-hidden="true">Y</span><span class="profile-label">profile</span></a>
         <button id="open-settings" type="button">settings</button>
       </div>
     </header>
@@ -72,7 +72,8 @@
       <section id="profile" aria-label="your typing"></section>
       <section id="touch-note">
         <p class="touch-title">typesilk needs a keyboard.</p>
-        <p class="touch-text">Connect one to your phone or tablet and press any key, or open this page on a computer.</p>
+        <p class="touch-text">Connect one to your phone or tablet and press any key, or open this page on a computer. Your account and the leaderboard work here.</p>
+        <p class="touch-links"><a href="/daily">Daily leaderboard</a><a href="/me" id="touch-profile">Your profile</a></p>
       </section>
       <noscript><p>typesilk is a typing test that runs in your browser and needs JavaScript. <a href="/about">Read what it does.</a></p></noscript>
     </main>
@@ -83,7 +84,7 @@
       <nav id="controls-right" aria-label="language"></nav>
     </footer>
     <div class="colophon chrome">
-      <span><a href="https://johannesgrof.me">Johannes Grof</a> &middot; <a href="https://github.com/jx-grxf/typesilk">github</a> &middot; <a href="/about">about</a> &middot; <a href="/de" hreflang="de" lang="de">deutsch</a></span>
+      <span><a href="https://johannesgrof.me">Johannes Grof</a> &middot; <a href="https://github.com/jx-grxf/typesilk">github</a> &middot; <a href="/daily">leaderboard</a> &middot; <a href="/about">about</a> &middot; <a href="/de" hreflang="de" lang="de">deutsch</a> &middot; <a href="/privacy">privacy</a> &middot; <a href="/impressum">imprint</a></span>
       <span class="hint-short"><kbd>tab</kbd> restart &nbsp; <kbd class="palette-key">ctrl k</kbd> commands</span>
       <a id="version" href="https://github.com/jx-grxf/typesilk/releases"></a>
     </div>
@@ -112,6 +113,8 @@
         </span>
       </div>
     </div>
+
+    <div id="account-dialog" role="dialog" aria-label="account" inert></div>
 
     <script type="module" src="/src/main.ts"></script>
   </body>
