@@ -1,0 +1,113 @@
+/*
+ * typesilk tokens. Every colour, size and duration the interface uses lives here;
+ * DESIGN.md explains the rules and /design shows them live.
+ *
+ * Colour roles, contrast against --bg measured 2026-11-01 (noir / paper / forest / klein):
+ *   --ink     typed text and primary text          16.9 / 15.6 / 14.7 / 8.5
+ *   --muted   secondary text, the active word        7.2 /  4.9 /  7.3 / 6.2
+ *   --dim     untyped text and large quiet text      3.6 /  3.2 /  4.2 / 3.6  (3:1 is enough only for text from 24px)
+ *   --rule    hairlines, never text                  1.3 /  1.3 /  1.3 / 1.4
+ *   --accent  the one colour for what matters: caret, mistakes, records, the selected item
+ */
+
+:root {
+  --bg: #0d0c0b;
+  --ink: #f3eee3;
+  --muted: #a39d91;
+  --dim: #6f6a60;
+  --rule: #2a2825;
+  --accent: #ff4f1f;
+
+  --serif: "Newsreader Variable", "Iowan Old Style", Georgia, serif;
+  --mono: "JetBrains Mono Variable", ui-monospace, Menlo, monospace;
+  --face: var(--serif);
+  --face-scale: 1;
+  --word-gap: 0.27em;
+  --scale: 1;
+  --anchor: 34vw;
+  --edge: clamp(20px, 2.6vw, 44px);
+  color-scheme: dark;
+}
+
+:root[data-theme="paper"] {
+  --bg: #f1ebdd;
+  --ink: #16130e;
+  --muted: #6b6455;
+  --dim: #8a816f;
+  --rule: #d5ccb9;
+  --accent: #d6330a;
+  color-scheme: light;
+}
+
+:root[data-theme="forest"] {
+  --bg: #0e1a14;
+  --ink: #efe9d8;
+  --muted: #9aa99e;
+  --dim: #6d7f73;
+  --rule: #24332b;
+  --accent: #f2b13c;
+}
+
+:root[data-theme="klein"] {
+  --bg: #1a2bc4;
+  --ink: #f6f1e4;
+  --muted: #c9cef2;
+  --dim: #8f9ae6;
+  --rule: #3a4ad2;
+  --accent: #ffd23f;
+}
+
+:root[data-font="mono"] {
+  --face: var(--mono);
+  /* mono glyphs are wider and taller at the same size, so the line would overflow */
+  --face-scale: 0.8;
+  --word-gap: 0.6em;
+}
+
+:root[data-size="s"] { --scale: 0.78; }
+:root[data-size="l"] { --scale: 1.24; }
+
+:root[data-layout="tape"] {
+  --fs: calc(clamp(3.4rem, 6.6vw, 7.4rem) * var(--scale) * var(--face-scale));
+  --line: calc(var(--fs) * 1.32);
+}
+
+:root[data-layout="lines"] {
+  --fs: calc(clamp(1.9rem, 3vw, 3.2rem) * var(--scale) * var(--face-scale));
+  --line: calc(var(--fs) * 1.5);
+  --measure: min(1120px, 88vw);
+}
+
+:root[data-layout="classic"] {
+  --fs: calc(clamp(1.5rem, 2.2vw, 2.3rem) * var(--scale) * var(--face-scale));
+  --line: calc(var(--fs) * 1.6);
+  --measure: min(1040px, 86vw);
+}
+
+:root {
+  /* type: sizes below --text-lead use --muted or --ink, never --dim */
+  --text-small: 0.86rem;
+  --text-label: 0.92rem;
+  --text-body: 1rem;
+  --text-lead: 1.5rem;
+  --text-title: 1.9rem;
+
+  /* space: four steps, plus the page edge that grows with the window */
+  --space-1: 6px;
+  --space-2: 14px;
+  --space-3: 26px;
+  --space-4: 44px;
+
+  --hairline: 1px solid var(--rule);
+
+  /* motion: colour and hover changes, overlays, theme switches */
+  --fast: 160ms;
+  --fade: 280ms;
+  --theme: 500ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  /*
+   * --spring and --spring-snappy (with their -ms durations) are real springs baked into
+   * CSS linear() curves at start-up by src/spring.ts: soft is stiffness 170, damping 22;
+   * snappy is 300 / 26. Anything that moves into place uses one of the two.
+   */
+}

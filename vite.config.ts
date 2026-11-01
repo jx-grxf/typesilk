@@ -5,4 +5,9 @@ const { version } = JSON.parse(readFileSync(new URL("./package.json", import.met
 
 export default defineConfig({
   define: { __APP_VERSION__: JSON.stringify(version) },
+  build: {
+    rollupOptions: {
+      input: { main: "index.html", design: "design.html" },
+    },
+  },
 });
