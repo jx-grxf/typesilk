@@ -1,4 +1,5 @@
 import { THEMES, type Settings } from "./settings";
+import { SOUND_PACKS } from "./sound";
 
 type Option<T> = { label: string; value: T };
 
@@ -161,6 +162,11 @@ export function buildPanel(
     onOff("Ghost", "race the caret of your best run", "ghost"),
     group("Sound"),
     onOff("Keyboard sound", "recorded keystrokes", "sound"),
+    row("Pack", "recorded on three keyboards and a typewriter", seg(
+      SOUND_PACKS.map((value) => ({ label: value, value })),
+      s.soundPack,
+      (soundPack) => change({ soundPack }),
+    )),
     row("Volume", "", volume),
     group("Data"),
     row("Progress", "clears level, streak and records", reset),

@@ -1,2 +1,11 @@
-Keyboard recordings from "Keyboard soundpack 1" by Unicae Games, released under CC0 1.0.
-https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes
+All keystroke sounds are released under CC0 1.0 (public domain dedication).
+
+crisp/
+  "Keyboard soundpack 1" by Unicae Games, recorded on a Cherry KC 1000.
+  https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes
+
+laptop/, office/, typewriter/
+  Single keystrokes cut from recordings by Joseph Sardin, BigSoundBank.com:
+  Slow MacBook keyboard #1 and #2, Slow keyboard, Typewriter #1 and #2,
+  Typewriter key, Typewriter space.
+  https://bigsoundbank.com/licenses.html

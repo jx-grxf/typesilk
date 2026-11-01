@@ -10,7 +10,7 @@ import { renderResults } from "./results";
 import { type Command, Palette } from "./palette";
 import { customWords, pickQuote, QUOTE_LENGTHS, type Quote } from "./quotes";
 import { CARET_MOTIONS, CARETS, FONTS, LAYOUTS, loadSettings, MODES, recordKey, saveSettings, THEMES, type Mode, type Settings } from "./settings";
-import { Sound } from "./sound";
+import { Sound, SOUND_PACKS } from "./sound";
 import { springEasing } from "./spring";
 import { Stage } from "./stage";
 import { recordKey as recordKeyStat, trend, weakKeys } from "./training";
@@ -421,6 +421,15 @@ function commands(): Command[] {
   toggle("flow line", "flowLine");
   toggle("ghost", "ghost");
   toggle("sound", "sound");
+  for (const pack of SOUND_PACKS) {
+    list.push({
+      group: "sound pack",
+      label: pack,
+      current: settings.soundPack === pack,
+      preview: () => void sound.use(pack).then(() => sound.preview()),
+      run: () => change({ soundPack: pack, sound: true }),
+    });
+  }
   list.push({ group: "open", label: "settings", run: () => setPanel(true) });
   return list;
 }
@@ -567,6 +576,7 @@ function applySettings(): void {
   root.dataset.caret = settings.caret;
   sound.enabled = settings.sound;
   sound.setVolume(settings.volume);
+  void sound.use(settings.soundPack);
   stage.layout = settings.layout;
   stage.caretStyle = settings.caret;
   stage.setMotion(prefersReducedMotion ? "off" : settings.caretMotion);
@@ -583,6 +593,7 @@ function change(patch: Partial<Settings>): void {
   Object.assign(settings, patch);
   saveSettings(settings);
   applySettings();
+  if ("soundPack" in patch) void sound.use(settings.soundPack).then(() => sound.preview());
   if (TEST_KEYS.some((key) => key in patch)) void restart();
   else if ("caret" in patch) {
     stage.caretTo(engine.wordIndex, engine.input.length);
@@ -683,7 +694,6 @@ async function boot(): Promise<void> {
   segments.push(...buildPanel($("panel-body"), settings, change, resetProfile));
   applySettings();
   renderMeta();
-  void sound.load();
   await fontsReady();
   segments.forEach((seg) => seg.sync());
   newTest();
