@@ -35,6 +35,19 @@ export class Spring {
   }
 }
 
+export const SPRINGS = { soft: [170, 22], snappy: [300, 26] } as const;
+
+/** Publishes both springs as CSS tokens (--spring, --spring-snappy and their -ms durations). */
+export function applySpringTokens(root: HTMLElement): { soft: ReturnType<typeof springEasing>; snappy: ReturnType<typeof springEasing> } {
+  const soft = springEasing(...SPRINGS.soft);
+  const snappy = springEasing(...SPRINGS.snappy);
+  root.style.setProperty("--spring", soft.easing);
+  root.style.setProperty("--spring-ms", `${soft.duration}ms`);
+  root.style.setProperty("--spring-snappy", snappy.easing);
+  root.style.setProperty("--spring-snappy-ms", `${snappy.duration}ms`);
+  return { soft, snappy };
+}
+
 /** Bakes a spring into a CSS linear() easing so WAAPI and CSS can run it off the main thread. */
 export function springEasing(
   stiffness: number,

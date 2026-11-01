@@ -1,0 +1,63 @@
+body.design {
+  display: block;
+  height: auto;
+  overflow: auto;
+}
+
+.ds { max-width: 1120px; margin: 0 auto; padding: var(--space-3) var(--edge) 120px; }
+.ds-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--space-2) var(--space-4); padding-bottom: var(--space-4); }
+.ds-head .logo { color: var(--ink); text-decoration: none; }
+.ds-head h1 { flex: 1; font-size: clamp(3rem, 8vw, 6rem); font-weight: 300; font-style: italic; letter-spacing: -0.03em; line-height: 1; }
+.ds-controls { display: flex; flex-wrap: wrap; gap: var(--space-3); color: var(--muted); }
+
+.ds-section { padding: var(--space-4) 0; border-top: 1px solid var(--ink); }
+.ds-section > h2 { font-size: var(--text-title); font-weight: 300; font-style: italic; letter-spacing: -0.02em; }
+.ds-note { margin: var(--space-1) 0 var(--space-3); max-width: 62ch; color: var(--muted); }
+.ds-note b { color: var(--ink); font-weight: 400; }
+
+.ds-principles { display: grid; gap: var(--space-2); max-width: 70ch; padding-left: 1.2em; font-size: 1.15rem; line-height: 1.5; }
+.ds-principles b { font-weight: 500; }
+
+.ds-swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: var(--space-3); }
+.ds-swatch { display: flex; gap: var(--space-2); align-items: flex-start; }
+.ds-swatch div { display: flex; flex-direction: column; gap: 2px; }
+.ds-swatch b { font-weight: 500; }
+.ds-swatch span { color: var(--muted); font-variant-numeric: tabular-nums; }
+.ds-swatch small { color: var(--muted); font-style: italic; font-size: var(--text-small); }
+.ds-chip { flex: none; width: 52px; height: 52px; border: var(--hairline); }
+
+.ds-type { display: grid; gap: var(--space-3); }
+.ds-type .hero-number { font-size: clamp(6rem, 14vw, 11rem); }
+.ds-title { font-size: clamp(2.6rem, 6vw, 4.5rem); font-weight: 300; font-style: italic; letter-spacing: -0.03em; line-height: 1; }
+.ds-label { color: var(--muted); font-style: italic; font-size: var(--text-label); }
+.ds-figures { font-size: var(--text-lead); font-variant-numeric: lining-nums tabular-nums; }
+
+.ds-typing { font-size: clamp(2.2rem, 5vw, 4rem); line-height: 1.4; color: var(--dim); font-variant-ligatures: none; }
+.ds-carets { display: flex; gap: var(--space-4); margin-top: var(--space-2); }
+.ds-caret { position: relative; display: inline-flex; align-items: baseline; gap: var(--space-2); font-size: 3rem; color: var(--ink); }
+.ds-caret i { position: absolute; left: 0; background: var(--accent); }
+.ds-caret.line i { width: 3px; height: 1em; top: 0.12em; left: -4px; }
+.ds-caret.block i { width: 0.5em; height: 1em; top: 0.12em; background: color-mix(in srgb, var(--accent) 34%, transparent); }
+.ds-caret.underline i { width: 0.5em; height: 3px; top: 1.05em; }
+.ds-caret small { font-size: var(--text-small); color: var(--muted); font-style: italic; }
+
+.ds-motion { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-4); margin-bottom: var(--space-2); }
+.ds-spring { display: flex; flex-direction: column; gap: var(--space-1); }
+.ds-spring svg { width: 100%; height: auto; overflow: visible; }
+.ds-spring polyline { fill: none; stroke: var(--accent); stroke-width: 2; }
+.ds-spring .grid { stroke: var(--rule); }
+.ds-spring small { color: var(--muted); }
+.ds-track { position: relative; height: 18px; margin-top: var(--space-2); border-bottom: var(--hairline); }
+.ds-track i { position: absolute; left: 0; top: 4px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); transition-property: transform; }
+.ds-motion.moved .ds-track i { transform: translateX(calc(min(100vw, 1120px) / 2 - 120px)); }
+
+.ds-component { margin: var(--space-4) 0 var(--space-2); padding-bottom: var(--space-1); border-bottom: var(--hairline); font-size: var(--text-body); font-weight: 500; }
+.ds-component:first-child { margin-top: 0; }
+.ds-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-3); }
+.ds-stats { max-width: 420px; }
+.ds-palette { max-width: 520px; padding-bottom: var(--space-1); border: var(--hairline); }
+.ds-palette-input { padding: 16px 22px 12px; border-bottom: var(--hairline); font-size: var(--text-lead); font-style: italic; }
+.ds-palette .pal-row[aria-selected="true"] { border-left: 2px solid var(--accent); background: color-mix(in srgb, var(--ink) 6%, transparent); }
+.ds-panel { max-width: 520px; }
+.ds-panel h3 { margin: var(--space-3) 0 var(--space-1); padding-bottom: 8px; border-bottom: 1px solid var(--ink); font-size: var(--text-body); font-weight: 500; }
+.ds-card { display: block; width: 100%; max-width: 720px; border: var(--hairline); }

@@ -33,7 +33,7 @@ function tipText(cell: Cell): string {
   return `<b>${date}</b><span>${number.format(words)} words · ${runs} ${runs === 1 ? "run" : "runs"}</span><span>${minutes(ms)} · best ${best} wpm</span>`;
 }
 
-function activity(days: Days): HTMLElement {
+export function renderActivity(days: Days): HTMLElement {
   const weeks = yearGrid(days);
   const { words, active, longest } = summary(days);
   const figure = document.createElement("figure");
@@ -148,7 +148,7 @@ export function renderProfile(root: HTMLElement, profile: Profile, language: Lan
   const back = document.createElement("p");
   back.className = "again";
   back.innerHTML = "<kbd>esc</kbd> back to typing";
-  const parts = [head, activity(profile.days), records(profile), renderHeatmap(profile.keys, language), back];
+  const parts = [head, renderActivity(profile.days), records(profile), renderHeatmap(profile.keys, language), back];
   parts.forEach((part, i) => {
     part.classList.add("rise");
     part.style.animationDelay = `${i * 60}ms`;
