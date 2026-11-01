@@ -689,6 +689,12 @@ $("backdrop").addEventListener("click", () => {
 
 // --- boot
 
+// touch screens get a note instead of a test they can't take, until a real key arrives
+if (window.matchMedia("(hover: none) and (pointer: coarse)").matches) {
+  document.body.classList.add("touch");
+  window.addEventListener("keydown", () => document.body.classList.add("has-keyboard"), { once: true, capture: true });
+}
+
 async function boot(): Promise<void> {
   if (/Mac|iPhone|iPad/.test(navigator.platform)) {
     $("palette-key").textContent = "⌘k";
