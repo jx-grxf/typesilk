@@ -519,9 +519,22 @@ body.show-profile #profile { opacity: 1; visibility: visible; }
 body.show-profile :is(#typing, #results, footer) { opacity: 0; visibility: hidden; pointer-events: none; }
 
 .profile-head h2 { font-size: clamp(3rem, 7vw, 6rem); font-weight: 300; font-style: italic; letter-spacing: -0.03em; line-height: 1; }
-.profile-head dl { display: flex; flex-wrap: wrap; gap: 14px 48px; margin-top: 22px; }
-.profile-head dt { color: var(--muted); font-size: 0.9rem; }
-.profile-head dd { margin: 0; font-size: 1.7rem; font-variant-numeric: lining-nums tabular-nums; }
+.who p { margin-top: 8px; }
+.figures {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: var(--space-4);
+  border-top: 1px solid var(--ink);
+}
+.figure { display: flex; flex-direction: column; gap: 4px; padding: var(--space-2) var(--space-2) var(--space-3) 0; border-bottom: var(--hairline); }
+.figure dt { color: var(--muted); font-size: var(--text-label); font-style: italic; }
+.figure dd { margin: 0; font-size: clamp(2rem, 3.4vw, 3rem); font-weight: 300; line-height: 1; font-variant-numeric: lining-nums tabular-nums; letter-spacing: -0.02em; }
+.figure dd small { margin-left: 6px; color: var(--muted); font-size: 1rem; font-style: italic; letter-spacing: 0; }
+.figure > small { color: var(--muted); font-size: var(--text-small); }
+.streak-figure { display: inline-flex; align-items: center; gap: 10px; }
+.streak-figure .flame { width: 0.55em; height: 0.7em; }
+.streak-figure.lit .flame { fill: var(--accent); stroke: var(--accent); }
+@media (max-width: 900px) { .figures { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
 .activity figcaption { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 24px; margin-bottom: 14px; color: var(--muted); }
 .activity figcaption b { color: var(--ink); font-weight: 400; font-size: 1.3rem; }
@@ -549,6 +562,78 @@ body.show-profile :is(#typing, #results, footer) { opacity: 0; visibility: hidde
 .records h3 { margin-bottom: 4px; padding-bottom: 8px; border-bottom: 1px solid var(--ink); font-size: 1rem; font-weight: 500; }
 .records .stat-value small { color: var(--muted); font-size: 0.9rem; }
 .records .empty { padding: 11px 0; color: var(--muted); font-style: italic; }
+
+/* ---------- badges ---------- */
+
+.medal { flex: none; width: 64px; height: 64px; overflow: visible; }
+.medal .ring, .medal .seal, .medal .progress { fill: none; stroke-width: 1.2; vector-effect: non-scaling-stroke; }
+.medal .ring { stroke: var(--muted); }
+.medal .glyph { fill: var(--ink); font-family: var(--face); font-weight: 400; font-variant-numeric: lining-nums; letter-spacing: -0.02em; }
+.medal .rim { fill: var(--bg); font-family: var(--face); font-size: 6.4px; letter-spacing: 0.32em; text-transform: uppercase; }
+.medal.rare .ring { stroke: var(--ink); }
+.medal.epic .seal, .medal.epic .ring { stroke: var(--accent); }
+.medal.epic .glyph { fill: var(--accent); }
+.medal.legendary .seal { fill: var(--accent); stroke: var(--accent); }
+.medal.legendary .ring { stroke: var(--bg); stroke-opacity: 0.5; }
+.medal.legendary .glyph { fill: var(--bg); }
+/* locked medals keep their shape but fade back; only the progress arc stays at full strength */
+.medal.locked > :not(.progress) { opacity: 0.35; }
+.medal.locked .ring, .medal.locked .seal { stroke-dasharray: 2.5 3; }
+.medal.locked.legendary .seal { fill: none; stroke: var(--muted); }
+.medal.locked .glyph { fill: var(--muted); }
+.medal .progress { stroke: var(--accent); stroke-width: 2; stroke-linecap: round; }
+
+.badges h3 { margin-bottom: var(--space-2); padding-bottom: 8px; border-bottom: 1px solid var(--ink); font-size: var(--text-body); font-weight: 500; }
+.badge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--space-3) var(--space-4); }
+.badge-card { display: flex; align-items: center; gap: var(--space-2); }
+.badge-card .medal { transition: transform var(--spring-snappy-ms, 300ms) var(--spring-snappy, ease); }
+.badge-card:hover .medal { transform: rotate(-8deg) scale(1.08); }
+.badge-copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.badge-copy b { font-weight: 500; }
+.badge-copy span { color: var(--muted); font-size: var(--text-label); line-height: 1.35; }
+.badge-copy small { color: var(--muted); font-size: var(--text-small); font-style: italic; }
+.badge-card:not(.earned) .badge-copy b { color: var(--muted); font-weight: 400; }
+
+.unlocked { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-4); }
+.unlocked-title { width: 100%; color: var(--muted); font-style: italic; }
+.unlocked-badge { position: relative; display: flex; align-items: center; gap: var(--space-2); max-width: 420px; }
+.unlocked-badge .medal { width: 84px; height: 84px; animation: medal-in 900ms var(--spring, ease) backwards; animation-delay: calc(var(--i, 0) * 120ms + 300ms); }
+.unlocked-badge div { display: flex; flex-direction: column; gap: 2px; }
+.unlocked-badge b { font-size: var(--text-lead); font-weight: 400; }
+.unlocked-badge span { color: var(--muted); }
+.unlocked-badge small { color: var(--accent); font-style: italic; }
+@keyframes medal-in { from { opacity: 0; transform: scale(0.4) rotate(-30deg); } }
+/* legendary gets one ring that leaves the medal, once */
+.unlocked-badge.legendary::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 84px;
+  height: 84px;
+  margin-top: -42px;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: burst 1200ms var(--ease-out) 650ms both;
+}
+@keyframes burst { from { opacity: 0.9; transform: scale(0.9); } to { opacity: 0; transform: scale(2.4); } }
+
+.identity { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 84px;
+  height: 84px;
+  border: 1px solid var(--ink);
+  border-radius: 50%;
+  font-size: 2.6rem;
+  font-style: italic;
+  font-weight: 300;
+}
+.identity p { color: var(--muted); }
+.showcase { display: flex; gap: var(--space-2); margin-left: auto; }
+.showcase .medal { width: 72px; height: 72px; }
 
 /* ---------- settings panel ---------- */
 

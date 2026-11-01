@@ -20,6 +20,11 @@ export type Profile = {
   /** Activity per local day, only from runs that look like a person typed them. */
   days: Days;
   dailies: Dailies;
+  /** Badge id to the day it was earned. */
+  badges: Record<string, string>;
+  quotes: number;
+  /** Languages with a finished run of 30 seconds or more. */
+  languages: string[];
 };
 
 export type RunResult = {
@@ -41,7 +46,7 @@ export type RunReward = {
 };
 
 export function emptyProfile(): Profile {
-  return { xp: 0, tests: 0, totalChars: 0, streakDays: 0, lastDay: null, bests: {}, keys: {}, history: [], days: {}, dailies: {} };
+  return { xp: 0, tests: 0, totalChars: 0, streakDays: 0, lastDay: null, bests: {}, keys: {}, history: [], days: {}, dailies: {}, badges: {}, quotes: 0, languages: [] };
 }
 
 export function loadProfile(): Profile {

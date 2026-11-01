@@ -6,6 +6,7 @@ import "./tokens.css";
 import "./style.css";
 import "./design.css";
 import type { Days } from "./activity";
+import { BADGES, medal } from "./badges";
 import { renderCard } from "./card";
 import { renderHeatmap } from "./heatmap";
 import { renderActivity } from "./profile-view";
@@ -197,11 +198,24 @@ function components(): HTMLElement {
     label("Stat rows"), stats,
     label("Command palette rows"), palette,
     label("Settings rows"), panel,
+    label("Badges"), medals(),
     label("Key heatmap"), renderHeatmap(sampleKeys(), "english"),
     label("Activity"), renderActivity(sampleDays()),
     label("Result card"), card,
   );
   return wrap;
+}
+
+function medals(): HTMLElement {
+  const row = el("div", "ds-medals");
+  for (const id of ["sixty", "hundred", "one-fifty", "two-hundred"]) {
+    const badge = BADGES.find((b) => b.id === id)!;
+    const pair = el("div", "ds-medal");
+    pair.append(medal(badge, true), medal(badge, false, [2, 3]));
+    pair.append(el("small", "", `${badge.rarity}: earned, and locked with progress`));
+    row.append(pair);
+  }
+  return row;
 }
 
 function header(): HTMLElement {

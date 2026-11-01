@@ -1,4 +1,5 @@
 import { Spring } from "./spring";
+import { medal, type Badge } from "./badges";
 import { copyCard, saveCard, type CardData } from "./card";
 import { renderHeatmap } from "./heatmap";
 import { levelOf, levelProgress, type RunReward } from "./profile";
@@ -27,7 +28,28 @@ export type ResultData = {
   setup: string;
   /** Set on the daily: whether this was the first try, and what that first try was. */
   daily: { number: number; first: boolean; firstWpm: number | null } | null;
+  badges: Badge[];
 };
+
+function unlocked(badges: Badge[]): HTMLElement {
+  const wrap = document.createElement("section");
+  wrap.className = "unlocked";
+  const title = document.createElement("p");
+  title.className = "unlocked-title";
+  title.textContent = badges.length === 1 ? "New badge" : `${badges.length} new badges`;
+  wrap.append(title);
+  badges.forEach((badge, i) => {
+    const row = document.createElement("div");
+    row.className = `unlocked-badge ${badge.rarity}`;
+    row.style.setProperty("--i", String(i));
+    row.append(medal(badge, true));
+    const text = document.createElement("div");
+    text.innerHTML = `<b>${badge.name}</b><span>${badge.description}</span><small>${badge.rarity}</small>`;
+    row.append(text);
+    wrap.append(row);
+  });
+  return wrap;
+}
 
 let currentCard: CardData | null = null;
 
@@ -70,7 +92,7 @@ function niceMax(value: number): number {
 
 type ChartLabels = { title: string; description: string; tick(i: number): string; point(i: number): string };
 
-function buildChart(series: number[], labels: ChartLabels): HTMLElement {
+export function buildChart(series: number[], labels: ChartLabels): HTMLElement {
   const wrap = document.createElement("figure");
   wrap.className = "chart";
   const title = document.createElement("figcaption");
@@ -248,6 +270,7 @@ export function renderResults(root: HTMLElement, data: ResultData): void {
   };
 
   const parts: HTMLElement[] = [top];
+  if (data.badges.length > 0) parts.push(unlocked(data.badges));
   if (data.series.length >= 2) {
     parts.push(buildChart(data.series, {
       title: "Speed during this run",

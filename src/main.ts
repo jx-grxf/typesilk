@@ -5,6 +5,7 @@ import "@fontsource-variable/jetbrains-mono/wght-italic.css";
 import "./tokens.css";
 import "./style.css";
 import { plausible, recordDay } from "./activity";
+import { awardBadges, type RunFacts } from "./badges";
 import { dailyKey, dailyNumber, dailyWords } from "./daily";
 import { consistency, rollingWpm, TypingEngine, wpm } from "./engine";
 import { FlowMeter } from "./flow";
@@ -12,7 +13,7 @@ import { applyRun, clearProfile, emptyProfile, levelOf, levelProgress, loadProfi
 import { renderProfile, setupName } from "./profile-view";
 import { renderResults, shareResult } from "./results";
 import { type Command, Palette } from "./palette";
-import { customWords, pickQuote, QUOTE_LENGTHS, type Quote } from "./quotes";
+import { customWords, pickQuote, QUOTE_LENGTHS, quoteLength, type Quote } from "./quotes";
 import { CARET_MOTIONS, CARETS, FONTS, GOALS, LAYOUTS, loadSettings, MODES, recordKey, saveSettings, THEMES, type Mode, type Settings } from "./settings";
 import { Sound, SOUND_PACKS } from "./sound";
 import { applySpringTokens } from "./spring";
@@ -262,10 +263,25 @@ function finish(durationMs: number, failedAtWord: number | null = null): void {
     },
     localDay(),
   );
+  const human = plausible(gaps, wpm(engine.totalKeys, rateMs));
   // zen has no target text, so anything typed there would count
-  if (settings.mode !== "zen" && plausible(gaps, wpm(engine.totalKeys, rateMs))) {
+  if (settings.mode !== "zen" && human) {
     recordDay(profile.days, localDay(), { chars, ms: durationMs, wpm: rate });
   }
+  const finished = !failed && settings.mode !== "zen" && settings.mode !== "custom";
+  if (finished && settings.mode === "quote") profile.quotes++;
+  if (finished && durationMs >= 30000 && !profile.languages.includes(settings.language)) profile.languages.push(settings.language);
+  const facts: RunFacts = {
+    mode: settings.mode,
+    seconds: durationMs / 1000,
+    wpm: rate,
+    accuracy: engine.accuracy,
+    consistency: consistency(series),
+    words: engine.wordIndex,
+    finished: !failed,
+    quoteLength: settings.mode === "quote" && currentQuote ? quoteLength(currentQuote) : null,
+  };
+  const newBadges = awardBadges(profile, human ? facts : null);
   saveProfile(profile);
   renderMeta(firstToday);
 
@@ -289,6 +305,7 @@ function finish(durationMs: number, failedAtWord: number | null = null): void {
       keys: profile.keys,
       language: settings.language,
       setup: daily === null ? setupName(recordKey(settings)) : `daily #${daily} · ${settings.language}`,
+    badges: newBadges,
     daily: daily === null ? null : { number: daily, first: firstDaily, firstWpm: profile.dailies[dailyEntry!]?.wpm ?? null },
     });
     document.body.classList.add("show-results");
@@ -821,6 +838,8 @@ async function boot(): Promise<void> {
   applySettings();
   renderMeta();
   await fontsReady();
+  // badges for what someone already did before badges existed, without a fanfare
+  if (awardBadges(profile, null).length > 0) saveProfile(profile);
   segments.forEach((seg) => seg.sync());
   newTest();
   if (location.pathname === "/me") showProfile(false);
