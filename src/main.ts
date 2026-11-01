@@ -14,6 +14,7 @@ import { MIN_RATE_MS, consistency, rollingWpm, TypingEngine, wpm } from "./engin
 import { FlowMeter } from "./flow";
 import { applyRun, clearProfile, emptyProfile, levelOf, levelProgress, loadProfile, localDay, saveProfile } from "./profile";
 import { renderProfile, setupName } from "./profile-view";
+import { QuietGate } from "./quiet-gate";
 import { renderResults, shareResult } from "./results";
 import { type Command, Palette } from "./palette";
 import { customWords, pickQuote, QUOTE_LENGTHS, quoteLength, type Quote } from "./quotes";
@@ -51,6 +52,7 @@ if (new URLSearchParams(location.search).get("mode") === "daily") {
 const entryParams = new URLSearchParams(location.search);
 if (location.search) history.replaceState(null, "", location.pathname);
 const recorder = new RunRecorder();
+const resultShortcuts = new QuietGate(600);
 let profile = loadProfile();
 
 const typingEl = $("typing");
@@ -257,6 +259,7 @@ function setEscLabel(): void {
 function finish(durationMs: number, failedAtWord: number | null = null): void {
   if (state !== "running") return;
   state = "done";
+  resultShortcuts.close(performance.now());
   document.body.classList.remove("focus", "pointer-awake");
   stage.hideGhost();
   const chars = engine.correctChars;
@@ -691,6 +694,8 @@ window.addEventListener("keydown", (event) => {
   }
   if (state === "done") {
     if (event.key === "Enter") void restart();
+    // nobody stops typing the instant a run ends, and t, c and s are common letters
+    if (!resultShortcuts.pass(event.timeStamp)) return;
     const plain = !event.ctrlKey && !event.metaKey && !event.altKey;
     if (event.key.toLowerCase() === "t" && plain) change({ mode: "train" });
     if (event.key.toLowerCase() === "c" && plain) void shareResult("copy");
