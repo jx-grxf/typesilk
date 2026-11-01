@@ -110,7 +110,79 @@ section li + li { margin-top: var(--space-1); }
 
 .page-foot { margin-top: var(--space-4); border-top: var(--hairline); }
 
-.missing h1 + p { margin-top: var(--space-3); font-size: var(--text-lead); }
+/* the 404 borrows the test's own layout: the count above the line, the caret, the rule below it */
+body.nf {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+.nf-main {
+  align-self: center;
+  padding-bottom: 12vh;
+  padding-left: clamp(0px, 18vw, 340px);
+}
+
+.nf-count {
+  font-size: var(--text-lead);
+  font-style: italic;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.nf-typed {
+  display: flex;
+  align-items: center;
+  min-height: 1.32em;
+  margin-top: var(--space-1);
+  font-size: clamp(3rem, 6.6vw, 7.4rem);
+  line-height: 1.32;
+  white-space: pre;
+}
+
+.nf-typed.nf-cut {
+  -webkit-mask-image: linear-gradient(to right, #000 80%, transparent);
+  mask-image: linear-gradient(to right, #000 80%, transparent);
+}
+
+.nf-wrong { color: var(--accent); }
+
+.nf-caret {
+  flex: none;
+  width: 3px;
+  height: 0.95em;
+  margin-left: 0.04em;
+  background: var(--accent);
+}
+
+.nf-title {
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: var(--hairline);
+  margin-left: calc(-1 * (clamp(0px, 18vw, 340px) + var(--edge)));
+  padding-left: calc(clamp(0px, 18vw, 340px) + var(--edge));
+  margin-right: calc(-1 * var(--edge));
+  font-size: var(--text-lead);
+  font-weight: 400;
+  line-height: 1.35;
+  letter-spacing: 0;
+}
+
+.nf-suggest { font-size: var(--text-lead); line-height: 1.35; }
+
+.nf-hint {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+  font-size: var(--text-body);
+  color: var(--muted);
+}
+
+.nf-hint a { text-decoration: none; transition: color var(--fast) ease; }
+.nf-hint a:hover { color: var(--ink); }
+.nf-hint kbd { color: var(--ink); }
 
 @media (prefers-reduced-motion: reduce) {
   a { transition: none; }
