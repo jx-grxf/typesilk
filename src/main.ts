@@ -156,6 +156,8 @@ async function fontsReady(): Promise<void> {
 }
 
 async function restart(): Promise<void> {
+  // starting a test always means typing, so it brings you out of the profile
+  if (profileOpen()) hideProfile();
   if (state === "busy") return;
   const fromResults = state === "done";
   state = "busy";
@@ -580,6 +582,22 @@ $("daily-link").addEventListener("click", (event) => {
   (event.currentTarget as HTMLElement).blur();
   if (settings.mode === "daily") void restart();
   else change({ mode: "daily" });
+});
+for (const id of ["profile-button"]) {
+  $(id).addEventListener("click", (event) => {
+    event.preventDefault();
+    (event.currentTarget as HTMLElement).blur();
+    if (profileOpen()) hideProfile();
+    else showProfile();
+  });
+}
+// the logo and the back link on the profile both lead back to the test
+document.addEventListener("click", (event) => {
+  const link = (event.target as HTMLElement).closest("#home-link, .profile-back");
+  if (!link) return;
+  event.preventDefault();
+  (link as HTMLElement).blur();
+  if (profileOpen()) hideProfile();
 });
 $("profile-link").addEventListener("click", (event) => {
   event.preventDefault();

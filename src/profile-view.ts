@@ -143,6 +143,10 @@ function figure(label: string, value: string, note = ""): string {
 
 export function renderProfile(root: HTMLElement, profile: Profile, language: Language): void {
   root.replaceChildren();
+  const backTop = document.createElement("a");
+  backTop.className = "profile-back";
+  backTop.href = "/";
+  backTop.innerHTML = '<span aria-hidden="true">←</span> back to typing <kbd>esc</kbd>';
   const head = document.createElement("header");
   head.className = "profile-head";
   const typedMs = Object.values(profile.days).reduce((sum, day) => sum + day.ms, 0);
@@ -203,7 +207,7 @@ export function renderProfile(root: HTMLElement, profile: Profile, language: Lan
       point: (i) => `run ${i + 1}`,
     })
     : null;
-  const parts = [head, renderActivity(profile.days), ...(progress ? [progress] : []), badges, records(profile), renderHeatmap(profile.keys, language), back];
+  const parts = [backTop, head, renderActivity(profile.days), ...(progress ? [progress] : []), badges, records(profile), renderHeatmap(profile.keys, language), back];
   parts.forEach((part, i) => {
     part.classList.add("rise");
     part.style.animationDelay = `${i * 60}ms`;
