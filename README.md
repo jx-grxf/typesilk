@@ -1,47 +1,61 @@
-<img src="docs/typing.png" alt="typesilk: one line of large serif type gliding under a still orange caret" width="100%">
+<div align="center">
 
 # typesilk
 
-*A typing test that glides.*
+A typing test for the browser where the words glide under a still caret on a spring, with recorded keystrokes and a coach for your weak keys.
 
-The caret stands still and the words travel beneath it, carried by a spring that keeps its momentum between keystrokes. There are no boxes, no glow, just type at the size of a headline and one colour for what matters.
+[![Live](https://img.shields.io/badge/live-typesilk.johannesgrof.me-ff4f1f?style=flat-square)](https://typesilk.johannesgrof.me)
+[![Release](https://img.shields.io/github/v/release/jx-grxf/typesilk?style=flat-square&color=2a2825)](https://github.com/jx-grxf/typesilk/releases)
+[![License](https://img.shields.io/badge/license-MIT-2a2825?style=flat-square)](LICENSE)
 
-## Why it feels different
+[Open typesilk](https://typesilk.johannesgrof.me) · [Design system](DESIGN.md) · [Roadmap](docs/specs/roadmap.md)
 
-Most typing tests start a short animation for every key. Type fast and each one is replaced before it finishes, so the motion keeps restarting from zero.
+<img src="docs/typing.gif" alt="Words in a large serif gliding under an orange caret while someone types; one wrong letter turns orange and is corrected" width="100%">
 
-typesilk retargets one continuous spring instead, so speed carries over from key to key. The faster you type, the smoother it runs.
+</div>
 
-- **Letters press in.** Each one dips and settles on a spring, and the caret flinches with every press.
-- **Mistakes have weight.** Wrong letters shake and turn the signal colour without breaking your rhythm.
-- **Real sound.** Four packs of recorded keystrokes (crisp, laptop, office, typewriter), placed in stereo by where the key sits on the board.
-- **Flow line.** A thin rule under the text grows while your rhythm holds, and shrinks when you slip.
+Most typing tests start a short animation for every key, so when you type fast each one is cut off and the motion keeps restarting. typesilk moves the text with one continuous spring that keeps its speed between keystrokes. The faster you type, the smoother it runs.
 
-## Modes
+## What it does
+
+**Typing**
+- Letters press in on a spring, wrong ones shake and turn the accent colour without breaking your rhythm.
+- Three layouts: *tape* (one line at headline size), *lines* (a page), *classic* (three lines with the setup above).
+- Serif or mono type; the caret as a line, block or underline that glides snappy, smooth or not at all.
+- Four sound packs cut from real recordings (crisp, laptop, office, typewriter), placed in stereo by where the key sits.
+
+**Modes**
 
 | Mode | What it does |
 | --- | --- |
 | **time** | 15, 30 or 60 seconds |
 | **words** | 25, 50 or 100 words |
-| **quote** | A passage from a public-domain book, short, medium or long |
-| **zen** | No text at all, type whatever you like, `shift` + `enter` ends it |
+| **quote** | 64 passages from public-domain books and poems, short, medium or long |
+| **zen** | No text at all; type anything, `shift` + `enter` ends it |
 | **custom** | Paste your own text, optionally shuffled |
 | **perfect** | One mistake ends the run |
 | **endless** | Runs until you press `esc` |
 | **train** | Words built around your weakest keys |
+| **daily** | The same 40 words for everyone today; your first try is the one that counts |
 
-Available in English, German, Spanish and French, with optional punctuation and numbers. Word lists go from the 200 most common words up to 20,000 in English, 10,000 in German and 1,000 in Spanish and French.
+English, German, Spanish and French, with optional punctuation and numbers. Word lists go from the 200 most common words up to 20,000 in English, 10,000 in German and 1,000 in Spanish and French.
 
-## Get better, then come back
+**Getting better**
+- Your best run in each setup comes back as a ghost caret to race.
+- Every keystroke feeds per-letter error and speed stats. Results name your weakest keys, shade them on a keyboard in your language's layout, and `t` starts a run built around them.
+- A streak with a flame that lights once you've typed today, and a words-per-day goal next to it.
 
-<img src="docs/results.png" alt="Results page with a very large words-per-minute number, statistics and a speed chart" width="100%">
+<img src="docs/results.png" alt="Results page with a very large words-per-minute number, statistics, a new badge and a speed chart" width="100%">
 
-- **Your ghost.** A second marker replays your best run in the same setup, so you always race someone your own speed.
-- **Weak keys.** Every keystroke feeds per-letter error and speed stats. Results name your worst letters, show them on a keyboard in your language's layout, and `t` starts a run built around them.
-- **Progress.** A chart of your past runs and your trend over the last five.
-- **Level and streak.** XP for clean typing and a count of days in a row.
+**Your profile** at `/me`: level, best and average speed, streak, a year of activity shaded by words typed per day, a speed chart, records per setup and 26 badges in four rarities, three of them secret.
 
-Everything is stored in your browser. There is no account and no server.
+<img src="docs/profile.png" alt="Profile page with a monogram, three badges, eight large figures and a grid of daily activity" width="100%">
+
+<img src="docs/badges.png" alt="Grid of round badge medals, earned ones solid, locked ones faded with an orange progress arc" width="100%">
+
+**Sharing**: `c` copies and `s` saves a 1200 × 630 image of your result, drawn in your theme in the browser.
+
+Everything is stored in your browser. There is no account and no server yet; the [roadmap](docs/specs/roadmap.md) describes optional GitHub sign-in and leaderboards.
 
 ## Make it yours
 
@@ -50,9 +64,13 @@ Everything is stored in your browser. There is no account and no server.
     <td><img src="docs/theme-paper.png" alt="Paper theme: black type on warm off-white"></td>
     <td><img src="docs/theme-klein.png" alt="Klein theme: cream type on saturated blue"></td>
   </tr>
+  <tr>
+    <td><img src="docs/classic.png" alt="Classic layout in mono type with a block caret and the setup above the text"></td>
+    <td><img src="docs/palette.png" alt="Command palette listing themes, with paper previewed behind it"></td>
+  </tr>
 </table>
 
-Four themes (noir, paper, forest, klein), a tape or lines layout, three text sizes, and a switch for every effect. `prefers-reduced-motion` is respected.
+Four themes (noir, paper, forest, klein), three text sizes and a switch for every effect. `prefers-reduced-motion` is respected. The command palette reaches every setting without the mouse and previews themes while you move over them.
 
 <img src="docs/settings.png" alt="Settings panel with hairline rows" width="100%">
 
@@ -61,9 +79,13 @@ Four themes (noir, paper, forest, klein), a tape or lines layout, three text siz
 | Key | Action |
 | --- | --- |
 | `tab` | Restart, or one more run |
-| `esc` | Settings, stop a run, or finish in endless |
+| `esc` | Settings, stop a run, or finish in endless and zen |
+| `⌘` / `ctrl` + `k` | Command palette |
 | `t` | Train your weak keys, from the results |
+| `c` / `s` | Copy or save the result image |
 | `ctrl` + `backspace` | Clear the word |
+
+It needs a physical keyboard. Phones and tablets show a note until one is connected.
 
 ## Run it
 
@@ -72,20 +94,29 @@ npm install
 npm run dev
 ```
 
-`npm test` runs the unit tests and `npm run build` makes a production build.
-
-It needs a physical keyboard. Touch devices aren't supported yet.
+`npm test` runs the unit tests, `npm run build` makes a production build and `npm run deploy` publishes it as a Cloudflare worker. `node scripts/build-wordlists.mjs` rebuilds the English and German word lists from their sources.
 
 ## Under the hood
 
-TypeScript and Vite with no UI framework, so nothing sits between a key and the screen. Letter positions are measured once when a word is created, and every frame after that only moves things with transforms.
+TypeScript and Vite with no UI framework, so nothing sits between a key and the screen. Letter positions are measured once when a word is created, and every frame after that only moves things with transforms. The look is defined in [`src/tokens.css`](src/tokens.css) and documented in [DESIGN.md](DESIGN.md).
 
-Measured in headless Chrome at 1600×900 with 200 keys at one key per 60 ms, a keypress costs 1.6 layout passes, 0.4 ms of layout and 3.0 ms of style recalculation, and no frame was dropped.
+Measured on v0.1.0 in headless Chrome at 1600×900, 200 keys at one key per 60 ms:
+
+| Per keypress | typesilk | Monkeytype |
+| --- | --- | --- |
+| Layout passes | 1.6 | 11.7 |
+| Layout time | 0.4 ms | 1.8 ms |
+| Style recalculation time | 3.0 ms | 1.6 ms |
+
+Neither dropped a frame in this test, so this shows where the work goes rather than a visible speed difference. What you feel is the motion design.
 
 ## Credits
 
-Typeface: [Newsreader](https://github.com/productiontype/Newsreader), SIL Open Font License. Keystrokes: [Keyboard soundpack 1](https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes) by Unicae Games and recordings by Joseph Sardin from [BigSoundBank](https://bigsoundbank.com), all CC0. English and German word lists: [FrequencyWords](https://github.com/hermitdave/FrequencyWords) by Hermit Dave and Wiktionary frequency lists from the Leipzig Corpora Collection, adapted under CC BY-SA 4.0 (see `public/words/LICENSE.txt`).
+- Typefaces: [Newsreader](https://github.com/productiontype/Newsreader) and [JetBrains Mono](https://github.com/JetBrains/JetBrainsMono), SIL Open Font License.
+- Keystrokes: [Keyboard soundpack 1](https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes) by Unicae Games and recordings by Joseph Sardin from [BigSoundBank](https://bigsoundbank.com), all CC0.
+- Word lists: [FrequencyWords](https://github.com/hermitdave/FrequencyWords) by Hermit Dave and Wiktionary frequency lists from the Leipzig Corpora Collection, adapted under CC BY-SA 4.0 (see `public/words/LICENSE.txt`).
+- Quotes: public-domain works, credited on the results page.
 
 ## License
 
-MIT, see [LICENSE](LICENSE).
+MIT, see [LICENSE](LICENSE). The word lists in `public/words` are CC BY-SA 4.0.
