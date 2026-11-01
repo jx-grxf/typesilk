@@ -156,6 +156,8 @@ async function fontsReady(): Promise<void> {
 }
 
 async function restart(): Promise<void> {
+  // starting a test always means typing, so it brings you out of the profile
+  if (profileOpen()) hideProfile();
   if (state === "busy") return;
   const fromResults = state === "done";
   state = "busy";
