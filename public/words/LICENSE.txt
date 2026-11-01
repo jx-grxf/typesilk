@@ -1,0 +1,16 @@
+The word lists in this folder are adapted works under CC BY-SA 4.0
+(https://creativecommons.org/licenses/by-sa/4.0/). The rest of typesilk is MIT.
+
+english.txt
+  From "FrequencyWords" by Hermit Dave, built from the OpenSubtitles 2018 corpus.
+  https://github.com/hermitdave/FrequencyWords
+  Names were removed by checking their casing against the Wiktionary frequency list
+  "English/Wikipedia (2016)", which is based on the Leipzig Corpora Collection.
+
+german.txt
+  From the Wiktionary frequency list "German/Mixed web 3M", based on the Leipzig
+  Corpora Collection, cross-checked against the German "FrequencyWords" list.
+  https://en.wiktionary.org/wiki/Wiktionary:Frequency_lists/German/Mixed_web_3M
+
+Changes: only plain words were kept, offensive words and names were removed, order is by
+frequency. scripts/build-wordlists.mjs rebuilds both files.

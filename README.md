@@ -30,7 +30,7 @@ typesilk retargets one continuous spring instead, so speed carries over from key
 | **endless** | Runs until you press `esc` |
 | **train** | Words built around your weakest keys |
 
-Available in English, German, Spanish and French, from the 200 most common words or about a thousand, with optional punctuation and numbers.
+Available in English, German, Spanish and French, with optional punctuation and numbers. Word lists go from the 200 most common words up to 20,000 in English, 10,000 in German and 1,000 in Spanish and French.
 
 ## Get better, then come back
 
@@ -84,7 +84,7 @@ Measured in headless Chrome at 1600×900 with 200 keys at one key per 60 ms, a k
 
 ## Credits
 
-Typeface: [Newsreader](https://github.com/productiontype/Newsreader), SIL Open Font License. Keystrokes: [Keyboard soundpack 1](https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes) by Unicae Games and recordings by Joseph Sardin from [BigSoundBank](https://bigsoundbank.com), all CC0.
+Typeface: [Newsreader](https://github.com/productiontype/Newsreader), SIL Open Font License. Keystrokes: [Keyboard soundpack 1](https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes) by Unicae Games and recordings by Joseph Sardin from [BigSoundBank](https://bigsoundbank.com), all CC0. English and German word lists: [FrequencyWords](https://github.com/hermitdave/FrequencyWords) by Hermit Dave and Wiktionary frequency lists from the Leipzig Corpora Collection, adapted under CC BY-SA 4.0 (see `public/words/LICENSE.txt`).
 
 ## License
 
