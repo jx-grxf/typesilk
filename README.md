@@ -4,11 +4,11 @@
 
 A typing test for the browser where the words glide under a still caret on a spring, with recorded keystrokes and a coach for your weak keys.
 
-[![Live](https://img.shields.io/badge/live-typesilk.johannesgrof.me-ff4f1f?style=flat-square)](https://typesilk.johannesgrof.me)
+[![Live](https://img.shields.io/badge/live-typesilk.com-ff4f1f?style=flat-square)](https://typesilk.com)
 [![Release](https://img.shields.io/github/v/release/jx-grxf/typesilk?style=flat-square&color=2a2825)](https://github.com/jx-grxf/typesilk/releases)
 [![License](https://img.shields.io/badge/license-MIT-2a2825?style=flat-square)](LICENSE)
 
-[Open typesilk](https://typesilk.johannesgrof.me) · [Design system](DESIGN.md) · [Roadmap](docs/specs/roadmap.md)
+[Open typesilk](https://typesilk.com) · [Design system](DESIGN.md) · [Roadmap](docs/specs/roadmap.md)
 
 <img src="docs/typing.gif" alt="Words in a large serif gliding under an orange caret while someone types; one wrong letter turns orange and is corrected" width="100%">
 

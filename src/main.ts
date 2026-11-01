@@ -36,6 +36,13 @@ const FONT_FAMILIES: Record<Settings["font"], string> = { serif: "Newsreader Var
 const $ = <T extends HTMLElement>(id: string): T => document.getElementById(id) as T;
 
 const settings = loadSettings();
+// language landing pages link here; the bare URL stays the canonical one
+const requestedLanguage = new URLSearchParams(location.search).get("lang");
+if (requestedLanguage && Object.hasOwn(LANGUAGES, requestedLanguage)) {
+  settings.language = requestedLanguage as Language;
+  saveSettings(settings);
+  history.replaceState(null, "", location.pathname);
+}
 let profile = loadProfile();
 
 const typingEl = $("typing");

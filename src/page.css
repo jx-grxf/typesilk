@@ -1,0 +1,117 @@
+@import "@fontsource-variable/newsreader/opsz.css";
+@import "@fontsource-variable/newsreader/opsz-italic.css";
+@import "./tokens.css";
+
+* { box-sizing: border-box; margin: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 1.1875rem;
+  line-height: 1.55;
+  font-optical-sizing: auto;
+  font-variant-numeric: lining-nums;
+  padding: 0 var(--edge);
+}
+
+a { color: inherit; text-decoration-color: var(--dim); text-underline-offset: 0.18em; transition: text-decoration-color var(--fast) ease; }
+a:hover { text-decoration-color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+kbd { font: inherit; font-style: italic; }
+
+.page-head,
+.page-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  font-size: var(--text-body);
+  color: var(--muted);
+}
+
+.page-head .logo {
+  font-size: 22px;
+  font-style: italic;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.page-head nav,
+.page-foot nav { display: flex; gap: var(--space-2); }
+
+.page-body {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: clamp(40px, 9vh, 96px) 0 var(--space-4);
+}
+
+h1 {
+  font-size: clamp(3rem, 8vw, 5.25rem);
+  font-weight: 400;
+  line-height: 1.02;
+  letter-spacing: -0.025em;
+}
+
+.lead {
+  margin-top: var(--space-3);
+  font-size: var(--text-lead);
+  line-height: 1.35;
+}
+
+.start {
+  display: inline-block;
+  margin-top: var(--space-3);
+  font-size: var(--text-lead);
+  font-style: italic;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 2px;
+}
+
+section {
+  margin-top: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: var(--hairline);
+}
+
+h2 {
+  font-size: var(--text-title);
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  margin-bottom: var(--space-2);
+}
+
+h3 {
+  font-size: inherit;
+  font-weight: 500;
+  margin-top: var(--space-3);
+}
+
+section p + p,
+section ul { margin-top: var(--space-2); }
+
+section ul { padding-left: 1.1em; }
+section li + li { margin-top: var(--space-1); }
+
+.modes div {
+  display: grid;
+  grid-template-columns: 6rem 1fr;
+  gap: var(--space-2);
+  padding: var(--space-1) 0;
+  border-bottom: var(--hairline);
+}
+
+.modes div:last-child { border-bottom: 0; }
+.modes dt { font-style: italic; color: var(--muted); }
+.modes dd { margin: 0; }
+
+.page-foot { margin-top: var(--space-4); border-top: var(--hairline); }
+
+.missing h1 + p { margin-top: var(--space-3); font-size: var(--text-lead); }
+
+@media (prefers-reduced-motion: reduce) {
+  a { transition: none; }
+}

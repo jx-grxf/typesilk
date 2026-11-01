@@ -56,9 +56,9 @@ the selected one is fetched.
 ### Deploy
 
 A Cloudflare worker with static assets (`wrangler.jsonc`), custom domain
-`typesilk.johannesgrof.me`. Builds come from Cloudflare's Git integration:
-production on `main`, a preview URL per PR. Open Graph image from
-`docs/typing.png`.
+`typesilk.com`. Builds come from Cloudflare's Git integration:
+production on `main`, a preview URL per PR. The site lives on `typesilk.com`;
+`www.typesilk.com` and `typesilk.johannesgrof.me` redirect there with a 301.
 
 ## Phase 2: shared stats, optional GitHub login
 
@@ -70,12 +70,16 @@ Platform: the same Cloudflare worker that serves the site, with routes under
 - Typing never needs an account. Anonymous runs get a random device id
   (`crypto.randomUUID`) plus a secret token in `localStorage`; the server stores
   only a hash of the token. Anonymous runs count for the global `/stats`.
-- **Sign in with GitHub** (decided 2026-11-01, GitHub only for now): an OAuth app,
-  `/api/auth/github` redirects, the callback exchanges the code with the client
-  secret (a worker secret), reads id, login and avatar, and sets an HttpOnly,
-  Secure, SameSite=Lax session cookie backed by a sessions table in D1.
-- **Leaderboards and public profiles need a login.** No free-text names, so no
-  name moderation; banning a cheater bans the GitHub id.
+- **Sign in with GitHub or Google** (decided 2026-11-01): an OAuth client per
+  provider, `/api/auth/<provider>` redirects, the callback exchanges the code with
+  the client secret (a worker secret) and sets an HttpOnly, Secure, SameSite=Lax
+  session cookie backed by a sessions table in D1. Google requires a privacy page
+  on the site.
+- **Leaderboards and public profiles need a login and a username.** At first login
+  everyone picks a username (unique, 3 to 20 characters of a-z, 0-9, - and _) and a
+  display name; GitHub prefills both. A Google account's real name and email are
+  never shown unasked. Reserved names and a word list block the worst; banning a
+  cheater bans the account.
 - First login takes over the local data once: level, streak, records and key
   stats. Records that were not replayed on the server show on the profile but
   never on a leaderboard.

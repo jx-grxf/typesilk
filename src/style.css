@@ -25,6 +25,15 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 
 kbd { font: inherit; font-style: italic; color: var(--ink); }
 
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 /* ---------- chrome ---------- */
 
 .chrome {

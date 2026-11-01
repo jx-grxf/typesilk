@@ -1,0 +1,50 @@
+# typesilk
+
+> A free typing test for the browser. The words glide under a still caret on a spring, keystrokes are recorded sounds, and a coach builds runs around your weakest keys. It needs a physical keyboard and no account.
+
+URL: https://typesilk.com
+Source code: https://github.com/jx-grxf/typesilk (MIT; the word lists are CC BY-SA 4.0)
+Author: Johannes Grof, https://johannesgrof.me
+
+## What makes it different
+
+Most typing tests start a short animation for every key, so at speed each one is cut off and the motion restarts. typesilk moves the text with one continuous spring that keeps its speed between keystrokes.
+
+## Modes
+
+- time: 15, 30 or 60 seconds.
+- words: 25, 50 or 100 words.
+- quote: 64 passages from public-domain books and poems, short, medium or long.
+- zen: no text at all; type anything, shift + enter ends it.
+- custom: paste your own text, optionally shuffled.
+- perfect: one mistake ends the run.
+- endless: runs until you press esc.
+- train: words built around your weakest keys.
+- daily: the same 40 words for everyone today; your first try is the one that counts.
+
+## Languages
+
+English, German, Spanish and French, with optional punctuation and numbers. Word lists go from the 200 most common words up to 20,000 in English, 10,000 in German and 1,000 in Spanish and French.
+
+## How speed is measured
+
+Words per minute (wpm) counts correct characters divided by five, per minute of typing. A run at 60 wpm is 300 correct characters per minute.
+
+## Results and progress
+
+- Results show wpm, accuracy and a speed chart.
+- Per-letter error and speed stats name your weakest keys and shade them on a keyboard in your language's layout: QWERTY, QWERTZ or AZERTY.
+- Pressing t after a run starts a run built around those keys.
+- Your best run in each setup comes back as a ghost caret to race.
+- A streak and a words-per-day goal track daily practice.
+- The profile at /me shows level, best and average speed, a year of activity, records per setup and 26 badges.
+- c copies and s saves a 1200 × 630 image of a result.
+
+## Look and sound
+
+Four themes (noir, paper, forest, klein), three layouts (tape, lines, classic), serif or mono type, three caret shapes and four sound packs (crisp, laptop, office, typewriter). A command palette on cmd or ctrl + k reaches every setting. prefers-reduced-motion is respected.
+
+## Limits
+
+- It needs a physical keyboard. Phones and tablets show a note until one is connected.
+- Results are stored in the browser. There is no account, so clearing browser data removes them.

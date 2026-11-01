@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en" data-theme="noir">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>About typesilk: a free online typing test</title>
+    <meta name="description" content="typesilk measures your typing speed in the browser, in English, German, Spanish or French, and builds practice runs around your weakest keys. No account needed." />
+    <link rel="canonical" href="https://typesilk.com/about" />
+    <link rel="alternate" hreflang="en" href="https://typesilk.com/about" />
+    <link rel="alternate" hreflang="de" href="https://typesilk.com/de" />
+    <link rel="alternate" hreflang="x-default" href="https://typesilk.com/about" />
+    <meta name="theme-color" content="#0d0c0b" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-48.png" sizes="48x48" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="typesilk" />
+    <meta property="og:title" content="About typesilk: a free online typing test" />
+    <meta property="og:description" content="Measure your typing speed in four languages and train your weakest keys. No account needed." />
+    <meta property="og:url" content="https://typesilk.com/about" />
+    <meta property="og:image" content="https://typesilk.com/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="The word typesilk in a large serif with an orange caret" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script>
+      try {
+        const { theme } = JSON.parse(localStorage.getItem("typesilk.settings") ?? "{}");
+        if (["noir", "paper", "forest", "klein"].includes(theme)) document.documentElement.dataset.theme = theme;
+      } catch {}
+    </script>
+    <link rel="stylesheet" href="/src/page.css" />
+  </head>
+  <body>
+    <header class="page-head">
+      <a class="logo" href="/">typesilk</a>
+      <nav aria-label="language"><a href="/de" hreflang="de" lang="de">Deutsch</a></nav>
+    </header>
+    <main class="page-body">
+      <h1>A typing test that glides</h1>
+      <p class="lead">typesilk measures your typing speed and accuracy in the browser. The words move under a still caret on one continuous spring, and every key plays a recorded keystroke.</p>
+      <a class="start" href="/">Start typing</a>
+
+      <section>
+        <h2>Modes</h2>
+        <dl class="modes">
+          <div><dt>time</dt><dd>15, 30 or 60 seconds</dd></div>
+          <div><dt>words</dt><dd>25, 50 or 100 words</dd></div>
+          <div><dt>quote</dt><dd>64 passages from public-domain books and poems</dd></div>
+          <div><dt>zen</dt><dd>No text at all; type anything, <kbd>shift</kbd> + <kbd>enter</kbd> ends it</dd></div>
+          <div><dt>custom</dt><dd>Paste your own text, optionally shuffled</dd></div>
+          <div><dt>perfect</dt><dd>One mistake ends the run</dd></div>
+          <div><dt>endless</dt><dd>Runs until you press <kbd>esc</kbd></dd></div>
+          <div><dt>train</dt><dd>Words built around your weakest keys</dd></div>
+          <div><dt>daily</dt><dd>The same 40 words for everyone today; your first try is the one that counts</dd></div>
+        </dl>
+      </section>
+
+      <section>
+        <h2>After a run</h2>
+        <p>Results show your words per minute, accuracy and a speed chart. Every keystroke feeds per-letter stats, so typesilk can name your weakest keys and shade them on a keyboard in your language's layout. Press <kbd>t</kbd> and the next run is built around them.</p>
+        <p>Your best run in each setup comes back as a ghost caret to race. The <a href="/me">profile</a> keeps your streak, a year of activity, records and 26 badges.</p>
+      </section>
+
+      <section>
+        <h2>Languages</h2>
+        <p>English, German, Spanish and French, with optional punctuation and numbers. Word lists go from the 200 most common words up to 20,000 in English, 10,000 in German and 1,000 in Spanish and French.</p>
+      </section>
+
+      <section>
+        <h2>Questions</h2>
+        <h3>How is words per minute calculated?</h3>
+        <p>Correct characters divided by five, per minute of typing. A run at 60 wpm is 300 correct characters per minute.</p>
+        <h3>Do I need an account?</h3>
+        <p>No. Your results stay in your browser, so clearing its data removes them.</p>
+        <h3>Does it work on a phone or tablet?</h3>
+        <p>Only with a physical keyboard connected. Without one, the page shows a note.</p>
+        <h3>Is it free?</h3>
+        <p>Yes. The <a href="https://github.com/jx-grxf/typesilk">source code</a> is on GitHub under the MIT licence.</p>
+      </section>
+    </main>
+    <footer class="page-foot">
+      <span><a href="https://johannesgrof.me">Johannes Grof</a></span>
+      <nav aria-label="project"><a href="https://github.com/jx-grxf/typesilk">github</a></nav>
+    </footer>
+  </body>
+</html>

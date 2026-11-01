@@ -2,10 +2,18 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "typesilk",
   "compatibility_date": "2026-10-15",
+  // a second public hostname would compete with the custom domain in search results
+  "workers_dev": false,
+  "preview_urls": true,
   // static site for now; the phase 2 API joins this worker under /api
   "assets": {
     "directory": "./dist",
-    "not_found_handling": "single-page-application"
+    "not_found_handling": "404-page"
   },
-  "routes": [{ "pattern": "typesilk.johannesgrof.me", "custom_domain": true }]
+  // the last two only exist so that a redirect rule on each zone can send them to the first
+  "routes": [
+    { "pattern": "typesilk.com", "custom_domain": true },
+    { "pattern": "www.typesilk.com", "custom_domain": true },
+    { "pattern": "typesilk.johannesgrof.me", "custom_domain": true }
+  ]
 }

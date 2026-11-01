@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en" data-theme="noir">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <title>Page not found | typesilk</title>
+    <meta name="theme-color" content="#0d0c0b" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <script>
+      try {
+        const { theme } = JSON.parse(localStorage.getItem("typesilk.settings") ?? "{}");
+        if (["noir", "paper", "forest", "klein"].includes(theme)) document.documentElement.dataset.theme = theme;
+      } catch {}
+    </script>
+    <link rel="stylesheet" href="/src/page.css" />
+  </head>
+  <body>
+    <header class="page-head"><a class="logo" href="/">typesilk</a></header>
+    <main class="page-body missing">
+      <h1>Nothing here</h1>
+      <p>This page doesn't exist.</p>
+      <a class="start" href="/">Start typing</a>
+    </main>
+  </body>
+</html>

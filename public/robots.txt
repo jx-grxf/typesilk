@@ -1,0 +1,11 @@
+# typesilk.com
+# Search engines and AI assistants may crawl, index and cite everything public.
+# /me and /design stay crawlable so that their noindex tag can be read.
+# A short directory for language models lives at /llms.txt, the full text at
+# /llms-full.txt.
+
+User-agent: *
+Allow: /
+Disallow: /api/
+
+Sitemap: https://typesilk.com/sitemap.xml
