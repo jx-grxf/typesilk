@@ -28,6 +28,7 @@ const MAX_BODY_BYTES = 128 * 1024;
 const MAX_KEYS = 8000;
 const TICKET_MS = 26 * 3600 * 1000;
 const BOARD_SIZE = 100;
+const DUPLICATE_GAP_MS = 16;
 // a local clock may be up to a day from UTC, so three daily numbers are "today" for someone
 const CLOCK_SKEW_DAYS = 1;
 // the ticket comes from the server clock and the run from the browser's; they can disagree a little
@@ -300,7 +301,9 @@ async function submitRun(request: Request, env: Env, user: SessionUser): Promise
   if (!result.finished) return fail("not_finished", 422);
   if (now - ticket.issuedAt + CLOCK_TOLERANCE_MS < result.durationMs) return fail("bad_ticket", 400);
 
-  const logHash = await sha256(JSON.stringify(log));
+  // gaps are rounded so a copied run with a little noise added still matches. The keys alone
+  // wouldn't do: every perfect run of the same daily has the same ones.
+  const logHash = await sha256(JSON.stringify({ keys: log.keys, gaps: log.gaps.map((gap) => Math.round(gap / DUPLICATE_GAP_MS)) }));
   const duplicate = await env.DB.prepare("SELECT 1 FROM daily_runs WHERE daily = ? AND language = ? AND log_hash = ? LIMIT 1")
     .bind(ticket.daily, ticket.language, logHash).first();
   const flagged = duplicate || !plausible(log.gaps.slice(1), result.rawWpm) ? 1 : 0;

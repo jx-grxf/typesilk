@@ -950,8 +950,8 @@ body.palette-open #palette, body.custom-open #custom, body.account-open #account
 
 #touch-note { display: none; }
 
-body.touch:not(.has-keyboard) :is(#typing, #results, footer, .meta) { display: none; }
-body.touch:not(.has-keyboard) #touch-note {
+body.touch:not(.has-keyboard) :is(#typing, #results, footer, #daily-link, #profile-link, #open-settings) { display: none; }
+body.touch:not(.has-keyboard):not(.show-profile) #touch-note {
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -959,7 +959,11 @@ body.touch:not(.has-keyboard) #touch-note {
   animation: rise var(--spring-ms, 500ms) var(--spring, ease) backwards 120ms;
 }
 .touch-title { font-size: clamp(2.2rem, 9vw, 4rem); font-style: italic; font-weight: 300; line-height: 1.05; letter-spacing: -0.02em; }
-.touch-text { max-width: 30ch; color: var(--muted); font-size: 1.15rem; line-height: 1.45; }
+.touch-text { max-width: 34ch; color: var(--muted); font-size: 1.15rem; line-height: 1.45; }
+.touch-links { display: flex; flex-wrap: wrap; gap: var(--space-3); font-size: var(--text-lead); font-style: italic; }
+.touch-links a { color: var(--ink); text-decoration-color: var(--accent); text-underline-offset: 0.18em; }
+body.touch:not(.has-keyboard) :is(.again, .profile-back kbd, .hint-short) { display: none; }
+body.touch:not(.has-keyboard) .colophon { flex-wrap: wrap; row-gap: 4px; }
 
 @media (max-width: 1000px) {
   .result-top { grid-template-columns: 1fr; }

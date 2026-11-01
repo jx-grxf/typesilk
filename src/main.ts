@@ -605,7 +605,7 @@ $("daily-link").addEventListener("click", (event) => {
   if (settings.mode === "daily") void restart();
   else change({ mode: "daily" });
 });
-for (const id of ["profile-button"]) {
+for (const id of ["profile-button", "touch-profile"]) {
   $(id).addEventListener("click", (event) => {
     event.preventDefault();
     (event.currentTarget as HTMLElement).blur();
@@ -866,7 +866,13 @@ $("backdrop").addEventListener("click", () => {
 // touch screens get a note instead of a test they can't take, until a real key arrives
 if (window.matchMedia("(hover: none) and (pointer: coarse)").matches) {
   document.body.classList.add("touch");
-  window.addEventListener("keydown", () => document.body.classList.add("has-keyboard"), { once: true, capture: true });
+  const noticeKeyboard = (event: KeyboardEvent): void => {
+    // a phone's on-screen keyboard fires keys too, but only into a field it opened for
+    if ((event.target as HTMLElement).matches?.("input, textarea")) return;
+    document.body.classList.add("has-keyboard");
+    window.removeEventListener("keydown", noticeKeyboard, { capture: true });
+  };
+  window.addEventListener("keydown", noticeKeyboard, { capture: true });
 }
 
 async function boot(): Promise<void> {
