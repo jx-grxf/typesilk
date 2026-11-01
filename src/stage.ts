@@ -1,9 +1,17 @@
 import { Spring, springEasing } from "./spring";
-import type { Layout } from "./settings";
+import type { CaretMotion, CaretStyle, Layout } from "./settings";
 
 const PRESS = springEasing(620, 24);
 const SHAKE = springEasing(1000, 18);
-const ACTIVE_LINE = 1; // in lines layout the active line stays second, so one finished line remains visible
+const ACTIVE_LINE = 1; // in the line layouts the active line stays second, so one finished line remains visible
+
+type Tuning = { caret: [number, number]; wrap: [number, number]; scrollX: [number, number]; scrollY: [number, number] };
+
+// near critical damping (2·√k) everywhere, so nothing overshoots past a letter
+const MOTION: Record<Exclude<CaretMotion, "off">, Tuning> = {
+  snappy: { caret: [1100, 60], wrap: [3200, 105], scrollX: [620, 46], scrollY: [420, 38] },
+  smooth: { caret: [420, 40], wrap: [1400, 75], scrollX: [300, 34], scrollY: [260, 32] },
+};
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, className: string): HTMLElementTagNameMap[K] {
   const node = document.createElement(tag);
@@ -30,6 +38,9 @@ export class Stage {
   private scrollY = new Spring(0, 420, 38);
   private caretX = new Spring(0, 1100, 60);
   private caretY = new Spring(0, 1100, 60);
+  private caretW = new Spring(20, 1100, 60);
+  private tuning: Tuning = MOTION.snappy;
+  private instant = false;
   private ghostX = new Spring(0, 260, 32);
   private ghostY = new Spring(0, 260, 32);
   private pulse = new Spring(1, 900, 26);
@@ -38,6 +49,7 @@ export class Stage {
   private written: Record<string, string> = {};
 
   layout: Layout = "tape";
+  caretStyle: CaretStyle = "line";
   letterFx = true;
   ghostVisible = false;
 
@@ -48,6 +60,17 @@ export class Stage {
     private ghostEl: HTMLElement,
     private flowEl: HTMLElement,
   ) {}
+
+  setMotion(motion: CaretMotion): void {
+    this.instant = motion === "off";
+    this.tuning = MOTION[motion === "off" ? "snappy" : motion];
+    const { caret, scrollX, scrollY } = this.tuning;
+    [this.caretX.stiffness, this.caretX.damping] = caret;
+    [this.caretY.stiffness, this.caretY.damping] = caret;
+    [this.caretW.stiffness, this.caretW.damping] = caret;
+    [this.scrollX.stiffness, this.scrollX.damping] = scrollX;
+    [this.scrollY.stiffness, this.scrollY.damping] = scrollY;
+  }
 
   reset(words: string[]): void {
     this.wordsEl.replaceChildren();
@@ -78,6 +101,17 @@ export class Stage {
     this.scrollY.snap(0);
     for (const spring of [this.caretX, this.ghostX]) spring.snap(pos.left);
     for (const spring of [this.caretY, this.ghostY]) spring.snap(pos.top);
+    this.caretW.snap(this.letterWidth(wordIndex, 0));
+  }
+
+  /** Width of the letter under the caret, or of an average letter past the word's end. */
+  private letterWidth(wordIndex: number, charIndex: number): number {
+    const lefts = this.letterLefts[wordIndex] ?? [0];
+    const here = lefts[charIndex];
+    const next = lefts[charIndex + 1];
+    if (here !== undefined && next !== undefined) return next - here;
+    const end = lefts[lefts.length - 1] ?? 0;
+    return lefts.length > 1 ? end / (lefts.length - 1) : this.lineH * 0.35;
   }
 
   append(words: string[]): void {
@@ -131,7 +165,7 @@ export class Stage {
     for (let i = 0; i < this.wordEls.length; i++) this.measureLetters(i);
     this.firstTop = this.wordPos[0]?.top ?? 0;
     this.caretTo(wordIndex, charIndex);
-    for (const spring of [this.scrollX, this.scrollY, this.caretX, this.caretY]) spring.snap(spring.target);
+    for (const spring of [this.scrollX, this.scrollY, this.caretX, this.caretY, this.caretW]) spring.snap(spring.target);
     this.render();
   }
 
@@ -146,20 +180,24 @@ export class Stage {
     if (!pos) return;
     this.caretEl.classList.remove("idle");
     const lefts = this.letterLefts[wordIndex] ?? [0];
-    const x = pos.left + (lefts[Math.min(charIndex, lefts.length - 1)] ?? 0);
+    const index = Math.min(charIndex, lefts.length - 1);
+    const x = pos.left + (lefts[index] ?? 0);
+    this.caretW.target = this.letterWidth(wordIndex, index);
     if (this.layout === "tape") {
       this.scrollX.target = x;
-      return;
+    } else {
+      const line = Math.round((pos.top - this.firstTop) / this.lineH);
+      // a line wrap travels far, so it gets a stiffer spring to arrive just as fast
+      const wrapped = line !== this.lastLine;
+      [this.caretX.stiffness, this.caretX.damping] = wrapped ? this.tuning.wrap : this.tuning.caret;
+      this.lastLine = line;
+      this.caretX.target = x;
+      this.caretY.target = pos.top;
+      this.scrollY.target = Math.max(0, (line - ACTIVE_LINE) * this.lineH);
     }
-    const line = Math.round((pos.top - this.firstTop) / this.lineH);
-    // a line wrap travels far, so it gets a stiffer spring to arrive just as fast
-    const wrapped = line !== this.lastLine;
-    this.caretX.stiffness = wrapped ? 3200 : 1100;
-    this.caretX.damping = wrapped ? 105 : 60;
-    this.lastLine = line;
-    this.caretX.target = x;
-    this.caretY.target = pos.top;
-    this.scrollY.target = Math.max(0, (line - ACTIVE_LINE) * this.lineH);
+    if (this.instant) {
+      for (const spring of [this.scrollX, this.scrollY, this.caretX, this.caretY, this.caretW]) spring.snap(spring.target);
+    }
   }
 
   /** The caret reacts physically to every press, even though the text does the travelling. */
@@ -256,7 +294,7 @@ export class Stage {
   }
 
   update(dt: number, flow: number): boolean {
-    const springs = [this.scrollX, this.scrollY, this.caretX, this.caretY, this.ghostX, this.ghostY, this.pulse, this.nudge];
+    const springs = [this.scrollX, this.scrollY, this.caretX, this.caretY, this.caretW, this.ghostX, this.ghostY, this.pulse, this.nudge];
     for (const spring of springs) spring.step(dt);
     this.flowLevel = flow;
     this.render();
@@ -273,8 +311,11 @@ export class Stage {
     const tape = this.layout === "tape";
     const caretX = tape ? this.scrollX.x : this.caretX.x;
     const caretY = tape ? 0 : this.caretY.x;
-    const stretch = tape ? 1 : 1 + Math.min(Math.abs(this.caretX.v) / 1100, 2);
-    this.write("caret", this.caretEl, `translate3d(${(caretX + this.nudge.x).toFixed(2)}px,${caretY.toFixed(2)}px,0) scale(${stretch.toFixed(3)},${this.pulse.x.toFixed(3)})`);
+    // line carets stretch with speed; block and underline carets take the width of the letter
+    const scaleX = this.caretStyle === "line"
+      ? (tape ? 1 : 1 + Math.min(Math.abs(this.caretX.v) / 1100, 2))
+      : Math.max(this.caretW.x, 2);
+    this.write("caret", this.caretEl, `translate3d(${(caretX + this.nudge.x).toFixed(2)}px,${caretY.toFixed(2)}px,0) scale(${scaleX.toFixed(3)},${this.pulse.x.toFixed(3)})`);
     if (this.ghostVisible) {
       this.write("ghost", this.ghostEl, `translate3d(${this.ghostX.x.toFixed(2)}px,${this.ghostY.x.toFixed(2)}px,0)`);
     }

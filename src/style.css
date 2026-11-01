@@ -7,6 +7,10 @@
   --accent: #ff4f1f;
 
   --serif: "Newsreader Variable", "Iowan Old Style", Georgia, serif;
+  --mono: "JetBrains Mono Variable", ui-monospace, Menlo, monospace;
+  --face: var(--serif);
+  --face-scale: 1;
+  --word-gap: 0.27em;
   --scale: 1;
   --anchor: 34vw;
   --edge: clamp(20px, 2.6vw, 44px);
@@ -41,17 +45,31 @@
   --accent: #ffd23f;
 }
 
+:root[data-font="mono"] {
+  --face: var(--mono);
+  /* mono glyphs are wider and taller at the same size, so the line would overflow */
+  --face-scale: 0.8;
+  --word-gap: 0.6em;
+}
+
 :root[data-size="s"] { --scale: 0.78; }
 :root[data-size="l"] { --scale: 1.24; }
 
 :root[data-layout="tape"] {
-  --fs: calc(clamp(3.4rem, 6.6vw, 7.4rem) * var(--scale));
+  --fs: calc(clamp(3.4rem, 6.6vw, 7.4rem) * var(--scale) * var(--face-scale));
   --line: calc(var(--fs) * 1.32);
 }
 
 :root[data-layout="lines"] {
-  --fs: calc(clamp(1.9rem, 3vw, 3.2rem) * var(--scale));
+  --fs: calc(clamp(1.9rem, 3vw, 3.2rem) * var(--scale) * var(--face-scale));
   --line: calc(var(--fs) * 1.5);
+  --measure: min(1120px, 88vw);
+}
+
+:root[data-layout="classic"] {
+  --fs: calc(clamp(1.5rem, 2.2vw, 2.3rem) * var(--scale) * var(--face-scale));
+  --line: calc(var(--fs) * 1.6);
+  --measure: min(1040px, 86vw);
 }
 
 * { box-sizing: border-box; margin: 0; }
@@ -63,7 +81,7 @@ body {
   grid-template-rows: auto 1fr auto auto;
   background: var(--bg);
   color: var(--ink);
-  font-family: var(--serif);
+  font-family: var(--face);
   font-size: 16px;
   font-optical-sizing: auto;
   font-variant-numeric: lining-nums;
@@ -195,6 +213,16 @@ body.show-results #typing { opacity: 0; visibility: hidden; pointer-events: none
   padding-left: var(--anchor);
 }
 
+#anchor { display: flex; align-items: baseline; gap: 1.4rem; }
+
+#live {
+  color: var(--dim);
+  font-size: 1.15rem;
+  font-style: italic;
+  font-variant-numeric: lining-nums tabular-nums;
+  white-space: pre;
+}
+
 #hud {
   color: var(--muted);
   font-size: 1.7rem;
@@ -249,7 +277,7 @@ body.show-results #typing { opacity: 0; visibility: hidden; pointer-events: none
 
 .word {
   display: inline-block;
-  margin-right: 0.27em;
+  margin-right: var(--word-gap);
   white-space: nowrap;
   transition: color 140ms ease;
 }
@@ -278,6 +306,18 @@ body.show-results #typing { opacity: 0; visibility: hidden; pointer-events: none
   height: calc(var(--fs) * 0.98);
   top: calc((var(--line) - var(--fs) * 0.98) / 2);
   background: var(--accent);
+}
+
+/* block and underline carets are 1px wide and scaled to the letter under them */
+:root:is([data-caret="block"], [data-caret="underline"]) #caret {
+  width: 1px;
+  margin-left: 0;
+  transform-origin: 0 50%;
+}
+:root[data-caret="block"] #caret { background: color-mix(in srgb, var(--accent) 34%, transparent); }
+:root[data-caret="underline"] #caret {
+  height: max(2px, calc(var(--fs) * 0.045));
+  top: calc(var(--line) / 2 + var(--fs) * 0.3);
 }
 
 #caret.idle { animation: breathe 1.15s cubic-bezier(.45, 0, .55, 1) infinite; }
@@ -314,17 +354,41 @@ body.show-results #typing { opacity: 0; visibility: hidden; pointer-events: none
   will-change: transform;
 }
 
-/* the lines layout reads like a page instead of a tape */
-:root[data-layout="lines"] { --anchor: calc((100vw - min(1120px, 88vw)) / 2); }
+/* the line layouts read like a page instead of a tape */
+:root:is([data-layout="lines"], [data-layout="classic"]) { --anchor: calc((100vw - var(--measure)) / 2); }
 
-:root[data-layout="lines"] #viewport {
+:root:is([data-layout="lines"], [data-layout="classic"]) #viewport {
   height: calc(var(--line) * 3);
   -webkit-mask-image: linear-gradient(to bottom, rgb(0 0 0 / 0.4) 0, #000 30%, #000 68%, rgb(0 0 0 / 0.1) 100%);
   mask-image: linear-gradient(to bottom, rgb(0 0 0 / 0.4) 0, #000 30%, #000 68%, rgb(0 0 0 / 0.1) 100%);
 }
 
-:root[data-layout="lines"] #scroller { width: min(1120px, 88vw); }
-:root[data-layout="lines"] #words { white-space: normal; }
+:root:is([data-layout="lines"], [data-layout="classic"]) #scroller { width: var(--measure); }
+:root:is([data-layout="lines"], [data-layout="classic"]) #words { white-space: normal; }
+
+/* classic: the setup sits on top like a toolbar, the text is a calm block of three even lines */
+:root[data-layout="classic"] body { grid-template-rows: auto auto 1fr auto auto; }
+:root[data-layout="classic"] footer {
+  grid-row: 2;
+  justify-content: center;
+  gap: 48px;
+  padding-top: 0;
+}
+:root[data-layout="classic"] main { grid-row: 3; }
+:root[data-layout="classic"] .colophon { grid-row: 5; }
+:root[data-layout="classic"] footer .hint {
+  position: fixed;
+  left: 50%;
+  bottom: 54px;
+  transform: translateX(-50%);
+}
+:root[data-layout="classic"] #viewport {
+  -webkit-mask-image: linear-gradient(to bottom, rgb(0 0 0 / 0.55) 0, #000 33%);
+  mask-image: linear-gradient(to bottom, rgb(0 0 0 / 0.55) 0, #000 33%);
+}
+:root[data-layout="classic"] #hud { font-size: 1.4rem; color: var(--accent); }
+:root[data-layout="classic"] #flow-track { margin-inline: var(--anchor); }
+:root[data-layout="classic"] #flow-line { transform-origin: 0 0; }
 
 /* ---------- results ---------- */
 
@@ -389,7 +453,7 @@ body.show-results #results { opacity: 1; visibility: visible; }
 .chart figcaption { margin-bottom: 10px; font-style: italic; color: var(--muted); }
 .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
 .chart .grid { stroke: var(--rule); stroke-width: 1; vector-effect: non-scaling-stroke; }
-.chart .axis { fill: var(--muted); font-size: 12px; font-family: var(--serif); font-variant-numeric: lining-nums; }
+.chart .axis { fill: var(--muted); font-size: 12px; font-family: var(--face); font-variant-numeric: lining-nums; }
 .chart .line {
   fill: none;
   stroke: var(--accent);

@@ -1,5 +1,7 @@
 import "@fontsource-variable/newsreader/opsz.css";
 import "@fontsource-variable/newsreader/opsz-italic.css";
+import "@fontsource-variable/jetbrains-mono/wght.css";
+import "@fontsource-variable/jetbrains-mono/wght-italic.css";
 import "./style.css";
 import { consistency, rollingWpm, TypingEngine, wpm } from "./engine";
 import { FlowMeter } from "./flow";
@@ -17,7 +19,8 @@ const CHUNK = 50;
 const REFILL_AT = 30;
 const PROGRESS_RUNS = 40;
 const MIN_RATE_MS = 1000; // a run ended after one key would otherwise show thousands of wpm
-const TEST_KEYS: (keyof Settings)[] = ["mode", "time", "count", "language", "punctuation", "numbers", "textSize", "layout"];
+const TEST_KEYS: (keyof Settings)[] = ["mode", "time", "count", "language", "punctuation", "numbers", "textSize", "layout", "font"];
+const FONT_FAMILIES: Record<Settings["font"], string> = { serif: "Newsreader Variable", mono: "JetBrains Mono Variable" };
 
 const $ = <T extends HTMLElement>(id: string): T => document.getElementById(id) as T;
 
@@ -27,6 +30,7 @@ let profile = loadProfile();
 const typingEl = $("typing");
 const resultsEl = $("results");
 const hudEl = $("hud");
+const liveEl = $("live");
 const comboEl = $("combo");
 const panelEl = $("panel");
 
@@ -53,6 +57,7 @@ let samples: number[] = [];
 let trainingKeys: string[] = [];
 let ghostSeries: number[] | null = null;
 let hudText = "";
+let liveText = "";
 
 let segments: Segment[] = [];
 let timeSeg: Segment;
@@ -112,13 +117,21 @@ function newTest(): void {
   kick();
 }
 
+/** Words are measured once, so they must never be measured with a fallback font. */
+async function fontsReady(): Promise<void> {
+  const family = FONT_FAMILIES[settings.font];
+  await Promise.all([document.fonts.load(`400 64px "${family}"`), document.fonts.load(`italic 400 64px "${family}"`)]);
+}
+
 async function restart(): Promise<void> {
   if (state === "busy") return;
   const fromResults = state === "done";
   state = "busy";
+  const fonts = fontsReady();
   if (!fromResults) {
     await typingEl.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 70, easing: "ease-in", fill: "forwards" }).finished;
   }
+  await fonts;
   newTest();
   for (const animation of typingEl.getAnimations()) animation.cancel();
   typingEl.animate(
@@ -131,7 +144,7 @@ function start(now: number): void {
   state = "running";
   startedAt = now;
   lastKeyAt = 0;
-  document.body.classList.add("focus");
+  if (settings.focusMode) document.body.classList.add("focus");
   setEscLabel();
 }
 
@@ -168,6 +181,14 @@ function renderHud(): void {
   if (text !== hudText) {
     hudEl.textContent = text;
     hudText = text;
+  }
+  // the first second of a run swings too wildly to be worth showing
+  const live = settings.liveStats && state === "running" && ms >= 1000
+    ? `${Math.round(wpm(engine.correctChars, ms))} wpm  ${Math.floor(engine.accuracy)}%`
+    : "";
+  if (live !== liveText) {
+    liveEl.textContent = live;
+    liveText = live;
   }
 }
 
@@ -392,9 +413,13 @@ function applySettings(): void {
   root.dataset.theme = settings.theme;
   root.dataset.size = settings.textSize;
   root.dataset.layout = settings.layout;
+  root.dataset.font = settings.font;
+  root.dataset.caret = settings.caret;
   sound.enabled = settings.sound;
   sound.setVolume(settings.volume);
   stage.layout = settings.layout;
+  stage.caretStyle = settings.caret;
+  stage.setMotion(prefersReducedMotion ? "off" : settings.caretMotion);
   stage.letterFx = settings.letterFx && !prefersReducedMotion;
   $("flow-track").style.display = settings.flowLine ? "" : "none";
   if (optionsWrap) {
@@ -408,6 +433,10 @@ function change(patch: Partial<Settings>): void {
   saveSettings(settings);
   applySettings();
   if (TEST_KEYS.some((key) => key in patch)) void restart();
+  else if ("caret" in patch) {
+    stage.caretTo(engine.wordIndex, engine.input.length);
+    kick();
+  }
 }
 
 function renderMeta(): void {
@@ -493,11 +522,7 @@ async function boot(): Promise<void> {
   applySettings();
   renderMeta();
   void sound.load();
-  // words must be measured with the final font, or every position would be off
-  await Promise.all([
-    document.fonts.load('400 64px "Newsreader Variable"'),
-    document.fonts.load('italic 400 64px "Newsreader Variable"'),
-  ]);
+  await fontsReady();
   segments.forEach((seg) => seg.sync());
   newTest();
   document.body.classList.add("ready");

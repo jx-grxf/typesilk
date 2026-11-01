@@ -114,16 +114,47 @@ export function buildPanel(
   root.append(
     group("Look"),
     row("Theme", "", seg(THEMES.map((value) => ({ label: value, value })), s.theme, (theme) => change({ theme }))),
-    row("Layout", "tape glides, lines read ahead", seg(
-      [{ label: "tape", value: "tape" as const }, { label: "lines", value: "lines" as const }],
+    row("Layout", "tape glides, lines read ahead, classic keeps the setup on top", seg(
+      [
+        { label: "tape", value: "tape" as const },
+        { label: "lines", value: "lines" as const },
+        { label: "classic", value: "classic" as const },
+      ],
       s.layout,
       (layout) => change({ layout }),
+    )),
+    row("Font", "", seg(
+      [{ label: "serif", value: "serif" as const }, { label: "mono", value: "mono" as const }],
+      s.font,
+      (font) => change({ font }),
     )),
     row("Text size", "", seg(
       [{ label: "small", value: "s" as const }, { label: "medium", value: "m" as const }, { label: "large", value: "l" as const }],
       s.textSize,
       (textSize) => change({ textSize }),
     )),
+    group("Caret"),
+    row("Shape", "", seg(
+      [
+        { label: "line", value: "line" as const },
+        { label: "block", value: "block" as const },
+        { label: "underline", value: "underline" as const },
+      ],
+      s.caret,
+      (caret) => change({ caret }),
+    )),
+    row("Movement", "off jumps, snappy follows, smooth glides", seg(
+      [
+        { label: "off", value: "off" as const },
+        { label: "snappy", value: "snappy" as const },
+        { label: "smooth", value: "smooth" as const },
+      ],
+      s.caretMotion,
+      (caretMotion) => change({ caretMotion }),
+    )),
+    group("While typing"),
+    onOff("Focus", "everything but the text fades out", "focusMode"),
+    onOff("Live stats", "speed and accuracy above the text", "liveStats"),
     group("Motion"),
     onOff("Letter motion", "letters press in, mistakes shake", "letterFx"),
     onOff("Flow line", "grows while your rhythm holds", "flowLine"),
