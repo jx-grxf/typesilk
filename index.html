@@ -36,7 +36,7 @@
 
     <footer class="chrome">
       <nav id="controls-left" aria-label="test setup"></nav>
-      <div class="hint"><kbd>tab</kbd> restart &nbsp; <kbd>esc</kbd> <span id="esc-label">settings</span></div>
+      <div class="hint"><kbd>tab</kbd> restart &nbsp; <kbd>esc</kbd> <span id="esc-label">settings</span> &nbsp; <kbd id="palette-key">ctrl k</kbd> commands</div>
       <nav id="controls-right" aria-label="language"></nav>
     </footer>
     <div class="colophon chrome">
@@ -49,6 +49,12 @@
       <div class="panel-head"><h2>Settings</h2><button id="close-settings" type="button">close</button></div>
       <div id="panel-body"></div>
     </aside>
+
+    <div id="palette" aria-label="commands" inert>
+      <input id="palette-input" type="text" placeholder="search settings and actions" autocomplete="off" spellcheck="false" aria-label="search commands" aria-controls="palette-list" />
+      <div id="palette-list" role="listbox"><span id="palette-hl" aria-hidden="true"></span></div>
+      <div class="pal-foot"><span><kbd>&uarr;&darr;</kbd> choose</span><span><kbd>enter</kbd> run</span><span><kbd>esc</kbd> close</span></div>
+    </div>
 
     <script type="module" src="/src/main.ts"></script>
   </body>

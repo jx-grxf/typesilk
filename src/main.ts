@@ -7,7 +7,8 @@ import { consistency, rollingWpm, TypingEngine, wpm } from "./engine";
 import { FlowMeter } from "./flow";
 import { applyRun, clearProfile, emptyProfile, levelOf, levelProgress, loadProfile, localDay, saveProfile } from "./profile";
 import { renderResults } from "./results";
-import { loadSettings, recordKey, saveSettings, type Mode, type Settings } from "./settings";
+import { type Command, Palette } from "./palette";
+import { CARET_MOTIONS, CARETS, FONTS, LAYOUTS, loadSettings, recordKey, saveSettings, THEMES, type Mode, type Settings } from "./settings";
 import { Sound } from "./sound";
 import { springEasing } from "./spring";
 import { Stage } from "./stage";
@@ -354,8 +355,76 @@ function setPanel(open: boolean): void {
   if (open) requestAnimationFrame(() => segments.forEach((seg) => seg.sync()));
 }
 
+const MODES: Mode[] = ["time", "words", "perfect", "endless", "train"];
+const SIZES: { label: string; value: Settings["textSize"] }[] = [
+  { label: "small", value: "s" },
+  { label: "medium", value: "m" },
+  { label: "large", value: "l" },
+];
+
+function commands(): Command[] {
+  const list: Command[] = [];
+  const pick = <K extends keyof Settings>(group: string, key: K, values: readonly Settings[K][], label = (v: Settings[K]) => String(v)): void => {
+    for (const value of values) {
+      list.push({ group, label: label(value), current: settings[key] === value, run: () => change({ [key]: value } as Partial<Settings>) });
+    }
+  };
+  const toggle = (group: string, key: keyof Settings): void => {
+    const on = settings[key] as boolean;
+    list.push({ group, label: on ? "turn off" : "turn on", run: () => change({ [key]: !on } as Partial<Settings>) });
+  };
+  list.push({ group: "test", label: "restart", run: () => void restart() });
+  if (weakKeys(profile.keys).length > 0) list.push({ group: "test", label: "train weak keys", run: () => change({ mode: "train" }) });
+  pick("mode", "mode", MODES);
+  pick("time", "time", [15, 30, 60], (v) => `${v} seconds`);
+  pick("words", "count", [25, 50, 100], (v) => `${v} words`);
+  pick("language", "language", Object.keys(LANGUAGES) as Language[]);
+  toggle("punctuation", "punctuation");
+  toggle("numbers", "numbers");
+  for (const theme of THEMES) {
+    list.push({
+      group: "theme",
+      label: theme,
+      current: settings.theme === theme,
+      preview: () => { root.dataset.theme = theme; },
+      run: () => change({ theme }),
+    });
+  }
+  pick("layout", "layout", LAYOUTS);
+  pick("font", "font", FONTS);
+  pick("text size", "textSize", SIZES.map((size) => size.value), (v) => SIZES.find((size) => size.value === v)!.label);
+  pick("caret", "caret", CARETS);
+  pick("caret movement", "caretMotion", CARET_MOTIONS);
+  toggle("focus", "focusMode");
+  toggle("live stats", "liveStats");
+  toggle("letter motion", "letterFx");
+  toggle("flow line", "flowLine");
+  toggle("ghost", "ghost");
+  toggle("sound", "sound");
+  list.push({ group: "open", label: "settings", run: () => setPanel(true) });
+  return list;
+}
+
+const palette = new Palette($("palette"), $<HTMLInputElement>("palette-input"), $("palette-list"), $("palette-hl"), commands, () => applySettings());
+
+function openPalette(): void {
+  if (panelOpen()) setPanel(false);
+  // a timed run would keep counting behind the palette
+  if (state === "running") void restart();
+  palette.open();
+}
+
 window.addEventListener("keydown", (event) => {
   if (event.isComposing) return;
+  if (palette.isOpen) return;
+
+  const key = event.key.toLowerCase();
+  const mod = event.metaKey || event.ctrlKey;
+  if (mod && (key === "k" || (event.shiftKey && key === "p"))) {
+    event.preventDefault();
+    openPalette();
+    return;
+  }
 
   if (panelOpen()) {
     if (event.key === "Escape") setPanel(false);
@@ -509,11 +578,15 @@ $("open-settings").addEventListener("click", (event) => {
   setPanel(true);
 });
 $("close-settings").addEventListener("click", () => setPanel(false));
-$("backdrop").addEventListener("click", () => setPanel(false));
+$("backdrop").addEventListener("click", () => {
+  setPanel(false);
+  palette.close();
+});
 
 // --- boot
 
 async function boot(): Promise<void> {
+  if (/Mac|iPhone|iPad/.test(navigator.platform)) $("palette-key").textContent = "⌘k";
   const version = $<HTMLAnchorElement>("version");
   version.textContent = `v${__APP_VERSION__}`;
   version.href = `https://github.com/jx-grxf/typesilk/releases/tag/v${__APP_VERSION__}`;
