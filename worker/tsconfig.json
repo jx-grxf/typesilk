@@ -9,10 +9,5 @@
     ],
     "resolveJsonModule": true
   },
-  "include": [
-    "./index.ts",
-    "./names.ts",
-    "./profile.ts",
-    "./ticket.ts"
-  ]
+  "include": ["./*.ts"]
 }
