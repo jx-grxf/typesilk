@@ -750,6 +750,19 @@ body.palette-open #palette, body.custom-open #custom {
 }
 .pal-foot kbd { color: var(--muted); }
 
+#touch-note { display: none; }
+
+body.touch:not(.has-keyboard) :is(#typing, #results, footer, .meta) { display: none; }
+body.touch:not(.has-keyboard) #touch-note {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 0 var(--edge);
+  animation: rise var(--spring-ms, 500ms) var(--spring, ease) backwards 120ms;
+}
+.touch-title { font-size: clamp(2.2rem, 9vw, 4rem); font-style: italic; font-weight: 300; line-height: 1.05; letter-spacing: -0.02em; }
+.touch-text { max-width: 30ch; color: var(--muted); font-size: 1.15rem; line-height: 1.45; }
+
 @media (max-width: 1000px) {
   .result-top { grid-template-columns: 1fr; }
   footer .hint { display: none; }
