@@ -1,4 +1,5 @@
 import { Spring } from "./spring";
+import { copyCard, saveCard, type CardData } from "./card";
 import { renderHeatmap } from "./heatmap";
 import { levelOf, levelProgress, type RunReward } from "./profile";
 import type { KeyStats } from "./training";
@@ -22,7 +23,32 @@ export type ResultData = {
   source: string | null;
   keys: KeyStats;
   language: Language;
+  /** Short name of the setup for the share image, like "time 30 · english". */
+  setup: string;
 };
+
+let currentCard: CardData | null = null;
+
+/** Keyboard path to the same actions as the buttons. */
+export function shareResult(action: "copy" | "save"): Promise<void> | null {
+  if (!currentCard) return null;
+  return action === "copy" ? copyCard(currentCard) : saveCard(currentCard);
+}
+
+function actionButton(label: string, done: string, action: "copy" | "save"): HTMLButtonElement {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "share";
+  button.textContent = label;
+  button.addEventListener("click", () => {
+    button.blur();
+    shareResult(action)
+      ?.then(() => { button.textContent = done; })
+      .catch(() => { button.textContent = "not allowed here"; })
+      .finally(() => setTimeout(() => { button.textContent = label; }, 1600));
+  });
+  return button;
+}
 
 const SVG = "http://www.w3.org/2000/svg";
 const WIDTH = 1200;
@@ -201,7 +227,21 @@ export function renderResults(root: HTMLElement, data: ResultData): void {
 
   const again = document.createElement("div");
   again.className = "again";
-  again.innerHTML = "<kbd>tab</kbd> one more";
+  again.innerHTML = "<span><kbd>tab</kbd> one more</span>";
+  const share = document.createElement("span");
+  share.className = "share-row";
+  share.append(actionButton("copy image", "copied", "copy"), actionButton("save image", "saved", "save"));
+  again.append(share);
+  currentCard = {
+    wpm: data.wpm,
+    accuracy: data.accuracy,
+    raw: data.raw,
+    consistency: data.consistency,
+    seconds: data.seconds,
+    series: data.series,
+    setup: data.setup,
+    date: new Date(),
+  };
 
   const parts: HTMLElement[] = [top];
   if (data.series.length >= 2) {

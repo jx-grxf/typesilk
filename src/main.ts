@@ -7,8 +7,8 @@ import { plausible, recordDay } from "./activity";
 import { consistency, rollingWpm, TypingEngine, wpm } from "./engine";
 import { FlowMeter } from "./flow";
 import { applyRun, clearProfile, emptyProfile, levelOf, levelProgress, loadProfile, localDay, saveProfile } from "./profile";
-import { renderProfile } from "./profile-view";
-import { renderResults } from "./results";
+import { renderProfile, setupName } from "./profile-view";
+import { renderResults, shareResult } from "./results";
 import { type Command, Palette } from "./palette";
 import { customWords, pickQuote, QUOTE_LENGTHS, type Quote } from "./quotes";
 import { CARET_MOTIONS, CARETS, FONTS, LAYOUTS, loadSettings, MODES, recordKey, saveSettings, THEMES, type Mode, type Settings } from "./settings";
@@ -135,6 +135,15 @@ function newTest(): void {
   kick();
 }
 
+/** Swaps views as one morph where the browser supports it; elsewhere the change is instant. */
+function withTransition(update: () => void): Promise<void> {
+  if (prefersReducedMotion || !document.startViewTransition) {
+    update();
+    return Promise.resolve();
+  }
+  return document.startViewTransition(update).updateCallbackDone;
+}
+
 /** Words are measured once, so they must never be measured with a fallback font. */
 async function fontsReady(): Promise<void> {
   const family = FONT_FAMILIES[settings.font];
@@ -154,6 +163,10 @@ async function restart(): Promise<void> {
     await typingEl.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 70, easing: "ease-in", fill: "forwards" }).finished;
   }
   await fonts;
+  if (fromResults) {
+    await withTransition(newTest);
+    return;
+  }
   newTest();
   for (const animation of typingEl.getAnimations()) animation.cancel();
   typingEl.animate(
@@ -250,25 +263,29 @@ function finish(durationMs: number, failedAtWord: number | null = null): void {
   saveProfile(profile);
   renderMeta();
 
-  renderResults(resultsEl, {
-    wpm: rate,
-    raw: wpm(engine.totalKeys, rateMs),
-    accuracy: engine.accuracy,
-    consistency: consistency(series),
-    seconds: durationMs / 1000,
-    series,
-    reward,
-    xp: profile.xp,
-    failedAt: failed ? { word: failedAtWord + 1, total: fixedLength } : null,
-    weakKeys: weakKeys(profile.keys),
-    trend: trend(profile.history, key),
-    progress: profile.history.filter((run) => run.key === key).slice(-PROGRESS_RUNS).map((run) => run.wpm),
-    streakDays: profile.streakDays,
-    source: settings.mode === "quote" && currentQuote ? `${currentQuote.author}, ${currentQuote.work}` : null,
-    keys: profile.keys,
-    language: settings.language,
+  // the timer above the text grows into the big number on the results page
+  void withTransition(() => {
+    renderResults(resultsEl, {
+      wpm: rate,
+      raw: wpm(engine.totalKeys, rateMs),
+      accuracy: engine.accuracy,
+      consistency: consistency(series),
+      seconds: durationMs / 1000,
+      series,
+      reward,
+      xp: profile.xp,
+      failedAt: failed ? { word: failedAtWord + 1, total: fixedLength } : null,
+      weakKeys: weakKeys(profile.keys),
+      trend: trend(profile.history, key),
+      progress: profile.history.filter((run) => run.key === key).slice(-PROGRESS_RUNS).map((run) => run.wpm),
+      streakDays: profile.streakDays,
+      source: settings.mode === "quote" && currentQuote ? `${currentQuote.author}, ${currentQuote.work}` : null,
+      keys: profile.keys,
+      language: settings.language,
+      setup: setupName(recordKey(settings)),
+    });
+    document.body.classList.add("show-results");
   });
-  document.body.classList.add("show-results");
   setEscLabel();
   kick();
 }
@@ -584,7 +601,10 @@ window.addEventListener("keydown", (event) => {
   }
   if (state === "done") {
     if (event.key === "Enter") void restart();
-    if (event.key.toLowerCase() === "t" && !event.ctrlKey && !event.metaKey) change({ mode: "train" });
+    const plain = !event.ctrlKey && !event.metaKey && !event.altKey;
+    if (event.key.toLowerCase() === "t" && plain) change({ mode: "train" });
+    if (event.key.toLowerCase() === "c" && plain) void shareResult("copy");
+    if (event.key.toLowerCase() === "s" && plain) void shareResult("save");
     return;
   }
   if (state === "busy") return;

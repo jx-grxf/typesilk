@@ -102,7 +102,7 @@ function activity(days: Days): HTMLElement {
 }
 
 /** "time:30:english:p:" reads as "time 30 · english · punctuation". */
-function setupName(key: string): string {
+export function setupName(key: string): string {
   const [mode, length, language, punctuation, numbers, size] = key.split(":");
   const parts = [length && length !== "0" ? `${mode} ${length}` : mode, language];
   if (punctuation) parts.push("punctuation");
