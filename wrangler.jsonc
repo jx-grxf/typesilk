@@ -1,0 +1,11 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "typesilk",
+  "compatibility_date": "2026-10-15",
+  // static site for now; the phase 2 API joins this worker under /api
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application"
+  },
+  "routes": [{ "pattern": "typesilk.johannesgrof.me", "custom_domain": true }]
+}
