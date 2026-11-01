@@ -39,6 +39,24 @@ function showDialog(...children: HTMLElement[]): void {
   dialog().replaceChildren(...children);
   dialog().inert = false;
   document.body.classList.add("account-open");
+  dialog().querySelector<HTMLElement>("a, button, input:not(:disabled)")?.focus();
+}
+
+/** Keeps tab inside the open dialog, because the page behind it has its own use for the key. */
+export function trapDialogFocus(event: KeyboardEvent): void {
+  if (event.key !== "Tab") return;
+  const items = [...dialog().querySelectorAll<HTMLElement>("a, button, input:not(:disabled)")];
+  const first = items[0];
+  const last = items[items.length - 1];
+  if (!first || !last) return;
+  const inside = dialog().contains(document.activeElement);
+  if (event.shiftKey && (document.activeElement === first || !inside)) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && (document.activeElement === last || !inside)) {
+    event.preventDefault();
+    first.focus();
+  }
 }
 
 function text<K extends keyof HTMLElementTagNameMap>(tag: K, className: string, content: string): HTMLElementTagNameMap[K] {
@@ -145,6 +163,30 @@ export function fillAvatar(node: HTMLElement): void {
   else node.textContent = "Y";
 }
 
+export function signOutNow(): void {
+  void signOut().then(() => afterChange());
+}
+
+export function openDeleteAccount(): void {
+  const foot = document.createElement("div");
+  foot.className = "account-foot";
+  const remove = text("button", "account-save", "delete my account");
+  remove.type = "button";
+  remove.addEventListener("click", () => {
+    void deleteAccount().then((done) => {
+      if (done) {
+        closeAccountDialog();
+        afterChange();
+      } else {
+        note.textContent = "That didn't work. Try again.";
+      }
+    });
+  });
+  foot.append(closeButton("keep it"), remove);
+  const note = text("p", "account-note", "This removes your account and all your ranked runs. Your local stats stay in this browser.");
+  showDialog(text("h2", "account-title", "Delete your account?"), note, foot);
+}
+
 function linkButton(label: string, action: () => void): HTMLButtonElement {
   const button = text("button", "", label);
   button.type = "button";
@@ -171,21 +213,11 @@ export function renderAccountRow(root: HTMLElement): void {
     actions.className = "account-actions";
     const board = text("a", "", "daily board");
     board.href = "/daily";
-    const remove = linkButton("delete account", () => {
-      remove.replaceWith(
-        text("span", "", "Delete your account and all your ranked runs?"),
-        linkButton("yes, delete", () => {
-          void deleteAccount().then(() => afterChange());
-        }),
-        linkButton("keep it", () => afterChange()),
-      );
-    });
+    const remove = linkButton("delete account", openDeleteAccount);
     actions.append(
       board,
       linkButton("edit name", () => openNames()),
-      linkButton("sign out", () => {
-        void signOut().then(() => afterChange());
-      }),
+      linkButton("sign out", signOutNow),
       remove,
     );
     row.append(who, actions);

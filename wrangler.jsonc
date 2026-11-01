@@ -26,8 +26,8 @@
   ],
   // the secrets live on the worker: TICKET_SECRET, GITHUB_CLIENT_SECRET, GOOGLE_CLIENT_SECRET
   "vars": {
-    "GITHUB_CLIENT_ID": "",
-    "GOOGLE_CLIENT_ID": ""
+    "GITHUB_CLIENT_ID": "Ov23limoN97HnVMw0wUp",
+    "GOOGLE_CLIENT_ID": "1098901554589-ttrt5grdri3upmkhtn2gpgr5va5eq1bp.apps.googleusercontent.com"
   },
   // the last two only exist so that a redirect rule on each zone can send them to the first
   "routes": [

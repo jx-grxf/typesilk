@@ -7,8 +7,8 @@ import "./style.css";
 import { plausible, recordDay } from "./activity";
 import { awardBadges, type RunFacts } from "./badges";
 import { dailyKey, dailyNumber, dailyWords } from "./daily";
-import { loadAccount, currentAccount, prepareTicket } from "./account";
-import { accountDialogOpen, closeAccountDialog, fillAvatar, onAccountChange, openNames, openSignIn, renderAccountRow, showDailyRank } from "./account-view";
+import { loadAccount, currentAccount, prepareTicket, signInProviders } from "./account";
+import { accountDialogOpen, closeAccountDialog, fillAvatar, onAccountChange, openDeleteAccount, openNames, openSignIn, renderAccountRow, showDailyRank, signOutNow, trapDialogFocus } from "./account-view";
 import { BACKSPACE, CLEAR_WORD, RunRecorder } from "./replay";
 import { MIN_RATE_MS, consistency, rollingWpm, TypingEngine, wpm } from "./engine";
 import { FlowMeter } from "./flow";
@@ -474,6 +474,16 @@ function commands(): Command[] {
   list.push({ group: "test", label: "restart", run: () => void restart() });
   list.push({ group: "test", label: `daily #${dailyNumber()}`, current: settings.mode === "daily", run: () => change({ mode: "daily" }) });
   if (weakKeys(profile.keys).length > 0) list.push({ group: "test", label: "train weak keys", run: () => change({ mode: "train" }) });
+  list.push({ group: "go to", label: "daily leaderboard", run: () => location.assign("/daily") });
+  list.push({ group: "go to", label: "profile", run: () => showProfile() });
+  const user = currentAccount();
+  if (user) {
+    list.push({ group: "account", label: "edit name", run: () => openNames() });
+    list.push({ group: "account", label: "sign out", run: signOutNow });
+    list.push({ group: "account", label: "delete account", run: openDeleteAccount });
+  } else if (signInProviders().length > 0) {
+    list.push({ group: "account", label: "sign in", run: () => openSignIn() });
+  }
   pick("mode", "mode", MODES);
   pick("time", "time", [15, 30, 60], (v) => `${v} seconds`);
   pick("words", "count", [25, 50, 100], (v) => `${v} words`);
@@ -638,6 +648,7 @@ window.addEventListener("keydown", (event) => {
   if (event.isComposing) return;
   if (accountDialogOpen()) {
     if (event.key === "Escape") closeAccountDialog();
+    trapDialogFocus(event);
     return;
   }
   if (palette.isOpen || customOpen()) return;
