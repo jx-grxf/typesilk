@@ -84,6 +84,9 @@ Platform: the same Cloudflare worker that serves the site, with routes under
 
 - **Leaderboards**: daily and all-time per setup (mode, length, language). Best
   run per device per board.
+- **Activity graph on public profiles**: words per day like the local `/me`
+  page, but counted only from runs the server replayed. Zen never counts, since
+  it has no target text. Local `days` are not uploaded as activity.
 - **Ghosts of others**: race the stored keystroke timeline of a leaderboard run
   or of a friend via a share code.
 - **`/stats` page**: total keystrokes, runs, hours typed, words per language,

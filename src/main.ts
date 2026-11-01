@@ -3,9 +3,11 @@ import "@fontsource-variable/newsreader/opsz-italic.css";
 import "@fontsource-variable/jetbrains-mono/wght.css";
 import "@fontsource-variable/jetbrains-mono/wght-italic.css";
 import "./style.css";
+import { plausible, recordDay } from "./activity";
 import { consistency, rollingWpm, TypingEngine, wpm } from "./engine";
 import { FlowMeter } from "./flow";
 import { applyRun, clearProfile, emptyProfile, levelOf, levelProgress, loadProfile, localDay, saveProfile } from "./profile";
+import { renderProfile } from "./profile-view";
 import { renderResults } from "./results";
 import { type Command, Palette } from "./palette";
 import { customWords, pickQuote, QUOTE_LENGTHS, type Quote } from "./quotes";
@@ -59,6 +61,7 @@ let nextWords: (count: number) => string[] = () => [];
 let state: "idle" | "running" | "done" | "busy" = "busy";
 let startedAt = 0;
 let lastKeyAt = 0;
+let gaps: number[] = [];
 let samples: number[] = [];
 let trainingKeys: string[] = [];
 let ghostSeries: number[] | null = null;
@@ -163,6 +166,7 @@ function start(now: number): void {
   state = "running";
   startedAt = now;
   lastKeyAt = 0;
+  gaps = [];
   if (settings.focusMode) document.body.classList.add("focus");
   setEscLabel();
 }
@@ -239,6 +243,10 @@ function finish(durationMs: number, failedAtWord: number | null = null): void {
     },
     localDay(),
   );
+  // zen has no target text, so anything typed there would count
+  if (settings.mode !== "zen" && plausible(gaps, wpm(engine.totalKeys, rateMs))) {
+    recordDay(profile.days, localDay(), { chars, ms: durationMs, wpm: rate });
+  }
   saveProfile(profile);
   renderMeta();
 
@@ -285,6 +293,7 @@ function onChar(ch: string, code: string, now: number): void {
   const expected = engine.word[engine.input.length];
   const gap = lastKeyAt > 0 ? now - lastKeyAt : null;
   lastKeyAt = now;
+  if (gap !== null) gaps.push(gap);
   const result = engine.insert(ch);
   if (result.kind !== "char") return;
 
@@ -438,6 +447,7 @@ function commands(): Command[] {
     });
   }
   list.push({ group: "open", label: "settings", run: () => setPanel(true) });
+  list.push({ group: "open", label: "profile", run: () => showProfile() });
   return list;
 }
 
@@ -498,6 +508,33 @@ customShuffle.addEventListener("click", () => {
 $("custom-cancel").addEventListener("click", closeCustom);
 $("custom-start").addEventListener("click", startCustom);
 
+const profileEl = $("profile");
+
+function profileOpen(): boolean {
+  return document.body.classList.contains("show-profile");
+}
+
+function showProfile(push = true): void {
+  if (state === "running") void restart();
+  if (panelOpen()) setPanel(false);
+  renderProfile(profileEl, profile, settings.language);
+  profileEl.scrollTop = 0;
+  document.body.classList.add("show-profile");
+  if (push && location.pathname !== "/me") history.pushState(null, "", "/me");
+}
+
+function hideProfile(push = true): void {
+  document.body.classList.remove("show-profile");
+  if (push && location.pathname === "/me") history.pushState(null, "", "/");
+}
+
+window.addEventListener("popstate", () => (location.pathname === "/me" ? showProfile(false) : hideProfile(false)));
+$("profile-link").addEventListener("click", (event) => {
+  event.preventDefault();
+  (event.currentTarget as HTMLElement).blur();
+  showProfile();
+});
+
 function openPalette(): void {
   if (panelOpen()) setPanel(false);
   // a timed run would keep counting behind the palette
@@ -514,6 +551,14 @@ window.addEventListener("keydown", (event) => {
   if (mod && (key === "k" || (event.shiftKey && key === "p"))) {
     event.preventDefault();
     openPalette();
+    return;
+  }
+  if (profileOpen()) {
+    if (event.key === "Escape" || event.key === "Tab") {
+      event.preventDefault();
+      hideProfile();
+      if (event.key === "Tab") void restart();
+    }
     return;
   }
 
@@ -710,6 +755,7 @@ async function boot(): Promise<void> {
   await fontsReady();
   segments.forEach((seg) => seg.sync());
   newTest();
+  if (location.pathname === "/me") showProfile(false);
   document.body.classList.add("ready");
 }
 
