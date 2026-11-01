@@ -1,15 +1,18 @@
 import { emptyProfile, type Profile } from "../src/profile";
 import { mergeProfiles, sanitizeProfile } from "../src/profile-merge";
+import { currentUser } from "./auth";
+import { fail, json, readJson, type Env } from "./http";
 
 type Share = { device: string; data: string };
-export type SharedProfile = { epoch: number; profile: Profile };
+type SharedProfile = { epoch: number; profile: Profile };
 
 const DEVICE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 // old devices fold into this one, so a long-lived account never loses runs to the limit
 const ARCHIVE = "archive";
 const MAX_DEVICES = 12;
+const MAX_PROFILE_BYTES = 256 * 1024;
 
-export const isDevice = (value: unknown): value is string => typeof value === "string" && DEVICE.test(value);
+const isDevice = (value: unknown): value is string => typeof value === "string" && DEVICE.test(value);
 
 async function epochOf(db: D1Database, userId: string): Promise<number> {
   const row = await db.prepare("SELECT profile_epoch FROM users WHERE id = ?").bind(userId).first<{ profile_epoch: number }>();
@@ -30,13 +33,13 @@ function othersOf(shares: Share[], device: string): Profile {
   return others.length === 0 ? emptyProfile() : mergeProfiles(others.map(parse));
 }
 
-export async function readProfile(db: D1Database, userId: string, device: string): Promise<SharedProfile> {
+async function readProfile(db: D1Database, userId: string, device: string): Promise<SharedProfile> {
   const [epoch, shares] = await Promise.all([epochOf(db, userId), sharesOf(db, userId)]);
   return { epoch, profile: othersOf(shares, device) };
 }
 
 /** Stores the device's share unless the account was reset since the device last heard of it. */
-export async function writeProfile(db: D1Database, userId: string, device: string, epoch: number, share: unknown): Promise<SharedProfile & { stale: boolean }> {
+async function writeProfile(db: D1Database, userId: string, device: string, epoch: number, share: unknown): Promise<SharedProfile & { stale: boolean }> {
   const shares = await sharesOf(db, userId);
   const current = await epochOf(db, userId);
   const others = othersOf(shares, device);
@@ -69,10 +72,29 @@ export async function writeProfile(db: D1Database, userId: string, device: strin
   return { epoch, profile: others, stale: false };
 }
 
-export async function resetProfile(db: D1Database, userId: string): Promise<number> {
+async function resetProfile(db: D1Database, userId: string): Promise<number> {
   await db.batch([
     db.prepare("DELETE FROM profile_shares WHERE user_id = ?").bind(userId),
     db.prepare("UPDATE users SET profile_epoch = profile_epoch + 1 WHERE id = ?").bind(userId),
   ]);
   return epochOf(db, userId);
+}
+
+/** GET reads the other devices, POST stores this one's share, DELETE resets the account's stats. */
+export async function handleProfile(request: Request, env: Env, url: URL): Promise<Response> {
+  const method = request.method;
+  if (method !== "GET" && method !== "POST" && method !== "DELETE") return fail("method_not_allowed", 405);
+  if (!env.TICKET_SECRET) return fail("signin_off", 503);
+  const user = await currentUser(request, env);
+  if (!user) return fail("signin_required", 401);
+  if (method === "DELETE") return json({ epoch: await resetProfile(env.DB, user.id) });
+  if (method === "GET") {
+    const device = url.searchParams.get("device");
+    if (!isDevice(device)) return fail("bad_request", 400);
+    return json(await readProfile(env.DB, user.id, device));
+  }
+  const body = await readJson(request, MAX_PROFILE_BYTES);
+  if (!body || !isDevice(body.device) || !Number.isInteger(body.epoch)) return fail("bad_request", 400);
+  const { stale, ...shared } = await writeProfile(env.DB, user.id, body.device, body.epoch as number, body.profile);
+  return json(shared, stale ? 409 : 200);
 }
