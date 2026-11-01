@@ -1,6 +1,6 @@
 import { QUOTE_LENGTHS, type QuoteLength } from "./quotes";
 import { SOUND_PACKS, type SoundPack } from "./sound";
-import type { Language } from "./words";
+import { WORD_LIST_SIZES, type Language, type WordListSize } from "./words";
 
 const KEY = "typesilk.settings";
 
@@ -26,6 +26,7 @@ export type Settings = {
   customText: string;
   customShuffle: boolean;
   language: Language;
+  wordList: WordListSize;
   punctuation: boolean;
   numbers: boolean;
   theme: Theme;
@@ -52,6 +53,7 @@ export const DEFAULTS: Settings = {
   customText: "",
   customShuffle: false,
   language: "english",
+  wordList: "200",
   punctuation: false,
   numbers: false,
   theme: "noir",
@@ -75,6 +77,7 @@ export function loadSettings(): Settings {
     const stored = { ...DEFAULTS, ...JSON.parse(localStorage.getItem(KEY) ?? "{}") } as Settings;
     if (!THEMES.includes(stored.theme)) stored.theme = DEFAULTS.theme;
     if (!MODES.includes(stored.mode)) stored.mode = DEFAULTS.mode;
+    if (!WORD_LIST_SIZES.includes(stored.wordList)) stored.wordList = DEFAULTS.wordList;
     if (!SOUND_PACKS.includes(stored.soundPack)) stored.soundPack = DEFAULTS.soundPack;
     if (!QUOTE_LENGTHS.includes(stored.quoteLength)) stored.quoteLength = DEFAULTS.quoteLength;
     if (!LAYOUTS.includes(stored.layout)) stored.layout = DEFAULTS.layout;
@@ -98,5 +101,9 @@ export function recordKey(s: Settings): string {
     : s.mode === "quote" ? s.quoteLength
     : s.mode === "endless" || s.mode === "zen" || s.mode === "custom" ? 0
     : s.count;
-  return [s.mode, length, s.language, s.punctuation ? "p" : "", s.numbers ? "n" : ""].join(":");
+  const wordBased = s.mode !== "quote" && s.mode !== "zen" && s.mode !== "custom";
+  const parts = [s.mode, length, s.language, s.punctuation ? "p" : "", s.numbers ? "n" : ""];
+  // older records were all made with the short list, so only the long one gets a marker
+  if (wordBased && s.wordList === "1k") parts.push("1k");
+  return parts.join(":");
 }

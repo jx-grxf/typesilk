@@ -508,6 +508,29 @@ body.show-results #results { opacity: 1; visibility: visible; }
 .coach b { font-style: italic; font-weight: 400; color: var(--accent); }
 .coach kbd { color: var(--muted); }
 
+.heatmap figcaption { margin-bottom: 14px; font-style: italic; color: var(--muted); }
+.board { display: flex; flex-direction: column; gap: 6px; width: fit-content; }
+.board-row { display: flex; gap: 6px; padding-left: calc(var(--offset) * 22px); }
+.hk {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--rule);
+  font-size: 1.05rem;
+  color: var(--ink);
+  background: color-mix(in srgb, var(--accent) calc(var(--heat) * 78%), transparent);
+  animation: rise var(--spring-ms, 500ms) var(--spring, ease) backwards;
+}
+.hk.sparse { color: var(--dim); }
+.board-legend { display: flex; align-items: center; gap: 6px; margin-top: 12px; color: var(--muted); font-size: 0.86rem; }
+.board-legend i {
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--rule);
+  background: color-mix(in srgb, var(--accent) calc(var(--heat) * 78%), transparent);
+}
+
 .xp-row { display: flex; justify-content: space-between; margin-bottom: 8px; color: var(--muted); }
 .xp-track { height: 1px; background: var(--rule); }
 .xp-fill {

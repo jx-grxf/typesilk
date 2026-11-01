@@ -30,14 +30,14 @@ typesilk retargets one continuous spring instead, so speed carries over from key
 | **endless** | Runs until you press `esc` |
 | **train** | Words built around your weakest keys |
 
-Available in English, German, Spanish and French, with optional punctuation and numbers.
+Available in English, German, Spanish and French, from the 200 most common words or about a thousand, with optional punctuation and numbers.
 
 ## Get better, then come back
 
 <img src="docs/results.png" alt="Results page with a very large words-per-minute number, statistics and a speed chart" width="100%">
 
 - **Your ghost.** A second marker replays your best run in the same setup, so you always race someone your own speed.
-- **Weak keys.** Every keystroke feeds per-letter error and speed stats. Results name your worst letters, and `t` starts a run built around them.
+- **Weak keys.** Every keystroke feeds per-letter error and speed stats. Results name your worst letters, show them on a keyboard in your language's layout, and `t` starts a run built around them.
 - **Progress.** A chart of your past runs and your trend over the last five.
 - **Level and streak.** XP for clean typing and a count of days in a row.
 

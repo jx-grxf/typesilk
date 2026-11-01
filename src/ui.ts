@@ -134,6 +134,12 @@ export function buildPanel(
       s.textSize,
       (textSize) => change({ textSize }),
     )),
+    group("Words"),
+    row("Word list", "the 200 most common words, or about a thousand", seg(
+      [{ label: "200", value: "200" as const }, { label: "1k", value: "1k" as const }],
+      s.wordList,
+      (wordList) => change({ wordList }),
+    )),
     group("Caret"),
     row("Shape", "", seg(
       [
