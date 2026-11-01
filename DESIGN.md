@@ -73,6 +73,9 @@ physics. `prefers-reduced-motion` turns movement off.
 | Activity grid | `src/profile-view.ts` | 53 weeks × 7 days, four accent steps from the year's own quartiles |
 | Text page | `src/page.css` | `/about`, `/de`: one column on hairlines, no script, follows the saved theme |
 | Not found | `src/notfound.ts` | the test's layout with 404 as the count: retypes the address, wrong letters in accent, offers the closest page |
+| Keyprint | `src/avatar.ts` | a mirrored 5 × 5 grid of keys drawn from the username in the current ink; nothing is uploaded or loaded |
+| Leaderboard | `src/board.ts` | hairline rows with a keyprint |
+| Account dialog | `src/account-view.ts` | an overlay like the palette; sign-in, then username and display name |
 | Result card | `src/card.ts` | 1200 × 630 canvas drawn from the live tokens |
 | Badge medal | `src/badges.ts` | round medal with a seal's edge: hairline ring (common), double ring (rare), scalloped accent edge (epic), filled seal with engraved rim (legendary); locked ones fade back and show progress as an accent arc |
 

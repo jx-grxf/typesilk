@@ -7,7 +7,10 @@ import "./style.css";
 import { plausible, recordDay } from "./activity";
 import { awardBadges, type RunFacts } from "./badges";
 import { dailyKey, dailyNumber, dailyWords } from "./daily";
-import { consistency, rollingWpm, TypingEngine, wpm } from "./engine";
+import { loadAccount, currentAccount, prepareTicket } from "./account";
+import { accountDialogOpen, closeAccountDialog, fillAvatar, onAccountChange, openNames, openSignIn, renderAccountRow, showDailyRank } from "./account-view";
+import { BACKSPACE, CLEAR_WORD, RunRecorder } from "./replay";
+import { MIN_RATE_MS, consistency, rollingWpm, TypingEngine, wpm } from "./engine";
 import { FlowMeter } from "./flow";
 import { applyRun, clearProfile, emptyProfile, levelOf, levelProgress, loadProfile, localDay, saveProfile } from "./profile";
 import { renderProfile, setupName } from "./profile-view";
@@ -25,7 +28,6 @@ import { availableSizes, createTrainingSource, createWordSource, LANGUAGES, load
 const CHUNK = 50;
 const REFILL_AT = 30;
 const PROGRESS_RUNS = 40;
-const MIN_RATE_MS = 1000; // a run ended after one key would otherwise show thousands of wpm
 const TEST_KEYS: (keyof Settings)[] = [
   "mode", "time", "count", "quoteLength", "customText", "customShuffle",
   "language", "wordList", "punctuation", "numbers", "textSize", "layout", "font",
@@ -41,8 +43,14 @@ const requestedLanguage = new URLSearchParams(location.search).get("lang");
 if (requestedLanguage && Object.hasOwn(LANGUAGES, requestedLanguage)) {
   settings.language = requestedLanguage as Language;
   saveSettings(settings);
-  history.replaceState(null, "", location.pathname);
 }
+if (new URLSearchParams(location.search).get("mode") === "daily") {
+  settings.mode = "daily";
+  saveSettings(settings);
+}
+const entryParams = new URLSearchParams(location.search);
+if (location.search) history.replaceState(null, "", location.pathname);
+const recorder = new RunRecorder();
 let profile = loadProfile();
 
 const typingEl = $("typing");
@@ -130,6 +138,8 @@ function newTest(): void {
     ? words.length
     : 0;
   engine = new TypingEngine(words, mode === "zen");
+  recorder.reset();
+  if (mode === "daily") prepareTicket(dailyNumber(), settings.language);
   samples = [];
   flow.reset();
   stage.reset(engine.words);
@@ -317,6 +327,7 @@ function finish(durationMs: number, failedAtWord: number | null = null): void {
     badges: newBadges,
     daily: daily === null ? null : { number: daily, first: firstDaily, firstWpm: profile.dailies[dailyEntry!]?.wpm ?? null },
     });
+    if (daily !== null && !failed) showDailyRank(resultsEl, daily, settings.language, recorder.log);
     document.body.classList.add("show-results");
   });
   setEscLabel();
@@ -344,6 +355,7 @@ function onChar(ch: string, code: string, now: number): void {
   const gap = lastKeyAt > 0 ? now - lastKeyAt : null;
   lastKeyAt = now;
   if (gap !== null) gaps.push(gap);
+  recorder.record(ch, now);
   const result = engine.insert(ch);
   if (result.kind !== "char") return;
 
@@ -375,6 +387,7 @@ function onChar(ch: string, code: string, now: number): void {
 function onSpace(code: string, now: number): void {
   if (state !== "running") return;
   lastKeyAt = now;
+  recorder.record(" ", now);
   const result = engine.space();
   if (result.kind !== "commit") return;
 
@@ -403,8 +416,9 @@ function onSpace(code: string, now: number): void {
   kick();
 }
 
-function onBackspace(whole: boolean, code: string): void {
+function onBackspace(whole: boolean, code: string, now: number): void {
   if (state !== "running") return;
+  recorder.record(whole ? CLEAR_WORD : BACKSPACE, now);
   const before = engine.input;
   const result = engine.backspace(whole);
   if (result.kind === "ignored") return;
@@ -573,6 +587,7 @@ function showProfile(push = true): void {
   if (panelOpen()) setPanel(false);
   void withTransition(() => {
     renderProfile(profileEl, profile, settings.language);
+    renderAccountRow(profileEl);
     profileEl.scrollTop = 0;
     document.body.classList.add("show-profile");
   });
@@ -621,6 +636,10 @@ function openPalette(): void {
 
 window.addEventListener("keydown", (event) => {
   if (event.isComposing) return;
+  if (accountDialogOpen()) {
+    if (event.key === "Escape") closeAccountDialog();
+    return;
+  }
   if (palette.isOpen || customOpen()) return;
 
   const key = event.key.toLowerCase();
@@ -678,7 +697,7 @@ window.addEventListener("keydown", (event) => {
   const altGraph = event.getModifierState("AltGraph");
   if (event.key === "Backspace") {
     event.preventDefault();
-    onBackspace(event.ctrlKey || event.altKey, event.code);
+    onBackspace(event.ctrlKey || event.altKey, event.code, event.timeStamp);
     return;
   }
   if ((event.ctrlKey || event.metaKey) && !altGraph) return;
@@ -871,4 +890,25 @@ async function boot(): Promise<void> {
   document.body.classList.add("ready");
 }
 
+function renderAccountChrome(): void {
+  const user = currentAccount();
+  const button = $("profile-button");
+  fillAvatar(button.querySelector<HTMLElement>(".mini-avatar")!);
+  button.querySelector<HTMLElement>(".profile-label")!.textContent = user?.username ?? "profile";
+  if (profileOpen()) {
+    renderProfile(profileEl, profile, settings.language);
+    renderAccountRow(profileEl);
+  }
+  if (settings.mode === "daily") prepareTicket(dailyNumber(), settings.language);
+}
+
 void boot();
+onAccountChange(renderAccountChrome);
+void loadAccount().then(() => {
+  renderAccountChrome();
+  const signin = entryParams.get("signin");
+  const user = currentAccount();
+  if (signin === "failed") openSignIn("That sign-in didn't work. Try again.");
+  else if (signin === "blocked") openSignIn("This account is blocked from the board.");
+  else if (user && !user.username) openNames(entryParams.get("name") ?? "");
+});

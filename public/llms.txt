@@ -8,6 +8,7 @@ The app is at the root URL. The text pages below describe it in English and Germ
 
 - [Typing test](https://typesilk.com/): The test itself. Runs in the browser and stores results there.
 - [About typesilk](https://typesilk.com/about): Modes, results, languages and common questions.
+- [Daily leaderboard](https://typesilk.com/daily): The fastest typists on today's shared 40 words.
 - [Tipptest auf Deutsch](https://typesilk.com/de): The same information in German, with a link that starts the test with German words.
 
 ## Project

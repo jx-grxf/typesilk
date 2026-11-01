@@ -55,7 +55,7 @@ English, German, Spanish and French, with optional punctuation and numbers. Word
 
 **Sharing**: `c` copies and `s` saves a 1200 × 630 image of your result, drawn in your theme in the browser.
 
-Everything is stored in your browser. There is no account and no server yet; the [roadmap](docs/specs/roadmap.md) describes optional GitHub sign-in and leaderboards.
+Everything is stored in your browser and typing never needs an account. Signing in with GitHub or Google is optional and puts your daily on the [leaderboard](https://typesilk.com/daily); the server replays each run's keystrokes before ranking it.
 
 ## Make it yours
 
@@ -94,7 +94,7 @@ npm install
 npm run dev
 ```
 
-`npm test` runs the unit tests, `npm run build` makes a production build and `npm run deploy` publishes it as a Cloudflare worker. `node scripts/build-wordlists.mjs` rebuilds the English and German word lists from their sources.
+`npm test` runs the unit tests, `npm run build` makes a production build and `npm run deploy` publishes it as a Cloudflare worker. Accounts and the leaderboard need `npx wrangler d1 migrations apply typesilk --local` and a `.dev.vars` with `TICKET_SECRET` and the OAuth credentials. `node scripts/build-wordlists.mjs` rebuilds the English and German word lists from their sources.
 
 ## Under the hood
 
@@ -116,6 +116,7 @@ Neither dropped a frame in this test, so this shows where the work goes rather t
 - Keystrokes: [Keyboard soundpack 1](https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes) by Unicae Games and recordings by Joseph Sardin from [BigSoundBank](https://bigsoundbank.com), all CC0.
 - Word lists: [FrequencyWords](https://github.com/hermitdave/FrequencyWords) by Hermit Dave and Wiktionary frequency lists from the Leipzig Corpora Collection, adapted under CC BY-SA 4.0 (see `public/words/LICENSE.txt`).
 - Quotes: public-domain works, credited on the results page.
+- Name filter: [obscenity](https://github.com/jo3-l/obscenity), MIT, and the [LDNOOBW lists](https://github.com/LDNOOBW/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words) for German, Spanish and French, CC BY 4.0.
 
 ## License
 

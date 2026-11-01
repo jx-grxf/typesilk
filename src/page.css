@@ -110,6 +110,46 @@ section li + li { margin-top: var(--space-1); }
 
 .page-foot { margin-top: var(--space-4); border-top: var(--hairline); }
 
+.board-languages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+  padding-bottom: var(--space-1);
+  border-bottom: var(--hairline);
+  font-style: italic;
+  color: var(--muted);
+}
+.board-languages a { text-decoration: none; }
+.board-languages a[aria-current] { color: var(--ink); text-decoration: underline; text-decoration-color: var(--accent); }
+.board-status { margin-top: var(--space-2); color: var(--muted); }
+.board-list { margin-top: var(--space-2); padding: 0; list-style: none; }
+.board-list li {
+  display: grid;
+  grid-template-columns: 2.4rem 1fr 3.2rem 3.2rem;
+  align-items: baseline;
+  gap: var(--space-1);
+  padding: var(--space-1) 0;
+  border-bottom: var(--hairline);
+  font-variant-numeric: tabular-nums;
+}
+.board-rank, .board-acc { color: var(--muted); }
+.board-wpm, .board-acc { text-align: right; }
+.board-who { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+.board-who b { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.board-who small { color: var(--muted); font-size: var(--text-small); font-style: italic; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.board-face {
+  flex: none;
+  align-self: center;
+  width: 22px;
+  height: 22px;
+  border: var(--hairline);
+  border-radius: 50%;
+  overflow: hidden;
+  color: var(--muted);
+}
+.keyprint { display: block; width: 100%; height: 100%; fill: currentColor; }
+
 /* the 404 borrows the test's own layout: the count above the line, the caret, the rule below it */
 body.nf {
   display: grid;

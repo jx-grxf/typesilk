@@ -4,6 +4,9 @@
     <loc>https://typesilk.com/</loc>
   </url>
   <url>
+    <loc>https://typesilk.com/daily</loc>
+  </url>
+  <url>
     <loc>https://typesilk.com/about</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://typesilk.com/about" />
     <xhtml:link rel="alternate" hreflang="de" href="https://typesilk.com/de" />

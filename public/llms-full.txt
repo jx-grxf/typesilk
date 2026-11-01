@@ -47,4 +47,4 @@ Four themes (noir, paper, forest, klein), three layouts (tape, lines, classic), 
 ## Limits
 
 - It needs a physical keyboard. Phones and tablets show a note until one is connected.
-- Results are stored in the browser. There is no account, so clearing browser data removes them.
+- Results are stored in the browser, so clearing browser data removes them. Typing needs no account; signing in with GitHub or Google is optional and adds the daily leaderboard at /daily.

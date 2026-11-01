@@ -77,9 +77,13 @@ Platform: the same Cloudflare worker that serves the site, with routes under
   on the site.
 - **Leaderboards and public profiles need a login and a username.** At first login
   everyone picks a username (unique, 3 to 20 characters of a-z, 0-9, - and _) and a
-  display name; GitHub prefills both. A Google account's real name and email are
-  never shown unasked. Reserved names and a word list block the worst; banning a
+  display name; GitHub prefills both. A Google account's real name, photo and email
+  are never requested or stored. Avatars are drawn from the username in the browser
+  (`src/avatar.ts`). There are no uploads and no remote pictures: uploads need
+  moderation, and a remote picture sends each visitor's address to its host. Reserved names and a word list block the worst; banning a
   cheater bans the account.
+- Sign-in is for ages 14 and up, stated in the terms. Keystroke logs are discarded
+  after the replay until ghosts need them; only a fingerprint stays.
 - First login takes over the local data once: level, streak, records and key
   stats. Records that were not replayed on the server show on the profile but
   never on a leaderboard.
