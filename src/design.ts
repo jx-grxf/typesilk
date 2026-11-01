@@ -180,7 +180,7 @@ function components(): HTMLElement {
 
   const panel = el("div", "ds-panel");
   const settings: Settings = { ...DEFAULTS };
-  segments.push(...buildPanel(panel, settings, () => {}, () => {}));
+  segments.push(...buildPanel(panel, settings, () => {}, { prompt: () => "really?", run: async () => true }));
 
   const card = el("img", "ds-card");
   card.alt = "Result card in the current theme";

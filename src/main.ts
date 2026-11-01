@@ -7,12 +7,13 @@ import "./style.css";
 import { plausible, recordDay } from "./activity";
 import { awardBadges, type RunFacts } from "./badges";
 import { dailyKey, dailyNumber, dailyWords } from "./daily";
-import { loadAccount, currentAccount, prepareTicket, signInProviders } from "./account";
+import { loadAccount, currentAccount, onAccountDeleted, onBeforeSignOut, prepareTicket, signInProviders } from "./account";
 import { accountDialogOpen, closeAccountDialog, fillAvatar, onAccountChange, openDeleteAccount, openNames, openSignIn, renderAccountRow, showDailyRank, signOutNow, trapDialogFocus } from "./account-view";
 import { BACKSPACE, CLEAR_WORD, RunRecorder } from "./replay";
 import { MIN_RATE_MS, consistency, rollingWpm, TypingEngine, wpm } from "./engine";
 import { FlowMeter } from "./flow";
-import { applyRun, clearProfile, emptyProfile, levelOf, levelProgress, loadProfile, localDay, saveProfile } from "./profile";
+import { applyRun, levelOf, levelProgress, localDay } from "./profile";
+import { ProfileStore } from "./profile-store";
 import { renderProfile, setupName } from "./profile-view";
 import { QuietGate } from "./quiet-gate";
 import { renderResults, shareResult } from "./results";
@@ -53,7 +54,10 @@ const entryParams = new URLSearchParams(location.search);
 if (location.search) history.replaceState(null, "", location.pathname);
 const recorder = new RunRecorder();
 const resultShortcuts = new QuietGate(600);
-let profile = loadProfile();
+const store = new ProfileStore();
+store.watchVisibility();
+// always the same object as store.profile; the store swaps it when other devices' runs arrive
+let profile = store.profile;
 
 const typingEl = $("typing");
 const resultsEl = $("results");
@@ -304,7 +308,7 @@ function finish(durationMs: number, failedAtWord: number | null = null): void {
     quoteLength: settings.mode === "quote" && currentQuote ? quoteLength(currentQuote) : null,
   };
   const newBadges = awardBadges(profile, human ? facts : null);
-  saveProfile(profile);
+  store.save();
   renderMeta(firstToday);
 
   // the timer above the text grows into the big number on the results page
@@ -844,12 +848,14 @@ function buildControls(): void {
   segments = [modeSeg, timeSeg, countSeg, quoteSeg, languageSeg];
 }
 
-function resetProfile(): void {
-  clearProfile();
-  profile = emptyProfile();
-  renderMeta();
-  void restart();
-}
+const profileReset = {
+  prompt: (): string => (store.signedIn() ? "clear on every device?" : "really?"),
+  run: async (): Promise<boolean> => {
+    if (!(await store.reset())) return false;
+    void restart();
+    return true;
+  },
+};
 
 let lastPointer = { x: -1, y: -1 };
 window.addEventListener("pointermove", (event) => {
@@ -900,12 +906,12 @@ async function boot(): Promise<void> {
   version.textContent = `v${__APP_VERSION__}`;
   version.href = `https://github.com/jx-grxf/typesilk/releases/tag/v${__APP_VERSION__}`;
   buildControls();
-  segments.push(...buildPanel($("panel-body"), settings, change, resetProfile));
+  segments.push(...buildPanel($("panel-body"), settings, change, profileReset));
   applySettings();
   renderMeta();
   await fontsReady();
   // badges for what someone already did before badges existed, without a fanfare
-  if (awardBadges(profile, null).length > 0) saveProfile(profile);
+  if (awardBadges(profile, null).length > 0) store.save();
   segments.forEach((seg) => seg.sync());
   newTest();
   if (location.pathname === "/me") showProfile(false);
@@ -924,9 +930,33 @@ function renderAccountChrome(): void {
   if (settings.mode === "daily") prepareTicket(dailyNumber(), settings.language);
 }
 
+store.onChange(() => {
+  profile = store.profile;
+  // badges for totals that only add up across devices, earned quietly like the ones at boot
+  if (awardBadges(profile, null).length > 0) store.save();
+  renderMeta();
+  if (profileOpen()) {
+    renderProfile(profileEl, profile, settings.language);
+    renderAccountRow(profileEl);
+  }
+});
+onBeforeSignOut(() => store.flush());
+onAccountDeleted(() => store.release());
+
+function syncAccount(): void {
+  const user = currentAccount();
+  if (user) store.connect(user.id);
+  else store.disconnect();
+}
+
 void boot();
-onAccountChange(renderAccountChrome);
-void loadAccount().then(() => {
+onAccountChange(() => {
+  syncAccount();
+  renderAccountChrome();
+});
+void loadAccount().then((reached) => {
+  // offline is not signed out: keep showing the account's stats from the last visit
+  if (reached) syncAccount();
   renderAccountChrome();
   const signin = entryParams.get("signin");
   const user = currentAccount();
