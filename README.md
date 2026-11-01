@@ -14,7 +14,7 @@ typesilk retargets one continuous spring instead, so speed carries over from key
 
 - **Letters press in.** Each one dips and settles on a spring, and the caret flinches with every press.
 - **Mistakes have weight.** Wrong letters shake and turn the signal colour without breaking your rhythm.
-- **Real sound.** 30 recorded keystrokes, placed in stereo by where the key sits on the board.
+- **Real sound.** Four packs of recorded keystrokes (crisp, laptop, office, typewriter), placed in stereo by where the key sits on the board.
 - **Flow line.** A thin rule under the text grows while your rhythm holds, and shrinks when you slip.
 
 ## Modes
@@ -84,7 +84,7 @@ Measured in headless Chrome at 1600×900 with 200 keys at one key per 60 ms, a k
 
 ## Credits
 
-Typeface: [Newsreader](https://github.com/productiontype/Newsreader), SIL Open Font License. Keystrokes: [Keyboard soundpack 1](https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes) by Unicae Games, CC0.
+Typeface: [Newsreader](https://github.com/productiontype/Newsreader), SIL Open Font License. Keystrokes: [Keyboard soundpack 1](https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes) by Unicae Games and recordings by Joseph Sardin from [BigSoundBank](https://bigsoundbank.com), all CC0.
 
 ## License
 

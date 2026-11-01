@@ -1,4 +1,3 @@
-const SAMPLE_COUNT = 32;
 const ONSET_THRESHOLD = 0.1;
 const TARGET_PEAK = 0.8;
 const MIN_PEAK = 0.2;
@@ -10,6 +9,17 @@ const KEY_ROWS = [
   "KeyZ KeyX KeyC KeyV KeyB KeyN KeyM Comma Period Slash",
 ];
 
+export const SOUND_PACKS = ["crisp", "laptop", "office", "typewriter"] as const;
+export type SoundPack = (typeof SOUND_PACKS)[number];
+
+/** Number of keystrokes per pack and whether it has its own space bar. */
+const PACKS: Record<SoundPack, { keys: number; space: boolean }> = {
+  crisp: { keys: 32, space: false },
+  laptop: { keys: 23, space: false },
+  office: { keys: 22, space: false },
+  typewriter: { keys: 24, space: true },
+};
+
 const keyPan = new Map<string, number>();
 for (const row of KEY_ROWS) {
   const keys = row.split(" ");
@@ -17,6 +27,7 @@ for (const row of KEY_ROWS) {
 }
 
 type Sample = { buffer: AudioBuffer; onset: number; gain: number };
+type Loaded = { keys: Sample[]; space: Sample | null };
 
 function analyse(buffer: AudioBuffer): Sample {
   const data = buffer.getChannelData(0);
@@ -31,27 +42,45 @@ function analyse(buffer: AudioBuffer): Sample {
   };
 }
 
+async function decode(decoder: BaseAudioContext, file: string): Promise<Sample> {
+  const response = await fetch(file);
+  return analyse(await decoder.decodeAudioData(await response.arrayBuffer()));
+}
+
 /** Real recorded keystrokes, varied only slightly so they keep sounding like a real keyboard. */
 export class Sound {
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;
-  private samples: Sample[] = [];
+  private loaded = new Map<SoundPack, Promise<Loaded>>();
+  private current: Loaded | null = null;
+  private pack: SoundPack = "crisp";
   private lastIndex = -1;
   private volumeValue = 0.5;
 
   enabled = true;
 
-  async load(): Promise<void> {
+  /** Only the chosen pack is fetched; switching back later reuses what was decoded. */
+  async use(pack: SoundPack): Promise<void> {
+    this.pack = pack;
+    let loading = this.loaded.get(pack);
+    if (!loading) {
+      loading = this.fetchPack(pack);
+      this.loaded.set(pack, loading);
+    }
+    const result = await loading;
+    if (this.pack === pack) this.current = result;
+  }
+
+  private async fetchPack(pack: SoundPack): Promise<Loaded> {
     const decoder = new OfflineAudioContext(1, 1, 44100);
-    const files = Array.from({ length: SAMPLE_COUNT }, (_, i) => `sounds/keypress-${String(i + 1).padStart(3, "0")}.wav`);
-    const decoded = await Promise.all(
-      files.map(async (file) => {
-        const response = await fetch(file);
-        return decoder.decodeAudioData(await response.arrayBuffer());
-      }),
-    );
+    const { keys, space } = PACKS[pack];
+    const files = Array.from({ length: keys }, (_, i) => `sounds/${pack}/key-${String(i + 1).padStart(3, "0")}.wav`);
+    const [decoded, spaceSample] = await Promise.all([
+      Promise.all(files.map((file) => decode(decoder, file))),
+      space ? decode(decoder, `sounds/${pack}/space.wav`) : Promise.resolve(null),
+    ]);
     // the quietest takes are mostly room noise once normalised
-    this.samples = decoded.map(analyse).filter((sample) => sample.gain < TARGET_PEAK / MIN_PEAK);
+    return { keys: decoded.filter((sample) => sample.gain < TARGET_PEAK / MIN_PEAK), space: spaceSample };
   }
 
   /** Browsers only allow audio after a gesture, so this runs on the first keypress. */
@@ -72,23 +101,36 @@ export class Sound {
   }
 
   key(code: string): void {
-    if (!this.enabled || this.samples.length === 0) return;
+    const pack = this.current;
+    if (!this.enabled || !pack || pack.keys.length === 0) return;
     const ctx = this.ensure();
     if (!this.master) return;
-    let index = Math.floor(Math.random() * this.samples.length);
-    if (index === this.lastIndex) index = (index + 1) % this.samples.length;
-    this.lastIndex = index;
-    const sample = this.samples[index]!;
+    const isSpace = code === "Space";
+    let sample: Sample;
+    if (isSpace && pack.space) {
+      sample = pack.space;
+    } else {
+      let index = Math.floor(Math.random() * pack.keys.length);
+      if (index === this.lastIndex) index = (index + 1) % pack.keys.length;
+      this.lastIndex = index;
+      sample = pack.keys[index]!;
+    }
+    // without a recorded space bar, a slower take of a normal key stands in for the bigger key
+    const spaceShift = isSpace && !pack.space;
 
     const source = ctx.createBufferSource();
     source.buffer = sample.buffer;
-    const isSpace = code === "Space";
-    source.playbackRate.value = (isSpace ? 0.86 : 1) * (0.985 + Math.random() * 0.03);
+    source.playbackRate.value = (spaceShift ? 0.86 : 1) * (0.985 + Math.random() * 0.03);
     const pan = ctx.createStereoPanner();
     pan.pan.value = keyPan.get(code) ?? 0;
     const gain = ctx.createGain();
-    gain.gain.value = sample.gain * (0.85 + Math.random() * 0.15) * (isSpace ? 1.1 : 1);
+    gain.gain.value = sample.gain * (0.85 + Math.random() * 0.15) * (spaceShift ? 1.1 : 1);
     source.connect(pan).connect(gain).connect(this.master);
     source.start(0, sample.onset);
+  }
+
+  /** A single keystroke to audition a pack right after choosing it. */
+  preview(): void {
+    if (this.current) this.key("KeyG");
   }
 }

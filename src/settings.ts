@@ -1,4 +1,5 @@
 import { QUOTE_LENGTHS, type QuoteLength } from "./quotes";
+import { SOUND_PACKS, type SoundPack } from "./sound";
 import type { Language } from "./words";
 
 const KEY = "typesilk.settings";
@@ -39,6 +40,7 @@ export type Settings = {
   flowLine: boolean;
   ghost: boolean;
   sound: boolean;
+  soundPack: SoundPack;
   volume: number;
 };
 
@@ -64,6 +66,7 @@ export const DEFAULTS: Settings = {
   flowLine: true,
   ghost: true,
   sound: true,
+  soundPack: "crisp",
   volume: 0.5,
 };
 
@@ -72,6 +75,7 @@ export function loadSettings(): Settings {
     const stored = { ...DEFAULTS, ...JSON.parse(localStorage.getItem(KEY) ?? "{}") } as Settings;
     if (!THEMES.includes(stored.theme)) stored.theme = DEFAULTS.theme;
     if (!MODES.includes(stored.mode)) stored.mode = DEFAULTS.mode;
+    if (!SOUND_PACKS.includes(stored.soundPack)) stored.soundPack = DEFAULTS.soundPack;
     if (!QUOTE_LENGTHS.includes(stored.quoteLength)) stored.quoteLength = DEFAULTS.quoteLength;
     if (!LAYOUTS.includes(stored.layout)) stored.layout = DEFAULTS.layout;
     if (!FONTS.includes(stored.font)) stored.font = DEFAULTS.font;
