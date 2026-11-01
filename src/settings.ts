@@ -5,8 +5,15 @@ const KEY = "typesilk.settings";
 export type Mode = "time" | "words" | "perfect" | "endless" | "train";
 export const THEMES = ["noir", "paper", "forest", "klein"] as const;
 export type Theme = (typeof THEMES)[number];
-export type Layout = "tape" | "lines";
+export const LAYOUTS = ["tape", "lines", "classic"] as const;
+export type Layout = (typeof LAYOUTS)[number];
 export type TextSize = "s" | "m" | "l";
+export const FONTS = ["serif", "mono"] as const;
+export type Font = (typeof FONTS)[number];
+export const CARETS = ["line", "block", "underline"] as const;
+export type CaretStyle = (typeof CARETS)[number];
+export const CARET_MOTIONS = ["off", "snappy", "smooth"] as const;
+export type CaretMotion = (typeof CARET_MOTIONS)[number];
 
 export type Settings = {
   mode: Mode;
@@ -18,6 +25,11 @@ export type Settings = {
   theme: Theme;
   layout: Layout;
   textSize: TextSize;
+  font: Font;
+  caret: CaretStyle;
+  caretMotion: CaretMotion;
+  liveStats: boolean;
+  focusMode: boolean;
   letterFx: boolean;
   flowLine: boolean;
   ghost: boolean;
@@ -35,6 +47,11 @@ export const DEFAULTS: Settings = {
   theme: "noir",
   layout: "tape",
   textSize: "m",
+  font: "serif",
+  caret: "line",
+  caretMotion: "snappy",
+  liveStats: false,
+  focusMode: true,
   letterFx: true,
   flowLine: true,
   ghost: true,
@@ -46,6 +63,10 @@ export function loadSettings(): Settings {
   try {
     const stored = { ...DEFAULTS, ...JSON.parse(localStorage.getItem(KEY) ?? "{}") } as Settings;
     if (!THEMES.includes(stored.theme)) stored.theme = DEFAULTS.theme;
+    if (!LAYOUTS.includes(stored.layout)) stored.layout = DEFAULTS.layout;
+    if (!FONTS.includes(stored.font)) stored.font = DEFAULTS.font;
+    if (!CARETS.includes(stored.caret)) stored.caret = DEFAULTS.caret;
+    if (!CARET_MOTIONS.includes(stored.caretMotion)) stored.caretMotion = DEFAULTS.caretMotion;
     return stored;
   } catch {
     return { ...DEFAULTS };
