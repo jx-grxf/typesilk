@@ -3,13 +3,45 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="A typing test that glides. Spring-driven type, real keyboard sound and a coach for your weak keys." />
+    <title>typesilk: a typing test that glides</title>
+    <meta name="description" content="Test your typing speed in English, German, Spanish or French. Words glide under a still caret, keys play recorded sounds, and a coach trains your weakest keys." />
+    <link rel="canonical" href="https://typesilk.com/" />
     <meta name="theme-color" content="#0d0c0b" />
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230d0c0b'/%3E%3Crect x='14.5' y='5' width='3' height='22' fill='%23ff4f1f'/%3E%3C/svg%3E" />
-    <title>typesilk</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-48.png" sizes="48x48" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="typesilk" />
+    <meta property="og:title" content="typesilk: a typing test that glides" />
+    <meta property="og:description" content="Test your typing speed in four languages. Words glide under a still caret, keys play recorded sounds, and a coach trains your weakest keys." />
+    <meta property="og:url" content="https://typesilk.com/" />
+    <meta property="og:image" content="https://typesilk.com/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="The word typesilk in a large serif with an orange caret" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "typesilk",
+        "url": "https://typesilk.com/",
+        "description": "A typing test for the browser with spring-driven type, recorded keystrokes and a coach for your weakest keys.",
+        "applicationCategory": "EducationalApplication",
+        "operatingSystem": "Any",
+        "browserRequirements": "Requires JavaScript and a physical keyboard",
+        "inLanguage": ["en", "de", "es", "fr"],
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "image": "https://typesilk.com/og.png",
+        "license": "https://opensource.org/licenses/MIT",
+        "author": { "@type": "Person", "name": "Johannes Grof", "url": "https://johannesgrof.me" }
+      }
+    </script>
   </head>
   <body>
     <header class="chrome">
+      <h1 class="visually-hidden">typesilk typing test</h1>
       <a class="logo" id="home-link" href="/">typesilk</a>
       <div class="meta">
         <button id="daily-link" type="button"></button>
@@ -42,6 +74,7 @@
         <p class="touch-title">typesilk needs a keyboard.</p>
         <p class="touch-text">Connect one to your phone or tablet and press any key, or open this page on a computer.</p>
       </section>
+      <noscript><p>typesilk is a typing test that runs in your browser and needs JavaScript. <a href="/about">Read what it does.</a></p></noscript>
     </main>
 
     <footer class="chrome">
@@ -50,7 +83,7 @@
       <nav id="controls-right" aria-label="language"></nav>
     </footer>
     <div class="colophon chrome">
-      <span><a href="https://johannesgrof.me">Johannes Grof</a> &middot; <a href="https://github.com/jx-grxf/typesilk">github</a></span>
+      <span><a href="https://johannesgrof.me">Johannes Grof</a> &middot; <a href="https://github.com/jx-grxf/typesilk">github</a> &middot; <a href="/about">about</a> &middot; <a href="/de" hreflang="de" lang="de">deutsch</a></span>
       <span class="hint-short"><kbd>tab</kbd> restart &nbsp; <kbd class="palette-key">ctrl k</kbd> commands</span>
       <a id="version" href="https://github.com/jx-grxf/typesilk/releases"></a>
     </div>

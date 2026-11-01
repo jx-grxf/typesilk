@@ -1,0 +1,17 @@
+# typesilk
+
+> A free typing test for the browser. The words glide under a still caret on a spring, keystrokes are recorded sounds, and a coach builds runs around your weakest keys. It needs a physical keyboard and no account.
+
+The app is at the root URL. The text pages below describe it in English and German. The source code is MIT licensed. A longer version of this file is at https://typesilk.com/llms-full.txt.
+
+## Pages
+
+- [Typing test](https://typesilk.com/): The test itself. Runs in the browser and stores results there.
+- [About typesilk](https://typesilk.com/about): Modes, results, languages and common questions.
+- [Tipptest auf Deutsch](https://typesilk.com/de): The same information in German, with a link that starts the test with German words.
+
+## Project
+
+- [Source code](https://github.com/jx-grxf/typesilk): MIT licensed, TypeScript and Vite with no UI framework.
+- [Releases](https://github.com/jx-grxf/typesilk/releases): Version history.
+- [Author](https://johannesgrof.me): Johannes Grof.

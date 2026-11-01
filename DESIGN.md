@@ -71,6 +71,7 @@ physics. `prefers-reduced-motion` turns movement off.
 | Command palette | `src/palette.ts` | the one overlay with a surface; highlight slides between rows |
 | Key heatmap | `src/heatmap.ts` | keyboard in the language's layout, accent strength = miss rate |
 | Activity grid | `src/profile-view.ts` | 53 weeks × 7 days, four accent steps from the year's own quartiles |
+| Text page | `src/page.css` | `/about`, `/de`, the 404: one column on hairlines, no script, follows the saved theme |
 | Result card | `src/card.ts` | 1200 × 630 canvas drawn from the live tokens |
 | Badge medal | `src/badges.ts` | round medal with a seal's edge: hairline ring (common), double ring (rare), scalloped accent edge (epic), filled seal with engraved rim (legendary); locked ones fade back and show progress as an accent arc |
 

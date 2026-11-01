@@ -97,7 +97,7 @@ export async function renderCard(data: CardData): Promise<Blob> {
 
   ctx.fillStyle = t.dim;
   ctx.font = `400 20px ${t.face}`;
-  ctx.fillText("typesilk.johannesgrof.me", PAD, H - PAD + 20);
+  ctx.fillText("typesilk.com", PAD, H - PAD + 20);
 
   return new Promise((resolve, reject) => canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error("no image"))), "image/png"));
 }

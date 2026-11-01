@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="de" data-theme="noir">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tipptest online: Schreibgeschwindigkeit messen | typesilk</title>
+    <meta name="description" content="Miss deine Schreibgeschwindigkeit im Browser mit den häufigsten deutschen Wörtern und übe gezielt die Tasten, bei denen du dich am meisten vertippst. Ohne Konto." />
+    <link rel="canonical" href="https://typesilk.com/de" />
+    <link rel="alternate" hreflang="en" href="https://typesilk.com/about" />
+    <link rel="alternate" hreflang="de" href="https://typesilk.com/de" />
+    <link rel="alternate" hreflang="x-default" href="https://typesilk.com/about" />
+    <meta name="theme-color" content="#0d0c0b" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-48.png" sizes="48x48" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="typesilk" />
+    <meta property="og:locale" content="de_DE" />
+    <meta property="og:title" content="Tipptest online: Schreibgeschwindigkeit messen" />
+    <meta property="og:description" content="Miss deine Schreibgeschwindigkeit mit deutschen Wörtern und übe deine schwächsten Tasten. Ohne Konto." />
+    <meta property="og:url" content="https://typesilk.com/de" />
+    <meta property="og:image" content="https://typesilk.com/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Das Wort typesilk in einer großen Serifenschrift mit einem orangen Cursor" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script>
+      try {
+        const { theme } = JSON.parse(localStorage.getItem("typesilk.settings") ?? "{}");
+        if (["noir", "paper", "forest", "klein"].includes(theme)) document.documentElement.dataset.theme = theme;
+      } catch {}
+    </script>
+    <link rel="stylesheet" href="/src/page.css" />
+  </head>
+  <body>
+    <header class="page-head">
+      <a class="logo" href="/?lang=german">typesilk</a>
+      <nav aria-label="Sprache"><a href="/about" hreflang="en" lang="en">English</a></nav>
+    </header>
+    <main class="page-body">
+      <h1>Tipptest auf Deutsch</h1>
+      <p class="lead">typesilk misst deine Schreibgeschwindigkeit und Genauigkeit im Browser. Du tippst die häufigsten deutschen Wörter, die Auswertung zeigt eine QWERTZ-Tastatur mit Umlauten und ß.</p>
+      <a class="start" href="/?lang=german">Tipptest starten</a>
+
+      <section>
+        <h2>Modi</h2>
+        <dl class="modes">
+          <div><dt>time</dt><dd>15, 30 oder 60 Sekunden</dd></div>
+          <div><dt>words</dt><dd>25, 50 oder 100 Wörter</dd></div>
+          <div><dt>quote</dt><dd>Passagen aus gemeinfreien Büchern und Gedichten</dd></div>
+          <div><dt>zen</dt><dd>Ganz ohne Vorlage; tippe, was du willst, <kbd>Umschalt</kbd> + <kbd>Enter</kbd> beendet den Lauf</dd></div>
+          <div><dt>custom</dt><dd>Eigenen Text einfügen, auf Wunsch gemischt</dd></div>
+          <div><dt>perfect</dt><dd>Ein Fehler beendet den Lauf</dd></div>
+          <div><dt>endless</dt><dd>Läuft, bis du <kbd>Esc</kbd> drückst</dd></div>
+          <div><dt>train</dt><dd>Wörter rund um deine schwächsten Tasten</dd></div>
+          <div><dt>daily</dt><dd>Heute für alle dieselben 40 Wörter; es zählt dein erster Versuch</dd></div>
+        </dl>
+      </section>
+
+      <section>
+        <h2>Nach dem Test</h2>
+        <p>Du siehst deine Wörter pro Minute, die Genauigkeit und einen Geschwindigkeitsverlauf. Aus jedem Anschlag entsteht eine Statistik pro Buchstabe. typesilk nennt dir so deine schwächsten Tasten und markiert sie auf der Tastatur. Mit <kbd>t</kbd> startest du einen Lauf, der genau diese Tasten übt.</p>
+        <p>Dein bester Lauf pro Einstellung kommt als Geist-Cursor zurück, gegen den du antreten kannst. Im <a href="/me">Profil</a> stehen deine Serie, ein Jahr Aktivität, deine Rekorde und 26 Abzeichen.</p>
+      </section>
+
+      <section>
+        <h2>Wortlisten</h2>
+        <p>Auf Deutsch reicht die Auswahl von den 200 häufigsten bis zu 10.000 Wörtern, auf Wunsch mit Satzzeichen und Zahlen. Englisch, Spanisch und Französisch gibt es auch.</p>
+      </section>
+
+      <section>
+        <h2>Fragen</h2>
+        <h3>Wie wird die Schreibgeschwindigkeit berechnet?</h3>
+        <p>typesilk zeigt Wörter pro Minute (WPM, „words per minute“). Ein Wort zählt als fünf richtig getippte Zeichen. 60 WPM entsprechen also 300 richtigen Anschlägen pro Minute.</p>
+        <h3>Brauche ich ein Konto?</h3>
+        <p>Nein. Deine Ergebnisse bleiben in deinem Browser. Löschst du seine Daten, sind sie weg.</p>
+        <h3>Geht das auch am Handy oder Tablet?</h3>
+        <p>Nur mit angeschlossener Tastatur. Ohne Tastatur zeigt die Seite einen Hinweis.</p>
+        <h3>Kostet das etwas?</h3>
+        <p>Nein. Der <a href="https://github.com/jx-grxf/typesilk">Quellcode</a> liegt unter der MIT-Lizenz auf GitHub.</p>
+      </section>
+    </main>
+    <footer class="page-foot">
+      <span><a href="https://johannesgrof.me/de/">Johannes Grof</a></span>
+      <nav aria-label="Projekt"><a href="https://github.com/jx-grxf/typesilk">GitHub</a></nav>
+    </footer>
+  </body>
+</html>
