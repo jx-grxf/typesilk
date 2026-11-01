@@ -1,4 +1,4 @@
-import { THEMES, type Settings } from "./settings";
+import { GOALS, THEMES, type Settings } from "./settings";
 import { SOUND_PACKS } from "./sound";
 import { WORD_LIST_SIZES } from "./words";
 
@@ -159,6 +159,12 @@ export function buildPanel(
       ],
       s.caretMotion,
       (caretMotion) => change({ caretMotion }),
+    )),
+    group("Every day"),
+    row("Daily goal", "words per day, shown next to your streak", seg(
+      GOALS.map((value) => ({ label: value === 0 ? "off" : String(value), value: value as number })),
+      s.dailyGoal,
+      (dailyGoal) => change({ dailyGoal }),
     )),
     group("While typing"),
     onOff("Focus", "everything but the text fades out", "focusMode"),

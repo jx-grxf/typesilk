@@ -84,6 +84,9 @@ Platform: the same Cloudflare worker that serves the site, with routes under
 
 - **Leaderboards**: daily and all-time per setup (mode, length, language). Best
   run per device per board.
+- **Daily leaderboard**: the daily already uses a seeded generator
+  (`src/daily.ts`), so the server builds the same words from the number and
+  language. Only the first replayed try per account and day ranks.
 - **Activity graph on public profiles**: words per day like the local `/me`
   page, but counted only from runs the server replayed. Zen never counts, since
   it has no target text. Local `days` are not uploaded as activity.

@@ -47,7 +47,21 @@ body.focus:not(.pointer-awake) .chrome { opacity: 0; pointer-events: none; }
 }
 
 .meta { display: flex; align-items: baseline; gap: 28px; color: var(--muted); }
-#streak:empty { display: none; }
+#streak { display: inline-flex; align-items: baseline; gap: 6px; }
+#streak[hidden], #goal[hidden] { display: none; }
+#streak b { font-weight: 400; font-variant-numeric: tabular-nums; }
+.flame { width: 13px; height: 16px; align-self: center; fill: none; stroke: var(--muted); stroke-width: 1.4; stroke-linejoin: round; transition: fill var(--fast) ease, stroke var(--fast) ease; }
+/* lit once today's run is in; until then it waits to be kept alive */
+#streak.lit .flame { fill: var(--accent); stroke: var(--accent); }
+#streak.flare .flame { animation: flare 900ms var(--spring, ease); transform-origin: 50% 90%; }
+@keyframes flare { 30% { transform: scale(1.45) rotate(-6deg); } }
+#goal { display: inline-flex; align-items: center; }
+.goal-track { width: 44px; height: 1px; background: var(--rule); }
+.goal-fill { display: block; height: 100%; background: var(--ink); transform-origin: left; transform: scaleX(0); transition: transform 900ms var(--spring, ease), background-color var(--fast) ease; }
+#goal.done .goal-fill { background: var(--accent); }
+#daily-link { color: var(--muted); font-style: italic; transition: color var(--fast) ease; }
+#daily-link:hover { color: var(--ink); }
+#daily-link.open::after { content: ""; display: inline-block; width: 5px; height: 5px; margin-left: 7px; border-radius: 50%; background: var(--accent); vertical-align: 0.2em; }
 #level { display: inline-flex; align-items: center; gap: 10px; }
 #level b { font-weight: 400; }
 .level-track { width: 64px; height: 1px; background: var(--rule); }
@@ -82,7 +96,7 @@ footer nav { display: flex; align-items: baseline; gap: 26px; flex-wrap: wrap; }
 .options[data-mode="train"] .only-count,
 .options[data-mode="quote"] .only-quote { display: inline-flex; }
 .options[data-mode="custom"] .only-custom { display: inline; }
-.options:is([data-mode="train"], [data-mode="quote"], [data-mode="zen"], [data-mode="custom"]) .extras { display: none; }
+.options:is([data-mode="train"], [data-mode="quote"], [data-mode="zen"], [data-mode="custom"], [data-mode="daily"]) .extras { display: none; }
 .extras { display: inline-flex; gap: 14px; }
 
 .seg {
