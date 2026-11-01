@@ -1,5 +1,8 @@
 import { Spring } from "./spring";
+import { renderHeatmap } from "./heatmap";
 import { levelOf, levelProgress, type RunReward } from "./profile";
+import type { KeyStats } from "./training";
+import type { Language } from "./words";
 
 export type ResultData = {
   wpm: number;
@@ -17,6 +20,8 @@ export type ResultData = {
   streakDays: number;
   /** Author and work of a quote. */
   source: string | null;
+  keys: KeyStats;
+  language: Language;
 };
 
 const SVG = "http://www.w3.org/2000/svg";
@@ -207,7 +212,7 @@ export function renderResults(root: HTMLElement, data: ResultData): void {
       point: (i) => `second ${i + 1}`,
     }));
   }
-  parts.push(coach);
+  parts.push(coach, renderHeatmap(data.keys, data.language));
   if (data.progress.length >= 3) {
     parts.push(buildChart(data.progress, {
       title: "Your progress in this setup",

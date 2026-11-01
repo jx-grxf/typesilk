@@ -15,7 +15,7 @@ import { springEasing } from "./spring";
 import { Stage } from "./stage";
 import { recordKey as recordKeyStat, trend, weakKeys } from "./training";
 import { buildPanel, segment, toggleWord, type Segment } from "./ui";
-import { createTrainingSource, createWordSource, LANGUAGES, type Language } from "./words";
+import { createTrainingSource, createWordSource, LANGUAGES, WORD_LIST_SIZES, type Language } from "./words";
 
 const CHUNK = 50;
 const REFILL_AT = 30;
@@ -23,7 +23,7 @@ const PROGRESS_RUNS = 40;
 const MIN_RATE_MS = 1000; // a run ended after one key would otherwise show thousands of wpm
 const TEST_KEYS: (keyof Settings)[] = [
   "mode", "time", "count", "quoteLength", "customText", "customShuffle",
-  "language", "punctuation", "numbers", "textSize", "layout", "font",
+  "language", "wordList", "punctuation", "numbers", "textSize", "layout", "font",
 ];
 const FALLBACK_TEXT = "Paste anything you like to practise here, a letter, notes or a page from a book.";
 const FONT_FAMILIES: Record<Settings["font"], string> = { serif: "Newsreader Variable", mono: "JetBrains Mono Variable" };
@@ -111,8 +111,8 @@ function newTest(): void {
     words = customWords(settings.customText.trim() || FALLBACK_TEXT, settings.customShuffle);
   } else if (mode !== "zen") {
     nextWords = mode === "train"
-      ? createTrainingSource(settings.language, trainingKeys)
-      : createWordSource(settings.language, { punctuation: settings.punctuation, numbers: settings.numbers });
+      ? createTrainingSource(settings.language, trainingKeys, Math.random, settings.wordList)
+      : createWordSource(settings.language, { punctuation: settings.punctuation, numbers: settings.numbers, size: settings.wordList });
     const counted = mode === "words" || mode === "perfect" || mode === "train";
     words = nextWords(counted ? settings.count : CHUNK * 2);
   }
@@ -253,6 +253,8 @@ function finish(durationMs: number, failedAtWord: number | null = null): void {
     progress: profile.history.filter((run) => run.key === key).slice(-PROGRESS_RUNS).map((run) => run.wpm),
     streakDays: profile.streakDays,
     source: settings.mode === "quote" && currentQuote ? `${currentQuote.author}, ${currentQuote.work}` : null,
+    keys: profile.keys,
+    language: settings.language,
   });
   document.body.classList.add("show-results");
   setEscLabel();
@@ -399,6 +401,7 @@ function commands(): Command[] {
   list.push({ group: "custom text", label: "edit", run: () => openCustom() });
   toggle("custom shuffle", "customShuffle");
   pick("language", "language", Object.keys(LANGUAGES) as Language[]);
+  pick("word list", "wordList", WORD_LIST_SIZES, (v) => (v === "200" ? "200 most common" : "1000 common"));
   toggle("punctuation", "punctuation");
   toggle("numbers", "numbers");
   for (const theme of THEMES) {

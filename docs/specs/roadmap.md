@@ -60,17 +60,25 @@ A Cloudflare worker with static assets (`wrangler.jsonc`), custom domain
 production on `main`, a preview URL per PR. Open Graph image from
 `docs/typing.png`.
 
-## Phase 2: shared stats without accounts
+## Phase 2: shared stats, optional GitHub login
 
 Platform: the same Cloudflare worker that serves the site, with routes under
-`/api` and a D1 database. No accounts for now.
+`/api` and a D1 database.
 
 ### Identity
 
-- First submit creates a random device id (`crypto.randomUUID`) plus a secret
-  token, both in `localStorage`. The server stores only a hash of the token.
-- Optional display name, checked against length, charset and a word list.
-  Without a name, runs count for global stats but not for named leaderboards.
+- Typing never needs an account. Anonymous runs get a random device id
+  (`crypto.randomUUID`) plus a secret token in `localStorage`; the server stores
+  only a hash of the token. Anonymous runs count for the global `/stats`.
+- **Sign in with GitHub** (decided 2026-11-01, GitHub only for now): an OAuth app,
+  `/api/auth/github` redirects, the callback exchanges the code with the client
+  secret (a worker secret), reads id, login and avatar, and sets an HttpOnly,
+  Secure, SameSite=Lax session cookie backed by a sessions table in D1.
+- **Leaderboards and public profiles need a login.** No free-text names, so no
+  name moderation; banning a cheater bans the GitHub id.
+- First login takes over the local data once: level, streak, records and key
+  stats. Records that were not replayed on the server show on the profile but
+  never on a leaderboard.
 
 ### Features
 
