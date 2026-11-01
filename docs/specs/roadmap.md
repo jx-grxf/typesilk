@@ -55,13 +55,15 @@ the selected one is fetched.
 
 ### Deploy
 
-Cloudflare Pages, project `typesilk`, auto-deploy from `main`, custom domain
-`typesilk.johannesgrof.me`, Open Graph image from `docs/typing.png`.
+A Cloudflare worker with static assets (`wrangler.jsonc`), custom domain
+`typesilk.johannesgrof.me`. Builds come from Cloudflare's Git integration:
+production on `main`, a preview URL per PR. Open Graph image from
+`docs/typing.png`.
 
 ## Phase 2: shared stats without accounts
 
-Platform: Cloudflare Workers + D1 on the same Pages project (Pages Functions or a
-separate Worker under `/api`). No accounts for now.
+Platform: the same Cloudflare worker that serves the site, with routes under
+`/api` and a D1 database. No accounts for now.
 
 ### Identity
 
