@@ -8,7 +8,8 @@ import { FlowMeter } from "./flow";
 import { applyRun, clearProfile, emptyProfile, levelOf, levelProgress, loadProfile, localDay, saveProfile } from "./profile";
 import { renderResults } from "./results";
 import { type Command, Palette } from "./palette";
-import { CARET_MOTIONS, CARETS, FONTS, LAYOUTS, loadSettings, recordKey, saveSettings, THEMES, type Mode, type Settings } from "./settings";
+import { customWords, pickQuote, QUOTE_LENGTHS, type Quote } from "./quotes";
+import { CARET_MOTIONS, CARETS, FONTS, LAYOUTS, loadSettings, MODES, recordKey, saveSettings, THEMES, type Mode, type Settings } from "./settings";
 import { Sound } from "./sound";
 import { springEasing } from "./spring";
 import { Stage } from "./stage";
@@ -20,7 +21,11 @@ const CHUNK = 50;
 const REFILL_AT = 30;
 const PROGRESS_RUNS = 40;
 const MIN_RATE_MS = 1000; // a run ended after one key would otherwise show thousands of wpm
-const TEST_KEYS: (keyof Settings)[] = ["mode", "time", "count", "language", "punctuation", "numbers", "textSize", "layout", "font"];
+const TEST_KEYS: (keyof Settings)[] = [
+  "mode", "time", "count", "quoteLength", "customText", "customShuffle",
+  "language", "punctuation", "numbers", "textSize", "layout", "font",
+];
+const FALLBACK_TEXT = "Paste anything you like to practise here, a letter, notes or a page from a book.";
 const FONT_FAMILIES: Record<Settings["font"], string> = { serif: "Newsreader Variable", mono: "JetBrains Mono Variable" };
 
 const $ = <T extends HTMLElement>(id: string): T => document.getElementById(id) as T;
@@ -59,6 +64,8 @@ let trainingKeys: string[] = [];
 let ghostSeries: number[] | null = null;
 let hudText = "";
 let liveText = "";
+let fixedLength = 0;
+let currentQuote: Quote | null = null;
 
 let segments: Segment[] = [];
 let timeSeg: Segment;
@@ -88,27 +95,34 @@ function frame(now: number): void {
 
 // --- test lifecycle
 
-function modeLength(): number {
-  return settings.mode === "words" || settings.mode === "perfect" || settings.mode === "train"
-    ? settings.count
-    : 0;
-}
-
 function isFixedLength(): boolean {
-  return modeLength() > 0;
+  return fixedLength > 0;
 }
 
 function newTest(): void {
-  trainingKeys = settings.mode === "train" ? weakKeys(profile.keys, 5) : [];
-  nextWords =
-    settings.mode === "train"
+  const mode = settings.mode;
+  trainingKeys = mode === "train" ? weakKeys(profile.keys, 5) : [];
+  nextWords = () => [];
+  let words: string[] = [];
+  if (mode === "quote") {
+    currentQuote = pickQuote(settings.language, settings.quoteLength, currentQuote);
+    words = currentQuote.text.split(" ");
+  } else if (mode === "custom") {
+    words = customWords(settings.customText.trim() || FALLBACK_TEXT, settings.customShuffle);
+  } else if (mode !== "zen") {
+    nextWords = mode === "train"
       ? createTrainingSource(settings.language, trainingKeys)
       : createWordSource(settings.language, { punctuation: settings.punctuation, numbers: settings.numbers });
-  const words = nextWords(isFixedLength() ? modeLength() : CHUNK * 2);
-  engine = new TypingEngine(words);
+    const counted = mode === "words" || mode === "perfect" || mode === "train";
+    words = nextWords(counted ? settings.count : CHUNK * 2);
+  }
+  fixedLength = mode === "words" || mode === "perfect" || mode === "train" || mode === "quote" || mode === "custom"
+    ? words.length
+    : 0;
+  engine = new TypingEngine(words, mode === "zen");
   samples = [];
   flow.reset();
-  stage.reset(words);
+  stage.reset(engine.words);
   ghostSeries = settings.ghost && !prefersReducedMotion ? (profile.bests[recordKey(settings)]?.series ?? null) : null;
   stage.ghostVisible = ghostSeries !== null;
   document.body.classList.remove("focus", "show-results");
@@ -174,8 +188,8 @@ function renderHud(): void {
   const ms = state === "running" ? elapsed(performance.now()) : 0;
   let text: string;
   if (settings.mode === "time") text = String(Math.max(0, Math.ceil(settings.time - ms / 1000)));
-  else if (settings.mode === "endless") text = `${Math.floor(ms / 1000)}s`;
-  else text = `${Math.min(engine.wordIndex, modeLength())}/${modeLength()}`;
+  else if (!isFixedLength()) text = `${Math.floor(ms / 1000)}s`;
+  else text = `${Math.min(engine.wordIndex, fixedLength)}/${fixedLength}`;
   if (settings.mode === "train" && state !== "running") {
     text = trainingKeys.length > 0 ? `training ${trainingKeys.join(" ")}` : "no weak keys yet";
   }
@@ -194,8 +208,8 @@ function renderHud(): void {
 }
 
 function setEscLabel(): void {
-  $("esc-label").textContent =
-    state === "running" && settings.mode === "endless" ? "finish" : state === "running" ? "stop" : "settings";
+  const open = settings.mode === "endless" || settings.mode === "zen";
+  $("esc-label").textContent = state === "running" && open ? "finish" : state === "running" ? "stop" : "settings";
 }
 
 function finish(durationMs: number, failedAtWord: number | null = null): void {
@@ -217,7 +231,7 @@ function finish(durationMs: number, failedAtWord: number | null = null): void {
       accuracy: engine.accuracy,
       chars,
       series: samples,
-      countsForRecord: !failed && durationMs >= 5000,
+      countsForRecord: !failed && durationMs >= 5000 && settings.mode !== "zen" && settings.mode !== "custom",
     },
     localDay(),
   );
@@ -233,11 +247,12 @@ function finish(durationMs: number, failedAtWord: number | null = null): void {
     series,
     reward,
     xp: profile.xp,
-    failedAt: failed ? { word: failedAtWord + 1, total: modeLength() } : null,
+    failedAt: failed ? { word: failedAtWord + 1, total: fixedLength } : null,
     weakKeys: weakKeys(profile.keys),
     trend: trend(profile.history, key),
     progress: profile.history.filter((run) => run.key === key).slice(-PROGRESS_RUNS).map((run) => run.wpm),
     streakDays: profile.streakDays,
+    source: settings.mode === "quote" && currentQuote ? `${currentQuote.author}, ${currentQuote.work}` : null,
   });
   document.body.classList.add("show-results");
   setEscLabel();
@@ -272,7 +287,8 @@ function onChar(ch: string, code: string, now: number): void {
   sound.key(code);
   stage.press(!result.correct);
 
-  if (result.extra) stage.addExtra(result.wordIndex, ch);
+  if (engine.free) stage.addTyped(result.wordIndex, ch);
+  else if (result.extra) stage.addExtra(result.wordIndex, ch);
   else if (result.correct) stage.markCorrect(result.wordIndex, result.charIndex);
   else stage.markWrong(result.wordIndex, result.charIndex);
 
@@ -310,7 +326,9 @@ function onSpace(code: string, now: number): void {
     finish(elapsed(now));
     return;
   }
-  if (!isFixedLength() && engine.words.length - engine.wordIndex < REFILL_AT) {
+  if (engine.free) {
+    stage.append([""]);
+  } else if (!isFixedLength() && engine.words.length - engine.wordIndex < REFILL_AT) {
     const words = nextWords(CHUNK);
     engine.extend(words);
     stage.append(words);
@@ -355,7 +373,6 @@ function setPanel(open: boolean): void {
   if (open) requestAnimationFrame(() => segments.forEach((seg) => seg.sync()));
 }
 
-const MODES: Mode[] = ["time", "words", "perfect", "endless", "train"];
 const SIZES: { label: string; value: Settings["textSize"] }[] = [
   { label: "small", value: "s" },
   { label: "medium", value: "m" },
@@ -378,6 +395,9 @@ function commands(): Command[] {
   pick("mode", "mode", MODES);
   pick("time", "time", [15, 30, 60], (v) => `${v} seconds`);
   pick("words", "count", [25, 50, 100], (v) => `${v} words`);
+  pick("quote length", "quoteLength", QUOTE_LENGTHS);
+  list.push({ group: "custom text", label: "edit", run: () => openCustom() });
+  toggle("custom shuffle", "customShuffle");
   pick("language", "language", Object.keys(LANGUAGES) as Language[]);
   toggle("punctuation", "punctuation");
   toggle("numbers", "numbers");
@@ -407,6 +427,61 @@ function commands(): Command[] {
 
 const palette = new Palette($("palette"), $<HTMLInputElement>("palette-input"), $("palette-list"), $("palette-hl"), commands, () => applySettings());
 
+const customEl = $("custom");
+const customText = $<HTMLTextAreaElement>("custom-text");
+const customShuffle = $("custom-shuffle");
+
+function customOpen(): boolean {
+  return document.body.classList.contains("custom-open");
+}
+
+function updateCustomCount(): void {
+  const count = customWords(customText.value, false).length;
+  $("custom-count").textContent = count === 1 ? "1 word" : `${count} words`;
+}
+
+function openCustom(): void {
+  if (panelOpen()) setPanel(false);
+  if (state === "running") void restart();
+  customText.value = settings.customText;
+  customShuffle.setAttribute("aria-pressed", String(settings.customShuffle));
+  updateCustomCount();
+  document.body.classList.add("custom-open");
+  customEl.inert = false;
+  customText.focus();
+}
+
+function closeCustom(): void {
+  document.body.classList.remove("custom-open");
+  customEl.inert = true;
+  customText.blur();
+}
+
+function startCustom(): void {
+  closeCustom();
+  change({
+    mode: "custom",
+    customText: customText.value.trim(),
+    customShuffle: customShuffle.getAttribute("aria-pressed") === "true",
+  });
+}
+
+customText.addEventListener("input", updateCustomCount);
+customText.addEventListener("keydown", (event) => {
+  event.stopPropagation();
+  if (event.key === "Escape") closeCustom();
+  if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
+    event.preventDefault();
+    startCustom();
+  }
+});
+customShuffle.addEventListener("click", () => {
+  customShuffle.setAttribute("aria-pressed", String(customShuffle.getAttribute("aria-pressed") !== "true"));
+  customText.focus();
+});
+$("custom-cancel").addEventListener("click", closeCustom);
+$("custom-start").addEventListener("click", startCustom);
+
 function openPalette(): void {
   if (panelOpen()) setPanel(false);
   // a timed run would keep counting behind the palette
@@ -416,7 +491,7 @@ function openPalette(): void {
 
 window.addEventListener("keydown", (event) => {
   if (event.isComposing) return;
-  if (palette.isOpen) return;
+  if (palette.isOpen || customOpen()) return;
 
   const key = event.key.toLowerCase();
   const mod = event.metaKey || event.ctrlKey;
@@ -439,7 +514,7 @@ window.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
     event.preventDefault();
     if (state === "running") {
-      if (settings.mode === "endless") finish(elapsed(event.timeStamp));
+      if (settings.mode === "endless" || settings.mode === "zen") finish(elapsed(event.timeStamp));
       else void restart();
     } else {
       setPanel(true);
@@ -452,6 +527,12 @@ window.addEventListener("keydown", (event) => {
     return;
   }
   if (state === "busy") return;
+
+  if (event.key === "Enter" && event.shiftKey && settings.mode === "zen" && state === "running") {
+    event.preventDefault();
+    finish(elapsed(event.timeStamp));
+    return;
+  }
 
   const altGraph = event.getModifierState("AltGraph");
   if (event.key === "Backspace") {
@@ -498,6 +579,7 @@ function applySettings(): void {
 }
 
 function change(patch: Partial<Settings>): void {
+  if (patch.mode === "custom" && settings.customText.trim() === "" && !("customText" in patch)) openCustom();
   Object.assign(settings, patch);
   saveSettings(settings);
   applySettings();
@@ -519,18 +601,21 @@ function renderMeta(): void {
 }
 
 function buildControls(): void {
-  const modes: { label: string; value: Mode }[] = [
-    { label: "time", value: "time" },
-    { label: "words", value: "words" },
-    { label: "perfect", value: "perfect" },
-    { label: "endless", value: "endless" },
-    { label: "train", value: "train" },
-  ];
-  const modeSeg = segment(modes, settings.mode, (mode) => change({ mode }));
+  const modeSeg = segment(MODES.map((value) => ({ label: value, value })), settings.mode, (mode: Mode) => change({ mode }));
   timeSeg = segment([15, 30, 60].map((value) => ({ label: String(value), value })), settings.time, (time) => change({ time }));
   countSeg = segment([25, 50, 100].map((value) => ({ label: String(value), value })), settings.count, (count) => change({ count }));
+  const quoteSeg = segment(QUOTE_LENGTHS.map((value) => ({ label: value, value })), settings.quoteLength, (quoteLength) => change({ quoteLength }));
   timeSeg.root.classList.add("only-time");
   countSeg.root.classList.add("only-count");
+  quoteSeg.root.classList.add("only-quote");
+  const customEdit = document.createElement("button");
+  customEdit.type = "button";
+  customEdit.className = "toggle-word only-custom";
+  customEdit.textContent = "edit text";
+  customEdit.addEventListener("click", () => {
+    customEdit.blur();
+    openCustom();
+  });
   const languageSeg = segment(
     (Object.keys(LANGUAGES) as Language[]).map((value) => ({ label: value, value })),
     settings.language,
@@ -545,10 +630,10 @@ function buildControls(): void {
     toggleWord("punctuation", settings.punctuation, (punctuation) => change({ punctuation })),
     toggleWord("numbers", settings.numbers, (numbers) => change({ numbers })),
   );
-  optionsWrap.append(timeSeg.root, countSeg.root, extras);
+  optionsWrap.append(timeSeg.root, countSeg.root, quoteSeg.root, customEdit, extras);
   $("controls-left").append(modeSeg.root, optionsWrap);
   $("controls-right").append(languageSeg.root);
-  segments = [modeSeg, timeSeg, countSeg, languageSeg];
+  segments = [modeSeg, timeSeg, countSeg, quoteSeg, languageSeg];
 }
 
 function resetProfile(): void {
@@ -581,12 +666,16 @@ $("close-settings").addEventListener("click", () => setPanel(false));
 $("backdrop").addEventListener("click", () => {
   setPanel(false);
   palette.close();
+  closeCustom();
 });
 
 // --- boot
 
 async function boot(): Promise<void> {
-  if (/Mac|iPhone|iPad/.test(navigator.platform)) $("palette-key").textContent = "⌘k";
+  if (/Mac|iPhone|iPad/.test(navigator.platform)) {
+    $("palette-key").textContent = "⌘k";
+    $("custom-key").textContent = "⌘ enter";
+  }
   const version = $<HTMLAnchorElement>("version");
   version.textContent = `v${__APP_VERSION__}`;
   version.href = `https://github.com/jx-grxf/typesilk/releases/tag/v${__APP_VERSION__}`;

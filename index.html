@@ -56,6 +56,19 @@
       <div class="pal-foot"><span><kbd>&uarr;&darr;</kbd> choose</span><span><kbd>enter</kbd> run</span><span><kbd>esc</kbd> close</span></div>
     </div>
 
+    <div id="custom" role="dialog" aria-label="your own text" inert>
+      <label class="custom-head" for="custom-text">Your text</label>
+      <textarea id="custom-text" spellcheck="false" placeholder="Paste or write anything. Line breaks become spaces."></textarea>
+      <div class="custom-foot">
+        <button id="custom-shuffle" class="toggle-word" type="button" aria-pressed="false">shuffle words</button>
+        <span id="custom-count"></span>
+        <span class="custom-actions">
+          <button id="custom-cancel" type="button">cancel</button>
+          <button id="custom-start" type="button"><kbd id="custom-key">ctrl enter</kbd> start</button>
+        </span>
+      </div>
+    </div>
+
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
