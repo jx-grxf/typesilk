@@ -77,16 +77,12 @@ It needs a physical keyboard. Touch devices aren't supported yet.
 
 TypeScript and Vite with no UI framework, so nothing sits between a key and the screen. Letter positions are measured once when a word is created, and every frame after that only moves things with transforms.
 
-Measured in headless Chrome at 1600×900, 200 keys at one key per 60 ms:
-
-| Per keypress | typesilk | Monkeytype |
-| --- | --- | --- |
-| Layout passes | 1.6 | 11.7 |
-| Layout time | 0.4 ms | 1.8 ms |
-| Style recalculation time | 3.0 ms | 1.6 ms |
-
-Neither dropped a frame in this test, so this shows where the work goes rather than a visible speed difference. What you feel is the motion design.
+Measured in headless Chrome at 1600×900 with 200 keys at one key per 60 ms, a keypress costs 1.6 layout passes, 0.4 ms of layout and 3.0 ms of style recalculation, and no frame was dropped.
 
 ## Credits
 
 Typeface: [Newsreader](https://github.com/productiontype/Newsreader), SIL Open Font License. Keystrokes: [Keyboard soundpack 1](https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes) by Unicae Games, CC0.
+
+## License
+
+MIT, see [LICENSE](LICENSE).

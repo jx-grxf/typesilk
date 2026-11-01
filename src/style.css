@@ -60,7 +60,7 @@ html, body { height: 100%; }
 
 body {
   display: grid;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: auto 1fr auto auto;
   background: var(--bg);
   color: var(--ink);
   font-family: var(--serif);
@@ -119,6 +119,10 @@ body.focus:not(.pointer-awake) .chrome { opacity: 0; pointer-events: none; }
 #open-settings:hover { color: var(--accent); }
 
 footer { color: var(--muted); }
+
+.colophon { padding-top: 0; padding-bottom: 18px; font-size: 14px; color: var(--dim); }
+.colophon a { color: inherit; text-decoration: none; transition: color 160ms ease; }
+.colophon a:hover { color: var(--ink); }
 footer nav { display: flex; align-items: baseline; gap: 26px; flex-wrap: wrap; }
 .hint { color: var(--muted); white-space: nowrap; }
 .hint kbd { color: var(--ink); }

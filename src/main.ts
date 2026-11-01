@@ -485,6 +485,9 @@ $("backdrop").addEventListener("click", () => setPanel(false));
 // --- boot
 
 async function boot(): Promise<void> {
+  const version = $<HTMLAnchorElement>("version");
+  version.textContent = `v${__APP_VERSION__}`;
+  version.href = `https://github.com/jx-grxf/typesilk/releases/tag/v${__APP_VERSION__}`;
   buildControls();
   segments.push(...buildPanel($("panel-body"), settings, change, resetProfile));
   applySettings();
