@@ -8,19 +8,50 @@ export const LANGUAGES = {
 
 export type Language = keyof typeof LANGUAGES;
 
-export const WORD_LIST_SIZES = ["200", "1k"] as const;
+export const WORD_LIST_SIZES = ["200", "1k", "5k", "10k", "20k"] as const;
 export type WordListSize = (typeof WORD_LIST_SIZES)[number];
+const SIZE_COUNT: Record<WordListSize, number> = { "200": 200, "1k": 1000, "5k": 5000, "10k": 10000, "20k": 20000 };
+
+/** Frequency lists in public/words, fetched on first use. Spanish and French stop at their own 1k list. */
+const PUBLISHED: Partial<Record<Language, number>> = { english: 20000, german: 10000 };
 
 const unique = (text: string): string[] => [...new Set(text.split(" "))];
-const lists = {
-  "200": Object.fromEntries(Object.entries(LANGUAGES).map(([name, text]) => [name, unique(text)])),
-  "1k": Object.fromEntries(
-    Object.entries(LANGUAGES).map(([name, text]) => [name, unique(`${text} ${EXTENDED[name as Language]}`)]),
-  ),
-} as Record<WordListSize, Record<Language, string[]>>;
+const short = Object.fromEntries(
+  Object.entries(LANGUAGES).map(([name, text]) => [name, unique(text)]),
+) as Record<Language, string[]>;
+const own = Object.fromEntries(
+  Object.entries(EXTENDED).map(([name, text]) => [name, unique(`${LANGUAGES[name as Language]} ${text}`)]),
+) as Partial<Record<Language, string[]>>;
+const published: Partial<Record<Language, string[]>> = {};
+
+export function availableSizes(language: Language): WordListSize[] {
+  const max = PUBLISHED[language] ?? (own[language] ? 1000 : 200);
+  return WORD_LIST_SIZES.filter((size) => SIZE_COUNT[size] <= max);
+}
+
+/** The asked size, or the largest one this language has. */
+export function effectiveSize(language: Language, size: WordListSize): WordListSize {
+  const sizes = availableSizes(language);
+  return sizes.includes(size) ? size : sizes[sizes.length - 1]!;
+}
+
+export function registerWords(language: Language, words: string[]): void {
+  published[language] = words;
+}
+
+export async function loadWords(language: Language, size: WordListSize): Promise<void> {
+  if (effectiveSize(language, size) === "200" || !PUBLISHED[language] || published[language]) return;
+  const response = await fetch(`words/${language}.txt`);
+  if (!response.ok) return;
+  registerWords(language, (await response.text()).split("\n").filter(Boolean));
+}
 
 export function wordList(language: Language, size: WordListSize = "200"): string[] {
-  return lists[size][language];
+  const fitting = effectiveSize(language, size);
+  if (fitting === "200") return short[language];
+  const list = published[language] ?? own[language];
+  // a list that hasn't arrived yet falls back to the short one rather than blocking the test
+  return list ? list.slice(0, SIZE_COUNT[fitting]) : short[language];
 }
 
 const RECENT_LIMIT = 12;

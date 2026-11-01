@@ -15,7 +15,7 @@ import { springEasing } from "./spring";
 import { Stage } from "./stage";
 import { recordKey as recordKeyStat, trend, weakKeys } from "./training";
 import { buildPanel, segment, toggleWord, type Segment } from "./ui";
-import { createTrainingSource, createWordSource, LANGUAGES, WORD_LIST_SIZES, type Language } from "./words";
+import { availableSizes, createTrainingSource, createWordSource, LANGUAGES, loadWords, type Language } from "./words";
 
 const CHUNK = 50;
 const REFILL_AT = 30;
@@ -135,7 +135,11 @@ function newTest(): void {
 /** Words are measured once, so they must never be measured with a fallback font. */
 async function fontsReady(): Promise<void> {
   const family = FONT_FAMILIES[settings.font];
-  await Promise.all([document.fonts.load(`400 64px "${family}"`), document.fonts.load(`italic 400 64px "${family}"`)]);
+  await Promise.all([
+    document.fonts.load(`400 64px "${family}"`),
+    document.fonts.load(`italic 400 64px "${family}"`),
+    loadWords(settings.language, settings.wordList),
+  ]);
 }
 
 async function restart(): Promise<void> {
@@ -401,7 +405,7 @@ function commands(): Command[] {
   list.push({ group: "custom text", label: "edit", run: () => openCustom() });
   toggle("custom shuffle", "customShuffle");
   pick("language", "language", Object.keys(LANGUAGES) as Language[]);
-  pick("word list", "wordList", WORD_LIST_SIZES, (v) => (v === "200" ? "200 most common" : "1000 common"));
+  pick("word list", "wordList", availableSizes(settings.language), (v) => (v === "200" ? "200 most common" : `${v} most common`));
   toggle("punctuation", "punctuation");
   toggle("numbers", "numbers");
   for (const theme of THEMES) {

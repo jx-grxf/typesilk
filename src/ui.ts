@@ -1,5 +1,6 @@
 import { THEMES, type Settings } from "./settings";
 import { SOUND_PACKS } from "./sound";
+import { WORD_LIST_SIZES } from "./words";
 
 type Option<T> = { label: string; value: T };
 
@@ -135,8 +136,8 @@ export function buildPanel(
       (textSize) => change({ textSize }),
     )),
     group("Words"),
-    row("Word list", "the 200 most common words, or about a thousand", seg(
-      [{ label: "200", value: "200" as const }, { label: "1k", value: "1k" as const }],
+    row("Word list", "most common words; English goes to 20k, German to 10k, Spanish and French to 1k", seg(
+      WORD_LIST_SIZES.map((value) => ({ label: value, value })),
       s.wordList,
       (wordList) => change({ wordList }),
     )),

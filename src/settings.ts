@@ -1,6 +1,6 @@
 import { QUOTE_LENGTHS, type QuoteLength } from "./quotes";
 import { SOUND_PACKS, type SoundPack } from "./sound";
-import { WORD_LIST_SIZES, type Language, type WordListSize } from "./words";
+import { effectiveSize, WORD_LIST_SIZES, type Language, type WordListSize } from "./words";
 
 const KEY = "typesilk.settings";
 
@@ -104,6 +104,7 @@ export function recordKey(s: Settings): string {
   const wordBased = s.mode !== "quote" && s.mode !== "zen" && s.mode !== "custom";
   const parts = [s.mode, length, s.language, s.punctuation ? "p" : "", s.numbers ? "n" : ""];
   // older records were all made with the short list, so only the long one gets a marker
-  if (wordBased && s.wordList === "1k") parts.push("1k");
+  const size = effectiveSize(s.language, s.wordList);
+  if (wordBased && size !== "200") parts.push(size);
   return parts.join(":");
 }
