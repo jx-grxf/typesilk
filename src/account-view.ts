@@ -114,6 +114,10 @@ function field(label: string, name: string, value: string, note: string): { row:
   input.value = value;
   input.autocomplete = "off";
   input.spellcheck = false;
+  // this isn't a login, so password managers shouldn't offer to fill it
+  input.setAttribute("data-1p-ignore", "");
+  input.setAttribute("data-lpignore", "true");
+  input.setAttribute("data-bwignore", "");
   row.append(text("span", "account-label", label), input, text("small", "", note));
   return { row, input };
 }
@@ -125,12 +129,12 @@ export function openNames(suggested = ""): void {
   const locked = user.username !== null;
   const username = field(
     "Username",
-    "username",
+    "board-address",
     user.username ?? suggested.toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 20),
     locked ? "Your address on the board. It stays as it is." : "Your address on the board. You can't change it later.",
   );
   username.input.disabled = locked;
-  const display = field("Display name", "displayName", user.displayName ?? "", "What people see next to your speed.");
+  const display = field("Display name", "board-name", user.displayName ?? "", "What people see next to your speed.");
   const error = text("p", "account-error", "");
   error.setAttribute("role", "alert");
   const submit = text("button", "account-save", "save");
