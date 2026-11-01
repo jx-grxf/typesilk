@@ -542,7 +542,10 @@ body.show-results #results { opacity: 1; visibility: visible; }
   transition: transform 1100ms cubic-bezier(.2, .8, .2, 1) 250ms;
 }
 
-.again { font-size: 1.5rem; color: var(--muted); }
+.again { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 32px; font-size: 1.5rem; color: var(--muted); }
+.share-row { display: flex; gap: 26px; font-size: 1.15rem; }
+.share { color: var(--muted); font-style: italic; transition: color 160ms ease; }
+.share:hover { color: var(--accent); }
 
 /* ---------- profile ---------- */
 
@@ -819,6 +822,19 @@ body.touch:not(.has-keyboard) #touch-note {
   .result-top { grid-template-columns: 1fr; }
   footer .hint { display: none; }
 }
+
+/* ---------- view transitions between test and results ---------- */
+
+body:not(.show-results) #hud { view-transition-name: score; }
+body.show-results .hero-number { view-transition-name: score; }
+::view-transition-group(score) {
+  animation-duration: var(--spring-ms, 500ms);
+  animation-timing-function: var(--spring, ease);
+}
+::view-transition-old(root) { animation: 160ms ease-in both view-out; }
+::view-transition-new(root) { animation: var(--spring-ms, 500ms) var(--spring, ease) both view-in; }
+@keyframes view-out { to { opacity: 0; transform: translateY(-10px); } }
+@keyframes view-in { from { opacity: 0; transform: translateY(16px); } }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 1ms !important; transition-duration: 1ms !important; animation-delay: 0ms !important; transition-delay: 0ms !important; }
