@@ -41,6 +41,7 @@ Most typing tests start a short animation for every key, so when you type fast e
 English, German, Spanish and French, with optional punctuation and numbers. Word lists go from the 200 most common words up to 20,000 in English, 10,000 in German and 1,000 in Spanish and French.
 
 **Getting better**
+- Every result can play the run back key by key at its recorded pace, at 1×, 2× or 4×.
 - Your best run in each setup comes back as a ghost caret to race.
 - Every keystroke feeds per-letter error and speed stats. Results name your weakest keys, shade them on a keyboard in your language's layout, and `t` starts a run built around them.
 - A streak with a flame that lights once you've typed today, and a words-per-day goal next to it. One missed day a week is frozen over and doesn't break the streak.
@@ -83,6 +84,7 @@ Four themes (noir, paper, forest, klein), three text sizes and a switch for ever
 | `⌘` / `ctrl` + `k` | Command palette |
 | `t` | Train your weak keys, from the results |
 | `c` / `s` | Copy or save the result image |
+| `r` | Play or pause the replay of the run, from the results |
 | `ctrl` + `backspace` | Clear the word |
 
 It needs a physical keyboard. Phones and tablets show a note until one is connected.
