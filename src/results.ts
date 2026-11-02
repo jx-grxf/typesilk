@@ -1,3 +1,4 @@
+import { themesOpenedBetween } from "./settings";
 import { Spring } from "./spring";
 import { medal, type Badge } from "./badges";
 import { copyCard, saveCard, type CardData } from "./card";
@@ -244,7 +245,9 @@ export function renderResults(root: HTMLElement, data: ResultData): void {
   const level = levelOf(data.xp);
   const levelUp = data.reward.levelAfter > data.reward.levelBefore;
   const days = data.streakDays === 1 ? "1 day" : `${data.streakDays} days`;
-  xp.innerHTML = `<div class="xp-row"><span>${levelUp ? `Level ${level}, new` : `Level ${level}`}</span><span>${days} streak</span><span>+${data.reward.xpGained} xp</span></div><div class="xp-track"><div class="xp-fill"></div></div>`;
+  const opened = levelUp ? themesOpenedBetween(data.reward.levelBefore, data.reward.levelAfter) : [];
+  const levelText = !levelUp ? `Level ${level}` : opened.length > 0 ? `Level ${level}, new. The ${opened.join(" and ")} theme is yours` : `Level ${level}, new`;
+  xp.innerHTML = `<div class="xp-row"><span>${levelText}</span><span>${days} streak</span><span>+${data.reward.xpGained} xp</span></div><div class="xp-track"><div class="xp-fill"></div></div>`;
   const fill = xp.querySelector<HTMLElement>(".xp-fill")!;
   fill.style.transform = "scaleX(0)";
   requestAnimationFrame(() => requestAnimationFrame(() => {

@@ -738,6 +738,9 @@ body.panel-open #panel {
 .row-text small { color: var(--muted); font-size: 0.86rem; font-style: italic; }
 .row-text small:empty { display: none; }
 .row .seg { flex: none; }
+.row.stacked { flex-direction: column; align-items: flex-start; gap: 8px; }
+.row.stacked .seg { flex-wrap: wrap; row-gap: 10px; }
+.seg button:disabled { color: var(--dim); cursor: default; }
 
 input[type="range"] { flex: none; width: 150px; accent-color: var(--accent); }
 
