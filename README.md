@@ -47,7 +47,7 @@ English, German, Spanish and French, with optional punctuation and numbers. Word
 
 <img src="docs/results.png" alt="Results page with a very large words-per-minute number, statistics, a new badge and a speed chart" width="100%">
 
-**Your profile** at `/me`: level, best and average speed, streak, a year of activity shaded by words typed per day, a speed chart, records per setup and 26 badges in four rarities, three of them secret.
+**Your profile** at `/me`: level, best and average speed, streak, a year of activity shaded by words typed per day, a speed chart, records per setup and 36 badges in four rarities, thirteen of them secret.
 
 <img src="docs/profile.png" alt="Profile page with a monogram, three badges, eight large figures and a grid of daily activity" width="100%">
 

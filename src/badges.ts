@@ -13,6 +13,12 @@ export type RunFacts = {
   words: number;
   finished: boolean;
   quoteLength: string | null;
+  language: string;
+  backspaces: number;
+  saidName: boolean;
+  firstToday: boolean;
+  /** A record beaten, not the first mark set in a mode. */
+  newBest: boolean;
 };
 
 type Context = { profile: Profile; run: RunFacts | null; now: Date };
@@ -25,6 +31,8 @@ export type Badge = {
   glyph: string;
   /** Hidden until earned, so finding it is part of it. */
   secret?: boolean;
+  /** What a secret badge shows while locked: enough to start looking, not the answer. */
+  hint?: string;
   earned(ctx: Context): boolean;
   /** Where you stand on a badge you don't have yet, as [now, goal]. */
   progress?(profile: Profile): [number, number];
@@ -39,6 +47,25 @@ const bestWpm = (profile: Profile): number => Math.max(0, ...Object.values(profi
 const toSpeed = (goal: number) => (p: Profile): [number, number] => [Math.round(bestWpm(p)), goal];
 const toStreak = (goal: number) => (p: Profile): [number, number] => [p.streakDays, goal];
 const toWords = (goal: number) => (p: Profile): [number, number] => [Math.round(words(p)), goal];
+const flawless = (c: Context): c is Context & { run: RunFacts } =>
+  comparable(c.run) && c.run.seconds >= 30 && c.run.accuracy === 100;
+const hourMs = 3_600_000;
+const binge = (c: Context): boolean =>
+  c.run !== null && c.profile.history.filter((entry) => entry.at !== undefined && c.now.getTime() - entry.at < hourMs).length >= 10;
+const languagesToday = (c: Context): number => {
+  const today = new Date(c.now);
+  today.setHours(0, 0, 0, 0);
+  const seen = new Set(c.profile.history.filter((entry) => (entry.at ?? 0) >= today.getTime()).map((entry) => entry.key.split(":")[2]));
+  if (c.run) seen.add(c.run.language);
+  return seen.size;
+};
+/** The run before this one was the slowest of the last ten in the same setup, and this one is a record. */
+const comeback = (c: Context): boolean => {
+  if (!comparable(c.run) || !c.run.newBest) return false;
+  const key = c.profile.history.at(-1)?.key;
+  const before = c.profile.history.filter((entry) => entry.key === key).slice(0, -1).slice(-10).map((entry) => entry.wpm);
+  return before.length === 10 && before.at(-1) === Math.min(...before);
+};
 const palindrome = (n: number): boolean => n >= 101 && String(n) === [...String(n)].reverse().join("");
 
 export const BADGES: Badge[] = [
@@ -55,7 +82,14 @@ export const BADGES: Badge[] = [
   { id: "polyglot", name: "Polyglot", description: "A run of 30 seconds or more in all four languages.", rarity: "rare", glyph: "4", progress: (p) => [p.languages.length, 4], earned: (c) => c.profile.languages.length >= 4 },
   { id: "bookworm", name: "Bookworm", description: "Finish 25 quotes.", rarity: "rare", glyph: "“", progress: (p) => [p.quotes, 25], earned: (c) => c.profile.quotes >= 25 },
   { id: "regular", name: "Regular", description: "Play 30 dailies.", rarity: "rare", glyph: "D", progress: (p) => [Object.keys(p.dailies).length, 30], earned: (c) => Object.keys(c.profile.dailies).length >= 30 },
-  { id: "midnight", name: "Midnight", description: "Finish a run in the first five minutes of a new day.", rarity: "rare", glyph: "0:00", secret: true, earned: (c) => c.run !== null && c.run.finished && c.now.getHours() === 0 && c.now.getMinutes() < 5 },
+  { id: "midnight", name: "Midnight", description: "Finish a run in the first five minutes of a new day.", rarity: "rare", glyph: "0:00", secret: true, hint: "Be there when the date turns.", earned: (c) => c.run !== null && c.run.finished && c.now.getHours() === 0 && c.now.getMinutes() < 5 },
+  { id: "night-owl", name: "Night owl", description: "Finish a run between three and four in the morning.", rarity: "rare", glyph: "3:00", secret: true, hint: "Everyone else is asleep.", earned: (c) => c.run !== null && c.run.finished && c.now.getHours() === 3 },
+  { id: "close-call", name: "Close call", description: "Save your streak in the last five minutes of the day.", rarity: "rare", glyph: "23:59", secret: true, hint: "Saved by the bell.", earned: (c) => c.run !== null && c.run.firstToday && c.profile.streakDays >= 2 && c.now.getHours() === 23 && c.now.getMinutes() >= 55 },
+  { id: "pi", name: "Pi", description: "Finish a run at 3:14.", rarity: "rare", glyph: "π", secret: true, hint: "Endless digits, one minute a day.", earned: (c) => c.run !== null && c.run.finished && c.now.getHours() % 12 === 3 && c.now.getMinutes() === 14 },
+  { id: "answer", name: "The answer", description: "Exactly 42 wpm without a mistake.", rarity: "rare", glyph: "42", secret: true, hint: "Slow down. The answer is a number.", earned: (c) => flawless(c) && Math.round(c.run.wpm) === 42 },
+  { id: "mirror", name: "Mirror", description: "Speed and accuracy land on the same number.", rarity: "rare", glyph: "⇄", secret: true, hint: "Fast and right, in equal measure.", earned: (c) => comparable(c.run) && c.run.seconds >= 30 && c.run.accuracy < 100 && Math.round(c.run.wpm) === Math.floor(c.run.accuracy) },
+  { id: "binge", name: "Binge", description: "Ten runs within an hour.", rarity: "rare", glyph: "10×", secret: true, hint: "Just one more.", earned: binge },
+  { id: "self-aware", name: "Self-aware", description: "Type the name of this site.", rarity: "rare", glyph: "ts", secret: true, hint: "Say my name.", earned: (c) => c.run !== null && c.run.saidName },
 
   { id: "one-fifty", name: "One fifty", description: "150 wpm over 30 seconds or more, 95% accurate.", rarity: "epic", glyph: "150", progress: toSpeed(150), earned: fast(150) },
   { id: "metronome", name: "Metronome", description: "90% consistency at 80 wpm or more for a full minute.", rarity: "epic", glyph: "=", earned: (c) => comparable(c.run) && c.run.seconds >= 60 && c.run.wpm >= 80 && c.run.consistency >= 90 },
@@ -63,8 +97,11 @@ export const BADGES: Badge[] = [
   { id: "marathon", name: "Marathon", description: "Keep an endless run going for ten minutes.", rarity: "epic", glyph: "10′", earned: (c) => c.run !== null && c.run.mode === "endless" && c.run.seconds >= 600 },
   { id: "hundred-days", name: "Hundred days", description: "Type on a hundred days in a row.", rarity: "epic", glyph: "100d", progress: toStreak(100), earned: (c) => c.profile.streakDays >= 100 },
   { id: "long-read", name: "Long read", description: "A long quote without a single mistake.", rarity: "epic", glyph: "§", earned: (c) => comparable(c.run) && c.run.mode === "quote" && c.run.quoteLength === "long" && c.run.accuracy === 100 },
-  { id: "palindrome", name: "Palindrome", description: "Finish at a speed that reads the same both ways, like 121 wpm, without a mistake.", rarity: "epic", glyph: "121", secret: true, earned: (c) => comparable(c.run) && c.run.seconds >= 30 && c.run.accuracy === 100 && palindrome(Math.round(c.run.wpm)) },
-  { id: "exactly", name: "Exactly", description: "Exactly 100 wpm, without a mistake.", rarity: "epic", glyph: "=100", secret: true, earned: (c) => comparable(c.run) && c.run.seconds >= 30 && c.run.accuracy === 100 && Math.round(c.run.wpm) === 100 },
+  { id: "palindrome", name: "Palindrome", description: "Finish at a speed that reads the same both ways, like 121 wpm, without a mistake.", rarity: "epic", glyph: "121", secret: true, hint: "A speed you could read from either end.", earned: (c) => comparable(c.run) && c.run.seconds >= 30 && c.run.accuracy === 100 && palindrome(Math.round(c.run.wpm)) },
+  { id: "exactly", name: "Exactly", description: "Exactly 100 wpm, without a mistake.", rarity: "epic", glyph: "=100", secret: true, hint: "A round number, and not a hair over.", earned: (c) => comparable(c.run) && c.run.seconds >= 30 && c.run.accuracy === 100 && Math.round(c.run.wpm) === 100 },
+  { id: "comeback", name: "Comeback", description: "A new record right after your slowest run in ten.", rarity: "epic", glyph: "↺", secret: true, hint: "Fall first, then fly.", earned: comeback },
+  { id: "world-tour", name: "World tour", description: "Runs in all four languages on the same day.", rarity: "epic", glyph: "4×", secret: true, hint: "One day, many tongues.", earned: (c) => languagesToday(c) >= 4 },
+  { id: "no-looking-back", name: "No looking back", description: "A full minute without backspace, 98% accurate.", rarity: "epic", glyph: "→", secret: true, hint: "There is one key you never touch.", earned: (c) => comparable(c.run) && c.run.seconds >= 60 && c.run.backspaces === 0 && c.run.accuracy >= 98 },
 
   { id: "two-hundred", name: "Two hundred", description: "200 wpm over 30 seconds or more, 95% accurate.", rarity: "legendary", glyph: "200", progress: toSpeed(200), earned: fast(200) },
   { id: "flawless-200", name: "Flawless 200", description: "200 wpm over a full minute without a single mistake.", rarity: "legendary", glyph: "200!", earned: (c) => comparable(c.run) && c.run.seconds >= 60 && c.run.wpm >= 200 && c.run.accuracy === 100 },
@@ -146,7 +183,7 @@ export function badgeCard(badge: Badge, profile: Profile): HTMLElement {
   const status = earned ? date : progress ? `${number.format(Math.min(progress[0], progress[1]))} of ${number.format(progress[1])}` : "";
   const text = document.createElement("div");
   text.className = "badge-copy";
-  text.innerHTML = `<b>${hidden ? "Secret" : badge.name}</b><span>${hidden ? "Keep typing." : badge.description}</span><small>${badge.rarity}${status ? ` · ${status}` : ""}</small>`;
+  text.innerHTML = `<b>${hidden ? "Secret" : badge.name}</b><span>${hidden ? (badge.hint ?? "Keep typing.") : badge.description}</span><small>${badge.rarity}${status ? ` · ${status}` : ""}</small>`;
   card.append(text);
   return card;
 }
