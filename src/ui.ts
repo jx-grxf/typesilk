@@ -78,6 +78,13 @@ function row(label: string, note: string, control: HTMLElement): HTMLElement {
   return node;
 }
 
+function publicSlot(): HTMLElement {
+  const slot = document.createElement("span");
+  slot.id = "public-profile-slot";
+  slot.className = "public-slot";
+  return slot;
+}
+
 function group(title: string): HTMLElement {
   const node = document.createElement("h3");
   node.textContent = title;
@@ -202,6 +209,7 @@ export function buildPanel(
     )),
     row("Volume", "", volume),
     group("Data"),
+    row("Public profile", "off until you turn it on; no per-letter stats, not indexed", publicSlot()),
     row("Progress", "clears level, streak and records", resetButton),
   );
   return segments;

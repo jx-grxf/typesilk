@@ -208,6 +208,40 @@ function linkButton(label: string, action: () => void): HTMLButtonElement {
   return button;
 }
 
+const publicUrl = (username: string): string => `${location.origin}/u/${username}`;
+
+/** The system share sheet where there is one, the clipboard everywhere else. */
+function shareButton(username: string): HTMLButtonElement {
+  const button = linkButton("share", () => {
+    const url = publicUrl(username);
+    const shared = typeof navigator.share === "function"
+      ? navigator.share({ title: `${username} on typesilk`, url }).then(() => "share")
+      : navigator.clipboard.writeText(url).then(() => "link copied");
+    void shared
+      .then((label) => { button.textContent = label; })
+      .catch(() => { button.textContent = "share"; })
+      .finally(() => setTimeout(() => { button.textContent = "share"; }, 1600));
+  });
+  return button;
+}
+
+/** Public profile controls: a toggle, and once it's on, the page and a share button. Used on /me and in settings. */
+export function publicProfileControls(): HTMLElement[] {
+  const user = currentAccount();
+  if (!user) return [linkButton("sign in first", () => openSignIn())];
+  if (!user.username) return [linkButton("pick a name first", () => openNames())];
+  const toggle = linkButton(user.publicProfile ? "make private" : "make public", () => void togglePublicProfile());
+  if (!user.publicProfile) return [toggle];
+  const view = text("a", "", "public page");
+  view.href = `/u/${user.username}`;
+  return [view, shareButton(user.username), toggle];
+}
+
+/** The settings row's control; the panel is built before the account loads, so it's filled in here. */
+export function renderPublicProfileSlot(slot: HTMLElement): void {
+  slot.replaceChildren(...publicProfileControls());
+}
+
 /** The row on the profile page: how to sign in, or who you are and how to leave. */
 export function renderAccountRow(root: HTMLElement): void {
   const user = currentAccount();
@@ -230,6 +264,7 @@ export function renderAccountRow(root: HTMLElement): void {
     const remove = linkButton("delete account", openDeleteAccount);
     actions.append(
       board,
+      ...(user.username ? publicProfileControls() : []),
       linkButton("edit name", () => openNames()),
       linkButton("sign out", signOutNow),
       remove,

@@ -6,7 +6,7 @@ import "./tokens.css";
 import "./style.css";
 import "./profile.css";
 import { currentAccount, loadAccount, onAccountDeleted, onBeforeSignOut, prepareTicket } from "./account";
-import { fillAvatar, onAccountChange, openNames, openSignIn } from "./account-view";
+import { fillAvatar, onAccountChange, openNames, openSignIn, renderPublicProfileSlot } from "./account-view";
 import { awardBadges } from "./badges";
 import { commands } from "./commands";
 import { CustomTextDialog } from "./custom-text";
@@ -263,6 +263,7 @@ function renderAccountChrome(): void {
   fillAvatar(button.querySelector<HTMLElement>(".mini-avatar")!);
   button.querySelector<HTMLElement>(".profile-label")!.textContent = user?.username ?? "profile";
   profilePage.refresh();
+  renderPublicProfileSlot($("public-profile-slot"));
   if (settings.mode === "daily") prepareTicket(dailyNumber(), settings.language);
 }
 
