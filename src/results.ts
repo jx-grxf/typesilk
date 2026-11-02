@@ -19,6 +19,7 @@ export type ResultData = {
   xp: number;
   failedAt: { word: number; total: number } | null;
   weakKeys: string[];
+  weakPairs: string[];
   trend: number | null;
   progress: number[];
   streakDays: number;
@@ -235,6 +236,11 @@ export function renderResults(root: HTMLElement, data: ResultData): void {
     coach.innerHTML = `<p>Your weakest keys are ${caps}. <kbd>t</kbd> trains them.</p>`;
   } else {
     coach.innerHTML = "<p>Your weak keys show up after a few runs.</p>";
+  }
+  if (data.weakPairs.length > 0) {
+    const pairs = document.createElement("p");
+    pairs.innerHTML = `Your slowest pairs are ${data.weakPairs.map((pair) => `<b>${pair}</b>`).join(" ")}. Training mixes them in.`;
+    coach.append(pairs);
   }
   if (data.trend !== null) {
     const trend = document.createElement("p");

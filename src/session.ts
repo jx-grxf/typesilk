@@ -15,7 +15,7 @@ import { renderResults } from "./results";
 import { recordKey, type Settings } from "./settings";
 import type { Sound } from "./sound";
 import { Stage } from "./stage";
-import { recordKey as recordKeyStat, trend, weakKeys } from "./training";
+import { recordKey as recordKeyStat, recordPair, trend, weakKeys, weakPairs } from "./training";
 import { createTrainingSource, createWordSource, loadWords } from "./words";
 
 const CHUNK = 50;
@@ -117,7 +117,7 @@ export class TypingSession {
   newTest(): void {
     const { settings } = this;
     const mode = settings.mode;
-    this.trainingKeys = mode === "train" ? weakKeys(this.store.profile.keys, 5) : [];
+    this.trainingKeys = mode === "train" ? [...weakKeys(this.store.profile.keys, 4), ...weakPairs(this.store.profile.pairs, 2)] : [];
     this.nextWords = () => [];
     let words: string[] = [];
     if (mode === "daily") {
@@ -303,6 +303,7 @@ export class TypingSession {
         xp: profile.xp,
         failedAt: failed ? { word: failedAtWord + 1, total: this.fixedLength } : null,
         weakKeys: weakKeys(profile.keys),
+        weakPairs: weakPairs(profile.pairs),
         trend: trend(profile.history, key),
         progress: profile.history.filter((run) => run.key === key).slice(-PROGRESS_RUNS).map((run) => run.wpm),
         streakDays: profile.streakDays,
@@ -338,6 +339,8 @@ export class TypingSession {
     const { engine, stage } = this;
     if (this.state === "idle") this.start(now);
     const expected = engine.word[engine.input.length];
+    // a pair only counts when its first letter went in right, or the time measures the fix
+    const previous = engine.input.length > 0 && engine.input === engine.word.slice(0, engine.input.length) ? engine.word[engine.input.length - 1] : undefined;
     const gap = this.lastKeyAt > 0 ? now - this.lastKeyAt : null;
     this.lastKeyAt = now;
     if (gap !== null) this.gaps.push(gap);
@@ -346,6 +349,7 @@ export class TypingSession {
     if (result.kind !== "char") return;
 
     if (expected !== undefined) recordKeyStat(this.store.profile.keys, expected, result.correct, gap);
+    if (expected !== undefined && previous !== undefined) recordPair(this.store.profile.pairs, previous, expected, result.correct, gap);
     this.flow.key(now, result.correct, engine.streak);
     this.sound.key(code);
     stage.press(!result.correct);

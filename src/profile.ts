@@ -15,6 +15,8 @@ export type Profile = {
   lastDay: string | null;
   bests: Record<string, Best>;
   keys: KeyStats;
+  /** Two-letter pairs inside words, keyed like "th". */
+  pairs: KeyStats;
   history: HistoryEntry[];
   /** Activity per local day, only from runs that look like a person typed them. */
   days: Days;
@@ -49,7 +51,7 @@ export type RunReward = {
 };
 
 export function emptyProfile(): Profile {
-  return { xp: 0, tests: 0, totalChars: 0, streakDays: 0, lastDay: null, bests: {}, keys: {}, history: [], days: {}, dailies: {}, badges: {}, quotes: 0, languages: [], frozen: [] };
+  return { xp: 0, tests: 0, totalChars: 0, streakDays: 0, lastDay: null, bests: {}, keys: {}, pairs: {}, history: [], days: {}, dailies: {}, badges: {}, quotes: 0, languages: [], frozen: [] };
 }
 
 export function levelOf(xp: number): number {

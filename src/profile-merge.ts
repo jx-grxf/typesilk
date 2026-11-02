@@ -10,6 +10,7 @@ const HISTORY_LIMIT = 400;
 const MAX_BESTS = 300;
 const MAX_SERIES = 600;
 const MAX_KEYS = 200;
+const MAX_PAIRS = 800;
 const MAX_DAYS = 1100;
 const MAX_DAILIES = 4000;
 const MAX_BADGES = 100;
@@ -23,6 +24,7 @@ const DAILY_KEY = /^\d{1,6}:[a-z]{1,16}$/;
 const BADGE_ID = /^[a-z0-9-]{1,40}$/;
 const LANGUAGE = /^[a-z]{1,16}$/;
 const LETTER = /^\p{L}$/u;
+const PAIR = /^\p{L}{2}$/u;
 
 const historyId = (entry: HistoryEntry): string => `${entry.key}|${entry.wpm}|${entry.at ?? ""}`;
 
@@ -80,6 +82,7 @@ export function mergeProfiles(profiles: Profile[]): Profile {
       if (!merged.bests[key] || best.wpm > merged.bests[key].wpm) merged.bests[key] = best;
     }
     sumKeys(merged.keys, profile.keys, 1);
+    sumKeys(merged.pairs, profile.pairs, 1);
     sumDays(merged.days, profile.days, 1);
     for (const [key, result] of Object.entries(profile.dailies)) merged.dailies[key] ??= result;
     for (const [id, day] of Object.entries(profile.badges)) {
@@ -111,6 +114,7 @@ export function subtractProfile(total: Profile, part: Profile): Profile {
   own.totalChars = Math.max(0, total.totalChars - part.totalChars);
   own.quotes = Math.max(0, total.quotes - part.quotes);
   sumKeys(own.keys, part.keys, -1);
+  sumKeys(own.pairs, part.pairs, -1);
   sumDays(own.days, part.days, -1);
   for (const [key, best] of Object.entries(part.bests)) {
     if (own.bests[key]?.wpm === best.wpm) delete own.bests[key];
@@ -175,6 +179,7 @@ export function sanitizeProfile(value: unknown): Profile {
   profile.lastDay = typeof raw.lastDay === "string" && DAY.test(raw.lastDay) ? raw.lastDay : null;
   for (const [key, item] of entries(raw.bests, RECORD_KEY, MAX_BESTS)) profile.bests[key] = cleanBest(item);
   for (const [key, item] of entries(raw.keys, LETTER, MAX_KEYS)) profile.keys[key] = cleanKey(item);
+  for (const [key, item] of entries(raw.pairs, PAIR, MAX_PAIRS)) profile.pairs[key] = cleanKey(item);
   for (const [day, item] of entries(raw.days, DAY, MAX_DAYS)) profile.days[day] = cleanDay(item);
   const dailies: Dailies = {};
   for (const [key, item] of entries(raw.dailies, DAILY_KEY, MAX_DAILIES)) dailies[key] = cleanDaily(item);

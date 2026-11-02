@@ -43,7 +43,7 @@ English, German, Spanish and French, with optional punctuation and numbers. Word
 **Getting better**
 - Every result can play the run back key by key at its recorded pace, at 1×, 2× or 4×.
 - Your best run in each setup comes back as a ghost caret to race.
-- Every keystroke feeds per-letter error and speed stats. Results name your weakest keys, shade them on a keyboard in your language's layout, and `t` starts a run built around them.
+- Every keystroke feeds per-letter error and speed stats. Results name your weakest keys, shade them on a keyboard in your language's layout, and `t` starts a run built around them. Slow letter pairs like "th" or "ie" are tracked too and mixed into training.
 - A streak with a flame that lights once you've typed today, and a words-per-day goal next to it. One missed day a week is frozen over and doesn't break the streak.
 
 <img src="docs/results.png" alt="Results page with a very large words-per-minute number, statistics, a new badge and a speed chart" width="100%">
