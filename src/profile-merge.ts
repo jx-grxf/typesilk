@@ -16,6 +16,7 @@ const MAX_DAILIES = 4000;
 const MAX_BADGES = 100;
 const MAX_LANGUAGES = 8;
 const MAX_STREAK = 4000;
+const MAX_RACE_MS = 600_000;
 const MAX_FROZEN = 60;
 
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
@@ -78,6 +79,10 @@ export function mergeProfiles(profiles: Profile[]): Profile {
     merged.tests += profile.tests;
     merged.totalChars += profile.totalChars;
     merged.quotes += profile.quotes;
+    merged.races.played += profile.races.played;
+    merged.races.won += profile.races.won;
+    const closest = profile.races.closest;
+    if (closest !== null && (merged.races.closest === null || closest < merged.races.closest)) merged.races.closest = closest;
     for (const [key, best] of Object.entries(profile.bests)) {
       if (!merged.bests[key] || best.wpm > merged.bests[key].wpm) merged.bests[key] = best;
     }
@@ -113,6 +118,12 @@ export function subtractProfile(total: Profile, part: Profile): Profile {
   own.tests = Math.max(0, total.tests - part.tests);
   own.totalChars = Math.max(0, total.totalChars - part.totalChars);
   own.quotes = Math.max(0, total.quotes - part.quotes);
+  own.races = {
+    played: Math.max(0, total.races.played - part.races.played),
+    won: Math.max(0, total.races.won - part.races.won),
+    // a minimum can't be taken apart; keep it only if this device holds a win
+    closest: total.races.won > part.races.won ? total.races.closest : null,
+  };
   sumKeys(own.keys, part.keys, -1);
   sumKeys(own.pairs, part.pairs, -1);
   sumDays(own.days, part.days, -1);
@@ -175,6 +186,12 @@ export function sanitizeProfile(value: unknown): Profile {
   profile.tests = count(raw.tests);
   profile.totalChars = count(raw.totalChars);
   profile.quotes = count(raw.quotes);
+  const races = record(raw.races);
+  profile.races = {
+    played: count(races.played),
+    won: Math.min(count(races.won), count(races.played)),
+    closest: typeof races.closest === "number" && Number.isFinite(races.closest) && races.closest >= 0 ? Math.min(races.closest, MAX_RACE_MS) : null,
+  };
   profile.streakDays = Math.floor(count(raw.streakDays, MAX_STREAK));
   profile.lastDay = typeof raw.lastDay === "string" && DAY.test(raw.lastDay) ? raw.lastDay : null;
   for (const [key, item] of entries(raw.bests, RECORD_KEY, MAX_BESTS)) profile.bests[key] = cleanBest(item);

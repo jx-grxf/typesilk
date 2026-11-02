@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en" data-theme="noir">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Race a friend | typesilk</title>
+    <meta name="description" content="Open a room, send the link or the six-letter code, and type the same words against a friend." />
+    <link rel="canonical" href="https://typesilk.com/race" />
+    <meta name="theme-color" content="#0d0c0b" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-48.png" sizes="48x48" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <script>
+      try {
+        const { theme } = JSON.parse(localStorage.getItem("typesilk.settings") ?? "{}");
+        if (["noir", "paper", "forest", "klein", "ash", "plum", "sepia", "void", "rosso"].includes(theme)) document.documentElement.dataset.theme = theme;
+      } catch {}
+    </script>
+    <link rel="stylesheet" href="/src/page.css" />
+    <script type="module" src="/src/race.ts"></script>
+  </head>
+  <body>
+    <header class="page-head">
+      <a class="logo" href="/">typesilk</a>
+      <nav aria-label="race"><a href="/race">new room</a></nav>
+    </header>
+    <main class="page-body race" id="race">
+      <h1>Race a friend</h1>
+      <p class="lead">Open a room and send the link or the code. You both type the same words, and the first finish counts once the server has replayed it.</p>
+      <p class="race-status" id="race-status" role="status"></p>
+    </main>
+    <footer class="page-foot">
+      <span><a href="https://johannesgrof.me">Johannes Grof</a></span>
+      <nav aria-label="legal"><a href="/about">about</a><a href="/impressum">imprint</a><a href="/privacy">privacy</a><a href="/terms">terms</a></nav>
+    </footer>
+  </body>
+</html>

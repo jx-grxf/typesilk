@@ -1,6 +1,7 @@
 export type Env = {
   ASSETS: Fetcher;
   DB: D1Database;
+  RACE: DurableObjectNamespace;
   RATE_LIMIT: RateLimit;
   RATE_LIMIT_READ: RateLimit;
   TICKET_SECRET?: string;

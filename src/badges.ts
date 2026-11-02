@@ -70,6 +70,7 @@ const palindrome = (n: number): boolean => n >= 101 && String(n) === [...String(
 
 export const BADGES: Badge[] = [
   { id: "first-words", name: "First words", description: "Finish your first run.", rarity: "common", glyph: "¶", earned: (c) => c.profile.tests >= 1 },
+  { id: "duel", name: "Duel", description: "Finish a race against someone.", rarity: "common", glyph: "vs", earned: (c) => c.profile.races.played >= 1 },
   { id: "sixty", name: "Sixty", description: "60 wpm over 30 seconds or more.", rarity: "common", glyph: "60", progress: toSpeed(60), earned: fast(60) },
   { id: "seven", name: "Seven", description: "Type on seven days in a row.", rarity: "common", glyph: "7", progress: toStreak(7), earned: (c) => c.profile.streakDays >= 7 },
   { id: "day-one", name: "Day one", description: "Finish a daily.", rarity: "common", glyph: "#", earned: (c) => Object.keys(c.profile.dailies).length >= 1 },
@@ -82,6 +83,7 @@ export const BADGES: Badge[] = [
   { id: "polyglot", name: "Polyglot", description: "A run of 30 seconds or more in all four languages.", rarity: "rare", glyph: "4", progress: (p) => [p.languages.length, 4], earned: (c) => c.profile.languages.length >= 4 },
   { id: "bookworm", name: "Bookworm", description: "Finish 25 quotes.", rarity: "rare", glyph: "“", progress: (p) => [p.quotes, 25], earned: (c) => c.profile.quotes >= 25 },
   { id: "regular", name: "Regular", description: "Play 30 dailies.", rarity: "rare", glyph: "D", progress: (p) => [Object.keys(p.dailies).length, 30], earned: (c) => Object.keys(c.profile.dailies).length >= 30 },
+  { id: "victor", name: "Victor", description: "Win a race.", rarity: "rare", glyph: "V", earned: (c) => c.profile.races.won >= 1 },
   { id: "midnight", name: "Midnight", description: "Finish a run in the first five minutes of a new day.", rarity: "rare", glyph: "0:00", secret: true, hint: "Be there when the date turns.", earned: (c) => c.run !== null && c.run.finished && c.now.getHours() === 0 && c.now.getMinutes() < 5 },
   { id: "night-owl", name: "Night owl", description: "Finish a run between three and four in the morning.", rarity: "rare", glyph: "3:00", secret: true, hint: "Everyone else is asleep.", earned: (c) => c.run !== null && c.run.finished && c.now.getHours() === 3 },
   { id: "close-call", name: "Close call", description: "Save your streak in the last five minutes of the day.", rarity: "rare", glyph: "23:59", secret: true, hint: "Saved by the bell.", earned: (c) => c.run !== null && c.run.firstToday && c.profile.streakDays >= 2 && c.now.getHours() === 23 && c.now.getMinutes() >= 55 },
@@ -93,6 +95,8 @@ export const BADGES: Badge[] = [
 
   { id: "one-fifty", name: "One fifty", description: "150 wpm over 30 seconds or more, 95% accurate.", rarity: "epic", glyph: "150", progress: toSpeed(150), earned: fast(150) },
   { id: "metronome", name: "Metronome", description: "90% consistency at 80 wpm or more for a full minute.", rarity: "epic", glyph: "=", earned: (c) => comparable(c.run) && c.run.seconds >= 60 && c.run.wpm >= 80 && c.run.consistency >= 90 },
+  { id: "rival", name: "Rival", description: "Win ten races.", rarity: "epic", glyph: "10V", progress: (p) => [p.races.won, 10], earned: (c) => c.profile.races.won >= 10 },
+  { id: "photo-finish", name: "Photo finish", description: "Win a race by less than half a second.", rarity: "epic", glyph: "½", secret: true, hint: "Closer than a blink.", earned: (c) => c.profile.races.closest !== null && c.profile.races.closest < 500 },
   { id: "perfectionist", name: "Perfectionist", description: "Finish 100 words in perfect mode.", rarity: "epic", glyph: "P", earned: (c) => comparable(c.run) && c.run.mode === "perfect" && c.run.words >= 100 },
   { id: "marathon", name: "Marathon", description: "Keep an endless run going for ten minutes.", rarity: "epic", glyph: "10′", earned: (c) => c.run !== null && c.run.mode === "endless" && c.run.seconds >= 600 },
   { id: "hundred-days", name: "Hundred days", description: "Type on a hundred days in a row.", rarity: "epic", glyph: "100d", progress: toStreak(100), earned: (c) => c.profile.streakDays >= 100 },

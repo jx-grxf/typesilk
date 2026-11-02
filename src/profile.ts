@@ -28,7 +28,11 @@ export type Profile = {
   languages: string[];
   /** Missed days a freeze carried the streak over, at most one per week. */
   frozen: string[];
+  /** Races against someone else: finished, won, and the closest win in milliseconds. */
+  races: RaceStats;
 };
+
+export type RaceStats = { played: number; won: number; closest: number | null };
 
 export type RunResult = {
   key: string;
@@ -51,7 +55,15 @@ export type RunReward = {
 };
 
 export function emptyProfile(): Profile {
-  return { xp: 0, tests: 0, totalChars: 0, streakDays: 0, lastDay: null, bests: {}, keys: {}, pairs: {}, history: [], days: {}, dailies: {}, badges: {}, quotes: 0, languages: [], frozen: [] };
+  return { xp: 0, tests: 0, totalChars: 0, streakDays: 0, lastDay: null, bests: {}, keys: {}, pairs: {}, history: [], days: {}, dailies: {}, badges: {}, quotes: 0, languages: [], frozen: [], races: { played: 0, won: 0, closest: null } };
+}
+
+/** Counts a finished race; `marginMs` is how far ahead a win was, null when there was no one to beat. */
+export function recordRace(profile: Profile, won: boolean, marginMs: number | null): void {
+  profile.races.played++;
+  if (!won) return;
+  profile.races.won++;
+  if (marginMs !== null && (profile.races.closest === null || marginMs < profile.races.closest)) profile.races.closest = marginMs;
 }
 
 export function levelOf(xp: number): number {
