@@ -1,7 +1,7 @@
 import type { RunLog } from "./replay";
 import type { Language } from "./words";
 
-export type Account = { id: string; username: string | null; displayName: string | null };
+export type Account = { id: string; username: string | null; displayName: string | null; publicProfile: boolean };
 export type Provider = "github" | "google";
 export type DailyRank = { wpm: number; accuracy: number; rank: number; total: number; first: boolean; hidden: boolean };
 
@@ -59,6 +59,18 @@ export async function saveNames(username: string, displayName: string): Promise<
     if (!ok) return String(data.error);
     account = data.user as Account;
     tickets.clear();
+    return null;
+  } catch {
+    return "offline";
+  }
+}
+
+/** Resolves to an error code, or null once the profile's visibility is saved. */
+export async function savePublicProfile(on: boolean): Promise<string | null> {
+  try {
+    const { ok, data } = await post("/api/me/public", { public: on });
+    if (!ok) return String(data.error);
+    if (account) account = { ...account, publicProfile: on };
     return null;
   } catch {
     return "offline";

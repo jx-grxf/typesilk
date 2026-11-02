@@ -48,6 +48,16 @@ kbd { font: inherit; font-style: italic; }
   padding: clamp(40px, 9vh, 96px) 0 var(--space-4);
 }
 
+/* a profile reads across, like /me in the app, not as a column of prose */
+.page-body.public-profile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 1200px;
+}
+.public-profile .who h2 { font-size: clamp(2.6rem, 6vw, 4.5rem); font-weight: 300; font-style: italic; letter-spacing: -0.03em; line-height: 1; }
+.public-profile .avatar svg { width: 56px; height: 56px; }
+
 h1 {
   font-size: clamp(3rem, 8vw, 5.25rem);
   font-weight: 400;

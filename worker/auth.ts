@@ -2,7 +2,7 @@ import { cookie, randomToken, readCookie, sha256, type Env } from "./http";
 import { validDisplayName } from "./names";
 
 export type Provider = "github" | "google";
-export type SessionUser = { id: string; username: string | null; display_name: string | null };
+export type SessionUser = { id: string; username: string | null; display_name: string | null; public_profile: number };
 
 const SESSION_COOKIE = "__Host-typesilk_session";
 const OAUTH_COOKIE = "__Host-typesilk_oauth";
@@ -26,7 +26,7 @@ export async function currentUser(request: Request, env: Env): Promise<SessionUs
   const token = readCookie(request, SESSION_COOKIE);
   if (!token) return null;
   return env.DB.prepare(
-    `SELECT users.id, users.username, users.display_name
+    `SELECT users.id, users.username, users.display_name, users.public_profile
      FROM sessions JOIN users ON users.id = sessions.user_id
      WHERE sessions.token_hash = ? AND sessions.expires_at > ? AND users.banned_at IS NULL`,
   ).bind(await sha256(token), Date.now()).first<SessionUser>();

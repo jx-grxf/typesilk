@@ -55,7 +55,7 @@ English, German, Spanish and French, with optional punctuation and numbers. Word
 
 **Sharing**: `c` copies and `s` saves a 1200 × 630 image of your result, drawn in your theme in the browser.
 
-Everything is stored in your browser and typing never needs an account. Signing in with GitHub or Google is optional. It puts your daily on the [leaderboard](https://typesilk.com/daily), where the server replays each run's keystrokes before ranking it, and syncs your profile across devices: each browser uploads its own runs and the profile shows the sum.
+Everything is stored in your browser and typing never needs an account. Signing in with GitHub or Google is optional. It puts your daily on the [leaderboard](https://typesilk.com/daily), where the server replays each run's keystrokes before ranking it, and syncs your profile across devices: each browser uploads its own runs and the profile shows the sum. Signed-in accounts can also make their profile public at `/u/username` from the command palette. It's off by default, shows no per-letter stats and isn't indexed.
 
 ## Make it yours
 

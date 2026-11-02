@@ -3,6 +3,7 @@ import {
   deleteAccount,
   PROVIDER_NAMES,
   saveNames,
+  savePublicProfile,
   signInProviders,
   signOut,
   submitDaily,
@@ -165,6 +166,15 @@ export function fillAvatar(node: HTMLElement): void {
   const user = currentAccount();
   if (user) node.replaceChildren(avatarNode(user.username ?? user.id));
   else node.textContent = "Y";
+}
+
+/** Flips whether /u/name shows this account's profile. Nothing is public until this is called. */
+export async function togglePublicProfile(): Promise<void> {
+  const user = currentAccount();
+  if (!user?.username) return;
+  const code = await savePublicProfile(!user.publicProfile);
+  if (code) console.warn("public profile not changed", code);
+  afterChange();
 }
 
 export function signOutNow(): void {
