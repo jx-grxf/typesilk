@@ -1,0 +1,167 @@
+/* The typing stage: viewport, words, caret, ghost and flow line. Shared by the test and race rooms. */
+
+#typing {
+  position: relative;
+  width: 100%;
+  margin-bottom: 4vh;
+  transition: opacity 200ms ease, visibility 200ms;
+}
+
+#anchor {
+  height: 2.2rem;
+  margin-bottom: 0.6rem;
+  padding-left: var(--anchor);
+}
+
+#anchor { display: flex; align-items: baseline; gap: 1.4rem; }
+
+#live {
+  color: var(--muted);
+  font-size: 1.15rem;
+  font-style: italic;
+  font-variant-numeric: lining-nums tabular-nums;
+  white-space: pre;
+}
+
+#hud {
+  color: var(--muted);
+  font-size: 1.7rem;
+  font-style: italic;
+  font-variant-numeric: lining-nums tabular-nums;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+#combo {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: clamp(14rem, 34vw, 34rem);
+  font-style: italic;
+  font-weight: 300;
+  line-height: 1;
+  color: var(--accent);
+  opacity: 0;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+#viewport {
+  position: relative;
+  height: var(--line);
+  overflow: hidden;
+  contain: strict;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, rgb(0 0 0 / 0.5) calc(var(--anchor) * 0.35), #000 calc(var(--anchor) * 0.68), #000 82%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, rgb(0 0 0 / 0.5) calc(var(--anchor) * 0.35), #000 calc(var(--anchor) * 0.68), #000 82%, transparent 100%);
+}
+
+#scroller {
+  position: relative;
+  left: var(--anchor);
+  width: max-content;
+  will-change: transform;
+}
+
+#words {
+  font-size: var(--fs);
+  line-height: var(--line);
+  font-weight: 370;
+  letter-spacing: -0.012em;
+  color: var(--dim);
+  font-variant-ligatures: none;
+  font-kerning: none;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.word {
+  display: inline-block;
+  margin-right: var(--word-gap);
+  white-space: nowrap;
+  transition: color var(--fast) ease;
+}
+
+.word.active { color: var(--muted); }
+
+.l { display: inline-block; white-space: pre; }
+.l.ok { color: var(--ink); }
+.l.bad { color: var(--accent); }
+.l.x { opacity: 0.75; }
+.l.missed { color: color-mix(in srgb, var(--accent) 45%, var(--dim)); }
+.word.flawed { text-decoration: underline 1px var(--accent); text-underline-offset: 0.14em; }
+
+#caret, #ghost {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: var(--line);
+  will-change: transform;
+}
+
+#caret {
+  width: max(3px, calc(var(--fs) * 0.034));
+  /* sits just ahead of the letter, so it never touches a serif */
+  margin-left: calc(var(--fs) * -0.05);
+  height: calc(var(--fs) * 0.98);
+  top: calc((var(--line) - var(--fs) * 0.98) / 2);
+  background: var(--accent);
+}
+
+/* block and underline carets are 1px wide and scaled to the letter under them */
+:root:is([data-caret="block"], [data-caret="underline"]) #caret {
+  width: 1px;
+  margin-left: 0;
+  transform-origin: 0 50%;
+}
+:root[data-caret="block"] #caret { background: color-mix(in srgb, var(--accent) 34%, transparent); }
+:root[data-caret="underline"] #caret {
+  height: max(2px, calc(var(--fs) * 0.045));
+  top: calc(var(--line) / 2 + var(--fs) * 0.3);
+}
+
+#caret.idle { animation: breathe 1.15s cubic-bezier(.45, 0, .55, 1) infinite; }
+
+@keyframes breathe {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+
+#ghost {
+  width: 0.5em;
+  font-size: var(--fs);
+  height: 2px;
+  top: calc(var(--line) - 5px);
+  background: var(--muted);
+  opacity: 0;
+  transition: opacity var(--fade) ease;
+}
+#ghost.on { opacity: 0.8; }
+
+#flow-track {
+  position: relative;
+  height: 1px;
+  margin-top: 1.1rem;
+  background: var(--rule);
+}
+
+#flow-line {
+  width: 100%;
+  height: 100%;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: var(--anchor) 0;
+  will-change: transform;
+}
+
+/* the line layouts read like a page instead of a tape */
+:root:is([data-layout="lines"], [data-layout="classic"]) { --anchor: calc((100vw - var(--measure)) / 2); }
+
+:root:is([data-layout="lines"], [data-layout="classic"]) #viewport {
+  height: calc(var(--line) * 3);
+  -webkit-mask-image: linear-gradient(to bottom, rgb(0 0 0 / 0.4) 0, #000 30%, #000 68%, rgb(0 0 0 / 0.1) 100%);
+  mask-image: linear-gradient(to bottom, rgb(0 0 0 / 0.4) 0, #000 30%, #000 68%, rgb(0 0 0 / 0.1) 100%);
+}
+
+:root:is([data-layout="lines"], [data-layout="classic"]) #scroller { width: var(--measure); }
+:root:is([data-layout="lines"], [data-layout="classic"]) #words { white-space: normal; }

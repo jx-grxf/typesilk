@@ -3,6 +3,7 @@ import "@fontsource-variable/newsreader/opsz-italic.css";
 import "@fontsource-variable/jetbrains-mono/wght.css";
 import "@fontsource-variable/jetbrains-mono/wght-italic.css";
 import "./tokens.css";
+import "./typing.css";
 import "./style.css";
 import "./profile.css";
 import { currentAccount, loadAccount, onAccountDeleted, onBeforeSignOut, prepareTicket } from "./account";
