@@ -10,12 +10,14 @@ const HISTORY_LIMIT = 400;
 const MAX_BESTS = 300;
 const MAX_SERIES = 600;
 const MAX_KEYS = 200;
+const MAX_PAIRS = 800;
 const MAX_DAYS = 1100;
 const MAX_DAILIES = 4000;
 const MAX_BADGES = 100;
 const MAX_LANGUAGES = 8;
 const MAX_STREAK = 4000;
 const MAX_RACE_MS = 600_000;
+const MAX_FROZEN = 60;
 
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 const RECORD_KEY = /^[a-z0-9:]{1,64}$/;
@@ -23,6 +25,7 @@ const DAILY_KEY = /^\d{1,6}:[a-z]{1,16}$/;
 const BADGE_ID = /^[a-z0-9-]{1,40}$/;
 const LANGUAGE = /^[a-z]{1,16}$/;
 const LETTER = /^\p{L}$/u;
+const PAIR = /^\p{L}{2}$/u;
 
 const historyId = (entry: HistoryEntry): string => `${entry.key}|${entry.wpm}|${entry.at ?? ""}`;
 
@@ -49,15 +52,22 @@ function sumDays(target: Days, source: Days, sign: 1 | -1): void {
 }
 
 /** Days typed in a row up to the latest day any share has seen. */
-function mergedStreak(profiles: Profile[], days: Days, lastDay: string): number {
+function mergedStreak(profiles: Profile[], days: Days, lastDay: string, frozen: Set<number>): number {
   const active = new Set(Object.keys(days).map(dayNumber));
   for (const profile of profiles) {
     if (!profile.lastDay) continue;
-    const end = dayNumber(profile.lastDay);
-    for (let i = 0; i < Math.min(profile.streakDays, MAX_STREAK); i++) active.add(end - i);
+    // a streak counts typed days, so the frozen ones in between are stepped over
+    let day = dayNumber(profile.lastDay);
+    for (let left = Math.min(profile.streakDays, MAX_STREAK); left > 0; day--) {
+      if (frozen.has(day)) continue;
+      active.add(day);
+      left--;
+    }
   }
   let streak = 0;
-  for (let day = dayNumber(lastDay); active.has(day); day--) streak++;
+  for (let day = dayNumber(lastDay); active.has(day) || frozen.has(day); day--) {
+    if (active.has(day)) streak++;
+  }
   return streak;
 }
 
@@ -77,6 +87,7 @@ export function mergeProfiles(profiles: Profile[]): Profile {
       if (!merged.bests[key] || best.wpm > merged.bests[key].wpm) merged.bests[key] = best;
     }
     sumKeys(merged.keys, profile.keys, 1);
+    sumKeys(merged.pairs, profile.pairs, 1);
     sumDays(merged.days, profile.days, 1);
     for (const [key, result] of Object.entries(profile.dailies)) merged.dailies[key] ??= result;
     for (const [id, day] of Object.entries(profile.badges)) {
@@ -86,12 +97,17 @@ export function mergeProfiles(profiles: Profile[]): Profile {
     for (const language of profile.languages) {
       if (!merged.languages.includes(language)) merged.languages.push(language);
     }
+    for (const day of profile.frozen) {
+      if (!merged.frozen.includes(day)) merged.frozen.push(day);
+    }
     if (profile.lastDay && (!merged.lastDay || profile.lastDay > merged.lastDay)) merged.lastDay = profile.lastDay;
     history.push(...profile.history);
   }
   // runs from before sync have no time; the stable sort keeps them in their device's order
   merged.history = history.sort((a, b) => (a.at ?? 0) - (b.at ?? 0)).slice(-HISTORY_LIMIT);
-  merged.streakDays = merged.lastDay ? mergedStreak(profiles, merged.days, merged.lastDay) : 0;
+  // another device may have typed on the day this one froze over
+  merged.frozen = merged.frozen.filter((day) => !merged.days[day]).sort().slice(-MAX_FROZEN);
+  merged.streakDays = merged.lastDay ? mergedStreak(profiles, merged.days, merged.lastDay, new Set(merged.frozen.map(dayNumber))) : 0;
   return merged;
 }
 
@@ -109,11 +125,13 @@ export function subtractProfile(total: Profile, part: Profile): Profile {
     closest: total.races.won > part.races.won ? total.races.closest : null,
   };
   sumKeys(own.keys, part.keys, -1);
+  sumKeys(own.pairs, part.pairs, -1);
   sumDays(own.days, part.days, -1);
   for (const [key, best] of Object.entries(part.bests)) {
     if (own.bests[key]?.wpm === best.wpm) delete own.bests[key];
   }
   for (const key of Object.keys(part.dailies)) delete own.dailies[key];
+  own.frozen = total.frozen.filter((day) => !part.frozen.includes(day));
   for (const [id, day] of Object.entries(part.badges)) {
     if (own.badges[id] === day) delete own.badges[id];
   }
@@ -178,6 +196,7 @@ export function sanitizeProfile(value: unknown): Profile {
   profile.lastDay = typeof raw.lastDay === "string" && DAY.test(raw.lastDay) ? raw.lastDay : null;
   for (const [key, item] of entries(raw.bests, RECORD_KEY, MAX_BESTS)) profile.bests[key] = cleanBest(item);
   for (const [key, item] of entries(raw.keys, LETTER, MAX_KEYS)) profile.keys[key] = cleanKey(item);
+  for (const [key, item] of entries(raw.pairs, PAIR, MAX_PAIRS)) profile.pairs[key] = cleanKey(item);
   for (const [day, item] of entries(raw.days, DAY, MAX_DAYS)) profile.days[day] = cleanDay(item);
   const dailies: Dailies = {};
   for (const [key, item] of entries(raw.dailies, DAILY_KEY, MAX_DAILIES)) dailies[key] = cleanDaily(item);
@@ -187,6 +206,9 @@ export function sanitizeProfile(value: unknown): Profile {
   }
   if (Array.isArray(raw.languages)) {
     profile.languages = [...new Set(raw.languages.filter((l): l is string => typeof l === "string" && LANGUAGE.test(l)))].slice(0, MAX_LANGUAGES);
+  }
+  if (Array.isArray(raw.frozen)) {
+    profile.frozen = [...new Set(raw.frozen.filter((d): d is string => typeof d === "string" && DAY.test(d)))].sort().slice(-MAX_FROZEN);
   }
   if (Array.isArray(raw.history)) {
     profile.history = raw.history.slice(-HISTORY_LIMIT).map(record)

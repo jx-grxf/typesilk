@@ -6,12 +6,12 @@
   // a second public hostname would compete with the custom domain in search results
   "workers_dev": false,
   "preview_urls": false,
-  // only the API and race rooms wake the worker; static files stay free and uncounted
+  // only the API, public profiles and race rooms wake the worker; static files stay free and uncounted
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
     "not_found_handling": "404-page",
-    "run_worker_first": ["/api/*", "/race/*"]
+    "run_worker_first": ["/api/*", "/u/*", "/race/*"]
   },
   "d1_databases": [
     {

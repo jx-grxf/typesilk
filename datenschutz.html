@@ -25,7 +25,7 @@
     <script>
       try {
         const { theme } = JSON.parse(localStorage.getItem("typesilk.settings") ?? "{}");
-        if (["noir", "paper", "forest", "klein"].includes(theme)) document.documentElement.dataset.theme = theme;
+        if (["noir", "paper", "forest", "klein", "ash", "plum", "sepia", "void", "rosso"].includes(theme)) document.documentElement.dataset.theme = theme;
       } catch {}
     </script>
     <link rel="stylesheet" href="/src/page.css" />
@@ -53,6 +53,7 @@
           <li>deine gewerteten Daily-Läufe: Geschwindigkeit, Genauigkeit, Dauer, Datum und einen Fingerabdruck der Anschläge, der kopierte Läufe erkennt</li>
           <li>deine Profil-Statistiken aus jedem Browser, in dem du angemeldet bist: Levelpunkte, Läufe, Wörter, Bestzeit pro Einstellung, letzte Geschwindigkeiten, Fehler und Tempo pro Buchstabe, Tippen pro Tag, Dailys, Abzeichen und Serie. Bei der ersten Anmeldung in einem Browser kommen die Statistiken dazu, die er schon hat.</li>
           <li>einen Hash deines Sitzungsschlüssels</li>
+          <li>ob dein Profil öffentlich ist. Das ist aus, bis du es einschaltest. Ist es an, sieht jeder unter /u/dein-nutzername dein Level, deine Läufe, Wörter, Serie, Tippen pro Tag, letzte Geschwindigkeiten, Bestzeiten und Abzeichen. Werte pro Buchstabe, Geräte und Uhrzeiten der Läufe bleiben privat, und Suchmaschinen werden gebeten, die Seite nicht aufzunehmen.</li>
         </ul>
         <p>Deine Mail-Adresse fragen wir nicht ab. Deinen echten Namen und dein Foto von Google sowie dein Bild von GitHub speichern wir nicht. Hat dein GitHub-Profil einen öffentlichen Namen, schlagen wir ihn als Anzeigenamen vor. Du kannst ihn ändern, bevor etwas öffentlich wird. Deine Anschläge werden zur Prüfung eines Laufs übertragen und danach verworfen.</p>
         <p>Rennen unter /race gehen mit und ohne Konto. Der Name, unter dem du fährst, dein Fortschritt und dein Ergebnis gehen an die andere Person im Raum. Deine Anschläge gehen zur Prüfung deines Zieleinlaufs an den Server und werden danach verworfen. Der Raum behält nichts, sobald ihr beide weg seid; nur sein Code wird eine Stunde gehalten, damit er nicht doppelt vergeben wird.</p>

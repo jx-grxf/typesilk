@@ -20,15 +20,16 @@ site shows every token and component in every theme, rendered by the app's own c
 
 ## Colour
 
-Six roles per theme (noir, paper, forest, klein). Contrast against `--bg`:
+Six roles per theme. Noir, paper, forest and klein are open from the start; ash, plum,
+sepia, void and rosso open at level 5, 10, 15, 20 and 30. Contrast against `--bg`:
 
-| Token | Use | noir | paper | forest | klein |
-| --- | --- | --- | --- | --- | --- |
-| `--ink` | typed text, primary text, values | 16.9 | 15.6 | 14.7 | 8.5 |
-| `--muted` | secondary text, labels, the active word | 7.2 | 4.9 | 7.3 | 6.2 |
-| `--dim` | untyped text, large quiet text | 3.6 | 3.2 | 4.2 | 3.6 |
-| `--rule` | hairlines, never text | 1.3 | 1.3 | 1.3 | 1.4 |
-| `--accent` | caret, mistakes, records, selection | 5.9 | 4.1 | 9.5 | 6.7 |
+| Token | Use | noir | paper | forest | klein | ash | plum | sepia | void | rosso |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `--ink` | typed text, primary text, values | 16.9 | 15.6 | 14.7 | 8.5 | 13.6 | 15.3 | 12.8 | 17.8 | 8.0 |
+| `--muted` | secondary text, labels, the active word | 7.2 | 4.9 | 7.3 | 6.2 | 5.6 | 7.6 | 7.0 | 7.6 | 6.1 |
+| `--dim` | untyped text, large quiet text | 3.6 | 3.2 | 4.2 | 3.6 | 3.4 | 3.7 | 3.6 | 3.5 | 3.5 |
+| `--rule` | hairlines, never text | 1.3 | 1.3 | 1.3 | 1.4 | 1.3 | 1.4 | 1.3 | 1.3 | 1.3 |
+| `--accent` | caret, mistakes, records, selection | 5.9 | 4.1 | 9.5 | 6.7 | 5.7 | 7.4 | 6.4 | 11.7 | 6.6 |
 
 Text below 24 px uses `--muted` or `--ink`. `--dim` only works for the large test text
 and placeholders, where 3:1 is enough.

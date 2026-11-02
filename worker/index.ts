@@ -3,6 +3,7 @@ import { currentUser, handleAuth, type Provider, type SessionUser } from "./auth
 import { isLanguage, issueTicket, readBoard, submitRun } from "./daily";
 import { clientKey, fail, type Env } from "./http";
 import { handleProfile } from "./profile";
+import { readPublicProfile, setPublicProfile } from "./public";
 import { createRace, joinRace } from "./race";
 
 export { RaceRoom } from "./race";
@@ -11,6 +12,7 @@ type SignedInRoute = (request: Request, env: Env, user: SessionUser) => Promise<
 
 const SIGNED_IN: Record<string, SignedInRoute> = {
   "POST /api/me": updateNames,
+  "POST /api/me/public": setPublicProfile,
   "DELETE /api/me": deleteAccount,
   "POST /api/daily/ticket": issueTicket,
   "POST /api/daily/runs": submitRun,
@@ -45,6 +47,9 @@ async function handleApi(request: Request, env: Env, url: URL): Promise<Response
 
   if (path === "/api/profile") return handleProfile(request, env, url);
 
+  const owner = path.match(/^\/api\/u\/([a-z0-9_-]{1,20})$/i);
+  if (owner && method === "GET") return readPublicProfile(request, env, owner[1]!);
+
   if (path === "/api/race" && method === "POST") return createRace(env);
   const race = path.match(/^\/api\/race\/([A-Za-z0-9]{1,12})$/);
   if (race && method === "GET") return joinRace(request, env, url, race[1]!.toUpperCase());
@@ -62,6 +67,19 @@ async function handleApi(request: Request, env: Env, url: URL): Promise<Response
   return route!(request, env, user);
 }
 
+/** Every /u/name is the same page, which then asks the API for that name. */
+async function publicProfilePage(request: Request, env: Env, url: URL): Promise<Response> {
+  if (request.method !== "GET" && request.method !== "HEAD") return fail("method_not_allowed", 405);
+  if (!/^\/u\/[a-z0-9_-]{3,20}\/?$/i.test(url.pathname)) return env.ASSETS.fetch(new Request(new URL("/404", url), request));
+  // this path wakes the worker, so it shares the budget of API reads
+  if (!(await env.RATE_LIMIT_READ.limit({ key: clientKey(request) })).success) return fail("rate_limited", 429);
+  const page = await env.ASSETS.fetch(new Request(new URL("/u", url), request));
+  const response = new Response(page.body, page);
+  // a profile is opt-in to be seen, not to be indexed
+  response.headers.set("X-Robots-Tag", "noindex");
+  return response;
+}
+
 /** Every /race/CODE is the race page, which reads the code from the address. */
 async function racePage(request: Request, env: Env, url: URL): Promise<Response> {
   if (request.method !== "GET" && request.method !== "HEAD") return fail("method_not_allowed", 405);
@@ -69,6 +87,7 @@ async function racePage(request: Request, env: Env, url: URL): Promise<Response>
   if (!(await env.RATE_LIMIT_READ.limit({ key: clientKey(request) })).success) return fail("rate_limited", 429);
   const page = await env.ASSETS.fetch(new Request(new URL("/race", url), request));
   const response = new Response(page.body, page);
+  // a room link is for the people in it, not for search results
   response.headers.set("X-Robots-Tag", "noindex");
   return response;
 }
@@ -76,6 +95,7 @@ async function racePage(request: Request, env: Env, url: URL): Promise<Response>
 export default {
   async fetch(request, env): Promise<Response> {
     const url = new URL(request.url);
+    if (url.pathname.startsWith("/u/")) return publicProfilePage(request, env, url);
     if (url.pathname.startsWith("/race/")) return racePage(request, env, url);
     if (!url.pathname.startsWith("/api/")) return env.ASSETS.fetch(request);
     try {

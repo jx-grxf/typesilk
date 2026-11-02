@@ -25,7 +25,7 @@
     <script>
       try {
         const { theme } = JSON.parse(localStorage.getItem("typesilk.settings") ?? "{}");
-        if (["noir", "paper", "forest", "klein"].includes(theme)) document.documentElement.dataset.theme = theme;
+        if (["noir", "paper", "forest", "klein", "ash", "plum", "sepia", "void", "rosso"].includes(theme)) document.documentElement.dataset.theme = theme;
       } catch {}
     </script>
     <link rel="stylesheet" href="/src/page.css" />
@@ -53,6 +53,7 @@
           <li>your ranked daily runs: speed, accuracy, duration, date and a fingerprint of the keystrokes that catches copied runs</li>
           <li>your profile stats from each browser you sign in on: level points, runs, words, best speed per setup, recent speeds, per-letter error and speed counts, typing per day, dailies, badges and streak. The first sign-in in a browser adds the stats it already has.</li>
           <li>a hash of your session token</li>
+          <li>whether your profile is public. It is off until you turn it on. When it is on, anyone with the address /u/your-username can see your level, runs, words, streak, typing per day, recent speeds, records and badges. Per-letter stats, devices and run times stay private, and search engines are asked not to index the page.</li>
         </ul>
         <p>We don't ask for your email address. We don't store your real name or photo from Google, or your picture from GitHub. If your GitHub profile has a public name, we suggest it as your display name and you can change it before anything is public. Your keystrokes are sent to check a run and then discarded.</p>
         <p>Races at /race work with or without an account. The name you race under, your progress and your result go to the other person in the room. Your keystrokes go to the server to check your finish and are discarded. The room keeps nothing once both of you have left; only its code is held for an hour so it can't be handed out twice.</p>

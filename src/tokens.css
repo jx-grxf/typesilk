@@ -2,11 +2,12 @@
  * typesilk tokens. Every colour, size and duration the interface uses lives here;
  * DESIGN.md explains the rules and /design shows them live.
  *
- * Colour roles, contrast against --bg measured 2026-11-01 (noir / paper / forest / klein):
- *   --ink     typed text and primary text          16.9 / 15.6 / 14.7 / 8.5
- *   --muted   secondary text, the active word        7.2 /  4.9 /  7.3 / 6.2
- *   --dim     untyped text and large quiet text      3.6 /  3.2 /  4.2 / 3.6  (3:1 is enough only for text from 24px)
- *   --rule    hairlines, never text                  1.3 /  1.3 /  1.3 / 1.4
+ * Colour roles, contrast against --bg measured 2026-11-02
+ * (noir / paper / forest / klein / ash / plum / sepia / void / rosso):
+ *   --ink     typed text and primary text          16.9 / 15.6 / 14.7 / 8.5 / 13.6 / 15.3 / 12.8 / 17.8 / 8.0
+ *   --muted   secondary text, the active word        7.2 /  4.9 /  7.3 / 6.2 /  5.6 /  7.6 /  7.0 /  7.6 / 6.1
+ *   --dim     untyped text and large quiet text      3.6 /  3.2 /  4.2 / 3.6 /  3.4 /  3.7 /  3.6 /  3.5 / 3.5  (3:1 is enough only for text from 24px)
+ *   --rule    hairlines, never text                  1.3 /  1.3 /  1.3 / 1.4 /  1.3 /  1.4 /  1.3 /  1.3 / 1.3
  *   --accent  the one colour for what matters: caret, mistakes, records, the selected item
  */
 
@@ -55,6 +56,52 @@
   --dim: #8f9ae6;
   --rule: #3a4ad2;
   --accent: #ffd23f;
+}
+
+:root[data-theme="ash"] {
+  --bg: #e4e2dc;
+  --ink: #1a1917;
+  --muted: #5a5751;
+  --dim: #7c7871;
+  --rule: #c9c6bf;
+  --accent: #2448c9;
+  color-scheme: light;
+}
+
+:root[data-theme="plum"] {
+  --bg: #1d1321;
+  --ink: #f3eaf0;
+  --muted: #b7a3b3;
+  --dim: #806b7d;
+  --rule: #3a2a42;
+  --accent: #ff7aa8;
+}
+
+:root[data-theme="sepia"] {
+  --bg: #2a2017;
+  --ink: #f2e5cd;
+  --muted: #bda98c;
+  --dim: #88765d;
+  --rule: #3e3224;
+  --accent: #ec8d3e;
+}
+
+:root[data-theme="void"] {
+  --bg: #000000;
+  --ink: #ececec;
+  --muted: #9c9c9c;
+  --dim: #636363;
+  --rule: #1e1e1e;
+  --accent: #45d6c8;
+}
+
+:root[data-theme="rosso"] {
+  --bg: #951b15;
+  --ink: #fff5ea;
+  --muted: #ffcfc3;
+  --dim: #ef8a7e;
+  --rule: #ab2f28;
+  --accent: #ffe066;
 }
 
 :root[data-font="mono"] {

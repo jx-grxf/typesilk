@@ -25,7 +25,7 @@ export default defineConfig({
   plugins: [profilePage()],
   build: {
     rollupOptions: {
-      input: { main: "index.html", design: "design.html", about: "about.html", de: "de.html", notFound: "404.html", daily: "daily.html", privacy: "privacy.html", datenschutz: "datenschutz.html", terms: "terms.html", nutzungsbedingungen: "nutzungsbedingungen.html", impressum: "impressum.html", race: "race.html" },
+      input: { main: "index.html", design: "design.html", about: "about.html", de: "de.html", notFound: "404.html", daily: "daily.html", privacy: "privacy.html", datenschutz: "datenschutz.html", terms: "terms.html", nutzungsbedingungen: "nutzungsbedingungen.html", impressum: "impressum.html", publicProfile: "u.html", race: "race.html" },
     },
   },
 });

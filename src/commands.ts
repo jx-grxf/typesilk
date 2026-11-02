@@ -1,14 +1,15 @@
 import { currentAccount, signInProviders } from "./account";
-import { openDeleteAccount, openNames, openSignIn, signOutNow } from "./account-view";
+import { openDeleteAccount, openNames, openSignIn, signOutNow, togglePublicProfile } from "./account-view";
 import { dailyNumber } from "./daily";
 import type { Command } from "./palette";
 import { QUOTE_LENGTHS } from "./quotes";
-import { CARET_MOTIONS, CARETS, FONTS, GOALS, LAYOUTS, MODES, THEMES, type Settings } from "./settings";
+import { CARET_MOTIONS, CARETS, FONTS, GOALS, LAYOUTS, MODES, themeLevel, THEMES, type Settings } from "./settings";
 import { SOUND_PACKS } from "./sound";
 import { availableSizes, LANGUAGES, type Language } from "./words";
 
 export type CommandContext = {
   settings: Settings;
+  level: number;
   hasWeakKeys: boolean;
   change(patch: Partial<Settings>): void;
   restart(): void;
@@ -46,6 +47,11 @@ export function commands(ctx: CommandContext): Command[] {
   list.push({ group: "go to", label: "profile", run: ctx.showProfile });
   if (currentAccount()) {
     list.push({ group: "account", label: "edit name", run: () => openNames() });
+    const user = currentAccount()!;
+    if (user.username) {
+      list.push({ group: "account", label: user.publicProfile ? "make profile private" : "make profile public", run: () => void togglePublicProfile() });
+      if (user.publicProfile) list.push({ group: "go to", label: "public profile", run: () => location.assign(`/u/${user.username}`) });
+    }
     list.push({ group: "account", label: "sign out", run: signOutNow });
     list.push({ group: "account", label: "delete account", run: openDeleteAccount });
   } else if (signInProviders().length > 0) {
@@ -62,6 +68,7 @@ export function commands(ctx: CommandContext): Command[] {
   toggle("punctuation", "punctuation");
   toggle("numbers", "numbers");
   for (const theme of THEMES) {
+    if (themeLevel(theme) > ctx.level) continue;
     list.push({
       group: "theme",
       label: theme,

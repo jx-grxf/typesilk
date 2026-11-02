@@ -1,11 +1,12 @@
 import { clearSession, currentUser, enabledProviders, sessionToken, type SessionUser } from "./auth";
 import { fail, json, readJson, sha256, type Env } from "./http";
 import { validDisplayName, validUsername } from "./names";
+import { forgetPublicProfile } from "./public";
 
-type PublicUser = { id: string; username: string | null; displayName: string | null };
+type PublicUser = { id: string; username: string | null; displayName: string | null; publicProfile: boolean };
 
 function publicUser(user: SessionUser): PublicUser {
-  return { id: user.id, username: user.username, displayName: user.display_name };
+  return { id: user.id, username: user.username, displayName: user.display_name, publicProfile: user.public_profile === 1 };
 }
 
 export async function readMe(request: Request, env: Env): Promise<Response> {
@@ -34,7 +35,7 @@ export async function updateNames(request: Request, env: Env, user: SessionUser)
   return json({ user: { ...publicUser(user), username, displayName } });
 }
 
-export async function deleteAccount(_request: Request, env: Env, user: SessionUser): Promise<Response> {
+export async function deleteAccount(request: Request, env: Env, user: SessionUser): Promise<Response> {
   await env.DB.batch([
     env.DB.prepare("DELETE FROM daily_runs WHERE user_id = ?").bind(user.id),
     env.DB.prepare("DELETE FROM profile_shares WHERE user_id = ?").bind(user.id),
@@ -42,6 +43,7 @@ export async function deleteAccount(_request: Request, env: Env, user: SessionUs
     env.DB.prepare("DELETE FROM identities WHERE user_id = ?").bind(user.id),
     env.DB.prepare("DELETE FROM users WHERE id = ?").bind(user.id),
   ]);
+  await forgetPublicProfile(request, user.username);
   return json({ ok: true }, 200, clearSession());
 }
 
