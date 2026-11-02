@@ -86,6 +86,8 @@ body.show-profile .mini-avatar { background: var(--accent); border-color: var(--
 .flame { width: 13px; height: 16px; align-self: center; fill: none; stroke: var(--muted); stroke-width: 1.4; stroke-linejoin: round; transition: fill var(--fast) ease, stroke var(--fast) ease; }
 /* lit once today's run is in; until then it waits to be kept alive */
 #streak.lit .flame { fill: var(--accent); stroke: var(--accent); }
+/* a dotted outline while a freeze holds the streak over a missed day */
+#streak.frozen .flame { stroke-dasharray: 2 2; }
 #streak.flare .flame { animation: flare 900ms var(--spring, ease); transform-origin: 50% 90%; }
 @keyframes flare { 30% { transform: scale(1.45) rotate(-6deg); } }
 #goal { display: inline-flex; align-items: center; }
@@ -466,6 +468,17 @@ body.show-results #results { opacity: 1; visibility: visible; }
   transition: transform 1100ms var(--ease-out) 250ms;
 }
 
+
+.replay figcaption { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin-bottom: 10px; font-style: italic; color: var(--muted); }
+.replay-controls { display: flex; gap: 22px; }
+.replay-controls kbd { margin-right: 4px; }
+/* three lines tall; the replay scrolls the line being typed into the middle */
+.replay-text { max-height: calc(3 * 1.6em); overflow: hidden; font-size: 1.35rem; line-height: 1.6; color: var(--dim); scroll-behavior: smooth; }
+.replay-word { white-space: nowrap; }
+.replay-text .ok { color: var(--ink); }
+.replay-text .bad { color: var(--accent); }
+.replay-text .extra { opacity: 0.6; }
+.replay-text .at { box-shadow: inset 2px 0 0 var(--accent); }
 .again { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 32px; font-size: 1.5rem; color: var(--muted); }
 .share-row { display: flex; gap: 26px; font-size: 1.15rem; }
 .share { color: var(--muted); font-style: italic; transition: color var(--fast) ease; }
@@ -559,6 +572,9 @@ body.panel-open #panel {
 .row-text small { color: var(--muted); font-size: 0.86rem; font-style: italic; }
 .row-text small:empty { display: none; }
 .row .seg { flex: none; }
+.row.stacked { flex-direction: column; align-items: flex-start; gap: 8px; }
+.row.stacked .seg { flex-wrap: wrap; row-gap: 10px; }
+.seg button:disabled { color: var(--dim); cursor: default; }
 
 input[type="range"] { flex: none; width: 150px; accent-color: var(--accent); }
 

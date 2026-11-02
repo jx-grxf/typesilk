@@ -3,12 +3,13 @@ import { openDeleteAccount, openNames, openSignIn, signOutNow, togglePublicProfi
 import { dailyNumber } from "./daily";
 import type { Command } from "./palette";
 import { QUOTE_LENGTHS } from "./quotes";
-import { CARET_MOTIONS, CARETS, FONTS, GOALS, LAYOUTS, MODES, THEMES, type Settings } from "./settings";
+import { CARET_MOTIONS, CARETS, FONTS, GOALS, LAYOUTS, MODES, themeLevel, THEMES, type Settings } from "./settings";
 import { SOUND_PACKS } from "./sound";
 import { availableSizes, LANGUAGES, type Language } from "./words";
 
 export type CommandContext = {
   settings: Settings;
+  level: number;
   hasWeakKeys: boolean;
   change(patch: Partial<Settings>): void;
   restart(): void;
@@ -66,6 +67,7 @@ export function commands(ctx: CommandContext): Command[] {
   toggle("punctuation", "punctuation");
   toggle("numbers", "numbers");
   for (const theme of THEMES) {
+    if (themeLevel(theme) > ctx.level) continue;
     list.push({
       group: "theme",
       label: theme,

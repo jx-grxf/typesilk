@@ -15,6 +15,8 @@ export type Profile = {
   lastDay: string | null;
   bests: Record<string, Best>;
   keys: KeyStats;
+  /** Two-letter pairs inside words, keyed like "th". */
+  pairs: KeyStats;
   history: HistoryEntry[];
   /** Activity per local day, only from runs that look like a person typed them. */
   days: Days;
@@ -24,6 +26,8 @@ export type Profile = {
   quotes: number;
   /** Languages with a finished run of 30 seconds or more. */
   languages: string[];
+  /** Missed days a freeze carried the streak over, at most one per week. */
+  frozen: string[];
 };
 
 export type RunResult = {
@@ -42,10 +46,12 @@ export type RunReward = {
   xpGained: number;
   levelBefore: number;
   levelAfter: number;
+  /** A freeze covered the day before this one. */
+  froze: boolean;
 };
 
 export function emptyProfile(): Profile {
-  return { xp: 0, tests: 0, totalChars: 0, streakDays: 0, lastDay: null, bests: {}, keys: {}, history: [], days: {}, dailies: {}, badges: {}, quotes: 0, languages: [] };
+  return { xp: 0, tests: 0, totalChars: 0, streakDays: 0, lastDay: null, bests: {}, keys: {}, pairs: {}, history: [], days: {}, dailies: {}, badges: {}, quotes: 0, languages: [], frozen: [] };
 }
 
 export function levelOf(xp: number): number {
@@ -68,11 +74,25 @@ export function dayNumber(day: string): number {
   return Date.UTC(year, month - 1, date) / 86400000;
 }
 
+const MAX_FROZEN = 60;
+
+/** Monday of the week a day falls in; day 0, 1 January 1970, was a Thursday. */
+export const weekOf = (day: number): number => day - ((day + 3) % 7);
+
+/** The missed yesterday a freeze would cover if you type today, or null when there is none to use. */
+export function pendingFreeze(profile: Profile, today: string): string | null {
+  if (profile.lastDay === null || profile.streakDays === 0) return null;
+  const missed = dayNumber(today) - 1;
+  if (missed - dayNumber(profile.lastDay) !== 1) return null;
+  if (profile.frozen.some((day) => weekOf(dayNumber(day)) === weekOf(missed))) return null;
+  return new Date(missed * 86400000).toISOString().slice(0, 10);
+}
+
 export function nextStreak(profile: Profile, today: string): number {
   if (profile.lastDay === null) return 1;
   const gap = dayNumber(today) - dayNumber(profile.lastDay);
   if (gap === 0) return profile.streakDays;
-  return gap === 1 ? profile.streakDays + 1 : 1;
+  return gap === 1 || pendingFreeze(profile, today) ? profile.streakDays + 1 : 1;
 }
 
 export function localDay(date = new Date()): string {
@@ -98,7 +118,9 @@ export function applyRun(profile: Profile, run: RunResult, today: string, now = 
   const xpGained = Math.round(
     run.chars * (run.accuracy / 100) ** 2 * 0.2 + (isBest ? 25 : 0) + (firstRunToday ? 20 : 0),
   );
+  const freeze = pendingFreeze(profile, today);
   profile.streakDays = nextStreak(profile, today);
+  if (freeze) profile.frozen = [...profile.frozen, freeze].slice(-MAX_FROZEN);
   profile.lastDay = today;
   profile.xp += xpGained;
   profile.tests++;
@@ -116,5 +138,6 @@ export function applyRun(profile: Profile, run: RunResult, today: string, now = 
     xpGained,
     levelBefore,
     levelAfter: levelOf(profile.xp),
+    froze: freeze !== null,
   };
 }

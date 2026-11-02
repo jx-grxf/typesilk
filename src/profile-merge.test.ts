@@ -25,6 +25,15 @@ function device(runs: [string, number, number][]): Profile {
 }
 
 describe("mergeProfiles", () => {
+  it("keeps a streak that a freeze carried over a missed day", () => {
+    const laptop = device([["2026-11-02", 80, 1], ["2026-11-03", 80, 2], ["2026-11-05", 80, 4]]);
+    const desktop = device([["2026-11-01", 80, 0]]);
+    const merged = mergeProfiles([laptop, desktop]);
+    expect(merged.frozen).toEqual(["2026-11-04"]);
+    expect(merged.streakDays).toBe(4);
+    expect(sanitizeProfile(JSON.parse(JSON.stringify(merged))).frozen).toEqual(["2026-11-04"]);
+  });
+
   it("adds counters and keeps the faster best", () => {
     const chrome = device([["2026-11-01", 93, 1], ["2026-11-01", 80, 3]]);
     const safari = device([["2026-11-01", 86, 2]]);
@@ -41,8 +50,8 @@ describe("mergeProfiles", () => {
   it("joins streaks that alternate between devices", () => {
     const a = device([["2026-10-30", 60, 1], ["2026-11-01", 60, 3]]);
     const b = device([["2026-10-31", 60, 2]]);
-    expect(a.streakDays).toBe(1);
-    expect(mergeProfiles([a, b])).toMatchObject({ streakDays: 3, lastDay: "2026-11-01" });
+    expect(a.streakDays).toBe(2);
+    expect(mergeProfiles([a, b])).toMatchObject({ streakDays: 3, lastDay: "2026-11-01", frozen: [] });
   });
 
   it("keeps the earliest day a badge was earned and every language once", () => {

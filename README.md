@@ -41,13 +41,14 @@ Most typing tests start a short animation for every key, so when you type fast e
 English, German, Spanish and French, with optional punctuation and numbers. Word lists go from the 200 most common words up to 20,000 in English, 10,000 in German and 1,000 in Spanish and French.
 
 **Getting better**
+- Every result can play the run back key by key at its recorded pace, at 1×, 2× or 4×.
 - Your best run in each setup comes back as a ghost caret to race.
-- Every keystroke feeds per-letter error and speed stats. Results name your weakest keys, shade them on a keyboard in your language's layout, and `t` starts a run built around them.
-- A streak with a flame that lights once you've typed today, and a words-per-day goal next to it.
+- Every keystroke feeds per-letter error and speed stats. Results name your weakest keys, shade them on a keyboard in your language's layout, and `t` starts a run built around them. Slow letter pairs like "th" or "ie" are tracked too and mixed into training.
+- A streak with a flame that lights once you've typed today, and a words-per-day goal next to it. One missed day a week is frozen over and doesn't break the streak.
 
 <img src="docs/results.png" alt="Results page with a very large words-per-minute number, statistics, a new badge and a speed chart" width="100%">
 
-**Your profile** at `/me`: level, best and average speed, streak, a year of activity shaded by words typed per day, a speed chart, records per setup and 26 badges in four rarities, three of them secret.
+**Your profile** at `/me`: level, best and average speed, streak, a year of activity shaded by words typed per day, a speed chart, records per setup and 36 badges in four rarities, thirteen of them secret.
 
 <img src="docs/profile.png" alt="Profile page with a monogram, three badges, eight large figures and a grid of daily activity" width="100%">
 
@@ -55,7 +56,7 @@ English, German, Spanish and French, with optional punctuation and numbers. Word
 
 **Sharing**: `c` copies and `s` saves a 1200 × 630 image of your result, drawn in your theme in the browser.
 
-Everything is stored in your browser and typing never needs an account. Signing in with GitHub or Google is optional. It puts your daily on the [leaderboard](https://typesilk.com/daily), where the server replays each run's keystrokes before ranking it, and syncs your profile across devices: each browser uploads its own runs and the profile shows the sum. Signed-in accounts can also make their profile public at `/u/username` from the command palette. It's off by default, shows no per-letter stats and isn't indexed.
+Everything is stored in your browser and typing never needs an account. typesilk installs as an app and keeps working offline once it has loaded. Signing in with GitHub or Google is optional. It puts your daily on the [leaderboard](https://typesilk.com/daily), where the server replays each run's keystrokes before ranking it, and syncs your profile across devices: each browser uploads its own runs and the profile shows the sum. Signed-in accounts can also make their profile public at `/u/username` from the command palette. It's off by default, shows no per-letter stats and isn't indexed.
 
 ## Make it yours
 
@@ -70,7 +71,7 @@ Everything is stored in your browser and typing never needs an account. Signing 
   </tr>
 </table>
 
-Four themes (noir, paper, forest, klein), three text sizes and a switch for every effect. `prefers-reduced-motion` is respected. The command palette reaches every setting without the mouse and previews themes while you move over them.
+Four themes from the start (noir, paper, forest, klein) and five more that open up at level 5, 10, 15, 20 and 30 (ash, plum, sepia, void, rosso), three text sizes and a switch for every effect. `prefers-reduced-motion` is respected. The command palette reaches every setting without the mouse and previews themes while you move over them.
 
 <img src="docs/settings.png" alt="Settings panel with hairline rows" width="100%">
 
@@ -83,6 +84,7 @@ Four themes (noir, paper, forest, klein), three text sizes and a switch for ever
 | `⌘` / `ctrl` + `k` | Command palette |
 | `t` | Train your weak keys, from the results |
 | `c` / `s` | Copy or save the result image |
+| `r` | Play or pause the replay of the run, from the results |
 | `ctrl` + `backspace` | Clear the word |
 
 It needs a physical keyboard. Phones and tablets show a note until one is connected.

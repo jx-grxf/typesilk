@@ -1,8 +1,9 @@
-import { GOALS, THEMES, type Settings } from "./settings";
+import { GOALS, THEME_LEVELS, themeLevel, THEMES, type Settings } from "./settings";
 import { SOUND_PACKS } from "./sound";
 import { WORD_LIST_SIZES } from "./words";
 
-type Option<T> = { label: string; value: T };
+/** `locked` returns why the option can't be picked yet, or null once it can. */
+type Option<T> = { label: string; value: T; locked?: () => string | null };
 
 export type Segment = { root: HTMLElement; set(value: unknown): void; sync(): void };
 
@@ -29,9 +30,16 @@ export function segment<T>(options: Option<T>[], value: T, onSelect: (value: T) 
   function sync(): void {
     const index = options.findIndex((option) => option.value === current);
     const active = buttons[index];
-    buttons.forEach((button, i) => button.classList.toggle("on", i === index));
+    buttons.forEach((button, i) => {
+      button.classList.toggle("on", i === index);
+      const locked = options[i]?.locked?.() ?? null;
+      button.disabled = locked !== null;
+      button.title = locked ?? "";
+    });
     if (!active || active.offsetWidth === 0) return;
-    thumb.style.transform = `translateX(${active.offsetLeft}px)`;
+    // a segment that wraps puts its line under the active word, not under the last row
+    const y = active.offsetTop + active.offsetHeight + 5 - root.offsetHeight;
+    thumb.style.transform = `translate(${active.offsetLeft}px, ${y}px)`;
     thumb.style.width = `${active.offsetWidth}px`;
   }
   function set(next: unknown): void {
@@ -56,6 +64,12 @@ export function toggleWord(label: string, value: boolean, onChange: (value: bool
   return button;
 }
 
+/** Label above the control, for a control too wide to share the line. */
+function stacked(node: HTMLElement): HTMLElement {
+  node.classList.add("stacked");
+  return node;
+}
+
 function row(label: string, note: string, control: HTMLElement): HTMLElement {
   const node = document.createElement("div");
   node.className = "row";
@@ -75,6 +89,7 @@ export function buildPanel(
   s: Settings,
   change: (patch: Partial<Settings>) => void,
   reset: { prompt(): string; run(): Promise<boolean> },
+  level: () => number,
 ): Segment[] {
   const segments: Segment[] = [];
   const seg = <T,>(options: Option<T>[], value: T, on: (v: T) => void): HTMLElement => {
@@ -116,7 +131,11 @@ export function buildPanel(
 
   root.append(
     group("Look"),
-    row("Theme", "", seg(THEMES.map((value) => ({ label: value, value })), s.theme, (theme) => change({ theme }))),
+    stacked(row("Theme", `more open up at level ${Object.values(THEME_LEVELS).join(", ").replace(/, (\d+)$/, " and $1")}`, seg(
+      THEMES.map((value) => ({ label: value, value, locked: () => (themeLevel(value) > level() ? `from level ${themeLevel(value)}` : null) })),
+      s.theme,
+      (theme) => change({ theme }),
+    ))),
     row("Layout", "tape glides, lines read ahead, classic keeps the setup on top", seg(
       [
         { label: "tape", value: "tape" as const },
