@@ -5,9 +5,9 @@ const MIN_SAMPLES = 12;
 const MAX_GAP_MS = 1500;
 const LETTER = /^\p{L}$/u;
 
-export function recordKey(stats: KeyStats, expected: string, correct: boolean, gapMs: number | null): void {
+export function recordKey(stats: KeyStats, expected: string, correct: boolean, gapMs: number | null, pair = false): void {
   const key = expected.toLowerCase();
-  if (!LETTER.test(key)) return;
+  if (!pair && !LETTER.test(key)) return;
   const stat = (stats[key] ??= { hits: 0, misses: 0, time: 0, timed: 0 });
   if (correct) stat.hits++;
   else stat.misses++;
@@ -17,9 +17,27 @@ export function recordKey(stats: KeyStats, expected: string, correct: boolean, g
   }
 }
 
+const MIN_PAIR_SAMPLES = 8;
+
+/** Times the second letter of a pair, typed right after a correct first one in the same word. */
+export function recordPair(stats: KeyStats, previous: string, expected: string, correct: boolean, gapMs: number | null): void {
+  const pair = (previous + expected).toLowerCase();
+  if (!LETTER.test(pair[0] ?? "") || !LETTER.test(pair[1] ?? "") || pair.length !== 2) return;
+  recordKey(stats, pair, correct, gapMs, true);
+}
+
+/** Letter pairs that are slow or go wrong more than your other pairs. */
+export function weakPairs(stats: KeyStats, count = 3): string[] {
+  return rank(stats, MIN_PAIR_SAMPLES, count);
+}
+
 /** Letters ranked by how much they hold you back. Errors weigh more than hesitation. */
 export function weakKeys(stats: KeyStats, count = 4): string[] {
-  const entries = Object.entries(stats).filter(([, s]) => s.hits + s.misses >= MIN_SAMPLES);
+  return rank(stats, MIN_SAMPLES, count);
+}
+
+function rank(stats: KeyStats, minSamples: number, count: number): string[] {
+  const entries = Object.entries(stats).filter(([, s]) => s.hits + s.misses >= minSamples);
   if (entries.length === 0) return [];
   const timed = entries.filter(([, s]) => s.timed > 0);
   const averageGap = timed.reduce((sum, [, s]) => sum + s.time / s.timed, 0) / Math.max(timed.length, 1);
