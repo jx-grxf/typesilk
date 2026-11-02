@@ -4,6 +4,7 @@ import "@fontsource-variable/jetbrains-mono/wght.css";
 import "@fontsource-variable/jetbrains-mono/wght-italic.css";
 import "./tokens.css";
 import "./style.css";
+import "./profile.css";
 import "./design.css";
 import type { Days } from "./activity";
 import { BADGES, medal } from "./badges";

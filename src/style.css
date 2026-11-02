@@ -432,61 +432,6 @@ body.show-results #results { opacity: 1; visibility: visible; }
 .badge { margin-top: 0.9rem; font-size: 1.5rem; font-style: italic; }
 .source { margin-top: 0.3rem; color: var(--muted); font-size: 1.1rem; }
 
-.stat {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  padding: 11px 0;
-  border-top: 1px solid var(--rule);
-}
-.stat:last-child { border-bottom: 1px solid var(--rule); }
-.stat-label { color: var(--muted); }
-.stat-value { font-size: 1.6rem; font-variant-numeric: lining-nums tabular-nums; line-height: 1.1; }
-
-.chart { position: relative; width: 100%; }
-.chart figcaption { margin-bottom: 10px; font-style: italic; color: var(--muted); }
-.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
-.chart .grid { stroke: var(--rule); stroke-width: 1; vector-effect: non-scaling-stroke; }
-.chart .axis { fill: var(--muted); font-size: 12px; font-family: var(--face); font-variant-numeric: lining-nums; }
-.chart .line {
-  fill: none;
-  stroke: var(--accent);
-  stroke-width: 1.6;
-  stroke-linejoin: round;
-  stroke-linecap: round;
-  stroke-dasharray: 1;
-  animation: draw 1100ms cubic-bezier(.3, .7, .2, 1) backwards 150ms;
-}
-@keyframes draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
-.chart .cross { stroke: var(--muted); stroke-width: 1; opacity: 0; pointer-events: none; vector-effect: non-scaling-stroke; }
-.chart .dot { fill: var(--accent); stroke: var(--bg); stroke-width: 2; opacity: 0; pointer-events: none; }
-.chart.hover .cross, .chart.hover .dot { opacity: 1; }
-
-.tip {
-  position: absolute;
-  left: 0;
-  top: 28px;
-  display: flex;
-  flex-direction: column;
-  width: 104px;
-  margin: -62px 0 0 -52px;
-  padding: 6px 8px;
-  text-align: center;
-  background: var(--ink);
-  color: var(--bg);
-  font-size: 14px;
-  line-height: 1.2;
-  opacity: 0;
-  pointer-events: none;
-}
-.tip b { font-weight: 500; }
-.chart.hover .tip { opacity: 1; }
-
-.chart details { margin-top: 6px; color: var(--muted); font-size: 14px; }
-.chart summary { cursor: pointer; width: fit-content; }
-.chart table { margin-top: 8px; border-collapse: collapse; }
-.chart th, .chart td { padding: 2px 18px 2px 0; text-align: left; font-weight: 400; }
-
 .coach {
   display: flex;
   flex-wrap: wrap;
@@ -513,13 +458,6 @@ body.show-results #results { opacity: 1; visibility: visible; }
   animation: rise var(--spring-ms, 500ms) var(--spring, ease) backwards;
 }
 .hk.sparse { color: var(--dim); }
-.board-legend { display: flex; align-items: center; gap: 6px; margin-top: 12px; color: var(--muted); font-size: 0.86rem; }
-.board-legend i {
-  width: 14px;
-  height: 14px;
-  border: 1px solid var(--rule);
-  background: color-mix(in srgb, var(--accent) calc(var(--heat) * 78%), transparent);
-}
 
 .xp-row { display: flex; justify-content: space-between; margin-bottom: 8px; color: var(--muted); }
 .xp-track { height: 1px; background: var(--rule); }
@@ -563,123 +501,6 @@ body.show-results #results { opacity: 1; visibility: visible; }
 }
 body.show-profile #profile { opacity: 1; visibility: visible; }
 body.show-profile :is(#typing, #results, footer) { opacity: 0; visibility: hidden; pointer-events: none; }
-
-.profile-head h2 { font-size: clamp(3rem, 7vw, 6rem); font-weight: 300; font-style: italic; letter-spacing: -0.03em; line-height: 1; }
-.who p { margin-top: 8px; }
-.figures {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  margin-top: var(--space-4);
-  border-top: 1px solid var(--ink);
-}
-.figure { display: flex; flex-direction: column; gap: 4px; padding: var(--space-2) var(--space-2) var(--space-3) 0; border-bottom: var(--hairline); }
-.figure dt { color: var(--muted); font-size: var(--text-label); font-style: italic; }
-.figure dd { margin: 0; font-size: clamp(2rem, 3.4vw, 3rem); font-weight: 300; line-height: 1; font-variant-numeric: lining-nums tabular-nums; letter-spacing: -0.02em; }
-.figure dd small { margin-left: 6px; color: var(--muted); font-size: 1rem; font-style: italic; letter-spacing: 0; }
-.figure > small { color: var(--muted); font-size: var(--text-small); }
-.streak-figure { display: inline-flex; align-items: center; gap: 10px; }
-.streak-figure .flame { width: 0.55em; height: 0.7em; }
-.streak-figure.lit .flame { fill: var(--accent); stroke: var(--accent); }
-@media (max-width: 900px) { .figures { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-
-.activity figcaption { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 24px; margin-bottom: 14px; color: var(--muted); }
-.activity figcaption b { color: var(--ink); font-weight: 400; font-size: 1.3rem; }
-.activity-board { position: relative; }
-.activity svg { display: block; width: 100%; height: auto; overflow: visible; }
-.activity .axis { fill: var(--muted); font-size: 9px; font-family: var(--face); }
-.day {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: pop 520ms var(--spring, ease) backwards;
-  transition: stroke 120ms ease;
-}
-.day:hover { stroke: var(--ink); stroke-width: 1; }
-@keyframes pop { from { opacity: 0; transform: scale(0.4); } }
-.l0 { --cell: color-mix(in srgb, var(--ink) 7%, transparent); }
-.l1 { --cell: color-mix(in srgb, var(--accent) 28%, transparent); }
-.l2 { --cell: color-mix(in srgb, var(--accent) 50%, transparent); }
-.l3 { --cell: color-mix(in srgb, var(--accent) 75%, transparent); }
-.l4 { --cell: var(--accent); }
-.day { fill: var(--cell); }
-.activity .board-legend i { border: 0; border-radius: 2px; background: var(--cell); }
-.activity .tip { width: 196px; margin: -80px 0 0 -98px; top: 0; }
-.activity.hover .tip { opacity: 1; }
-
-.records h3 { margin-bottom: 4px; padding-bottom: 8px; border-bottom: 1px solid var(--ink); font-size: 1rem; font-weight: 500; }
-.records .stat-value small { color: var(--muted); font-size: 0.9rem; }
-.records .empty { padding: 11px 0; color: var(--muted); font-style: italic; }
-
-/* ---------- badges ---------- */
-
-.medal { flex: none; width: 64px; height: 64px; overflow: visible; }
-.medal .ring, .medal .seal, .medal .progress { fill: none; stroke-width: 1.2; vector-effect: non-scaling-stroke; }
-.medal .ring { stroke: var(--muted); }
-.medal .glyph { fill: var(--ink); font-family: var(--face); font-weight: 400; font-variant-numeric: lining-nums; letter-spacing: -0.02em; }
-.medal .rim { fill: var(--bg); font-family: var(--face); font-size: 6.4px; letter-spacing: 0.32em; text-transform: uppercase; }
-.medal.rare .ring { stroke: var(--ink); }
-.medal.epic .seal, .medal.epic .ring { stroke: var(--accent); }
-.medal.epic .glyph { fill: var(--accent); }
-.medal.legendary .seal { fill: var(--accent); stroke: var(--accent); }
-.medal.legendary .ring { stroke: var(--bg); stroke-opacity: 0.5; }
-.medal.legendary .glyph { fill: var(--bg); }
-/* locked medals keep their shape but fade back; only the progress arc stays at full strength */
-.medal.locked > :not(.progress) { opacity: 0.35; }
-.medal.locked .ring, .medal.locked .seal { stroke-dasharray: 2.5 3; }
-.medal.locked.legendary .seal { fill: none; stroke: var(--muted); }
-.medal.locked .glyph { fill: var(--muted); }
-.medal .progress { stroke: var(--accent); stroke-width: 2; stroke-linecap: round; }
-
-.badges h3 { margin-bottom: var(--space-2); padding-bottom: 8px; border-bottom: 1px solid var(--ink); font-size: var(--text-body); font-weight: 500; }
-.badge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--space-3) var(--space-4); }
-.badge-card { display: flex; align-items: center; gap: var(--space-2); }
-.badge-card .medal { transition: transform var(--spring-snappy-ms, 300ms) var(--spring-snappy, ease); }
-.badge-card:hover .medal { transform: rotate(-8deg) scale(1.08); }
-.badge-copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.badge-copy b { font-weight: 500; }
-.badge-copy span { color: var(--muted); font-size: var(--text-label); line-height: 1.35; }
-.badge-copy small { color: var(--muted); font-size: var(--text-small); font-style: italic; }
-.badge-card:not(.earned) .badge-copy b { color: var(--muted); font-weight: 400; }
-
-.unlocked { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-4); }
-.unlocked-title { width: 100%; color: var(--muted); font-style: italic; }
-.unlocked-badge { position: relative; display: flex; align-items: center; gap: var(--space-2); max-width: 420px; }
-.unlocked-badge .medal { width: 84px; height: 84px; animation: medal-in 900ms var(--spring, ease) backwards; animation-delay: calc(var(--i, 0) * 120ms + 300ms); }
-.unlocked-badge div { display: flex; flex-direction: column; gap: 2px; }
-.unlocked-badge b { font-size: var(--text-lead); font-weight: 400; }
-.unlocked-badge span { color: var(--muted); }
-.unlocked-badge small { color: var(--accent); font-style: italic; }
-@keyframes medal-in { from { opacity: 0; transform: scale(0.4) rotate(-30deg); } }
-/* legendary gets one ring that leaves the medal, once */
-.unlocked-badge.legendary::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 50%;
-  width: 84px;
-  height: 84px;
-  margin-top: -42px;
-  border: 2px solid var(--accent);
-  border-radius: 50%;
-  pointer-events: none;
-  animation: burst 1200ms var(--ease-out) 650ms both;
-}
-@keyframes burst { from { opacity: 0.9; transform: scale(0.9); } to { opacity: 0; transform: scale(2.4); } }
-
-.identity { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
-.avatar {
-  display: grid;
-  place-items: center;
-  width: 84px;
-  height: 84px;
-  border: 1px solid var(--ink);
-  border-radius: 50%;
-  font-size: 2.6rem;
-  font-style: italic;
-  font-weight: 300;
-}
-.identity p { color: var(--muted); }
-.showcase { display: flex; gap: var(--space-2); margin-left: auto; }
-.showcase .medal { width: 72px; height: 72px; }
 
 /* ---------- settings panel ---------- */
 

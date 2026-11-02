@@ -4,6 +4,7 @@ import "@fontsource-variable/jetbrains-mono/wght.css";
 import "@fontsource-variable/jetbrains-mono/wght-italic.css";
 import "./tokens.css";
 import "./style.css";
+import "./profile.css";
 import { currentAccount, loadAccount, onAccountDeleted, onBeforeSignOut, prepareTicket } from "./account";
 import { fillAvatar, onAccountChange, openNames, openSignIn } from "./account-view";
 import { awardBadges } from "./badges";

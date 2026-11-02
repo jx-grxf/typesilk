@@ -26,7 +26,7 @@ export function clientKey(request: Request): string {
 export const json = (body: unknown, status = 200, headers: Record<string, string> = {}): Response =>
   new Response(JSON.stringify(body), {
     status,
-    headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", ...headers },
+    headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff", ...headers },
   });
 
 export const fail = (error: string, status: number): Response => json({ error }, status);

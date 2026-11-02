@@ -1,5 +1,5 @@
 import { currentAccount, signInProviders } from "./account";
-import { openDeleteAccount, openNames, openSignIn, signOutNow } from "./account-view";
+import { openDeleteAccount, openNames, openSignIn, signOutNow, togglePublicProfile } from "./account-view";
 import { dailyNumber } from "./daily";
 import type { Command } from "./palette";
 import { QUOTE_LENGTHS } from "./quotes";
@@ -46,6 +46,11 @@ export function commands(ctx: CommandContext): Command[] {
   list.push({ group: "go to", label: "profile", run: ctx.showProfile });
   if (currentAccount()) {
     list.push({ group: "account", label: "edit name", run: () => openNames() });
+    const user = currentAccount()!;
+    if (user.username) {
+      list.push({ group: "account", label: user.publicProfile ? "make profile private" : "make profile public", run: () => void togglePublicProfile() });
+      if (user.publicProfile) list.push({ group: "go to", label: "public profile", run: () => location.assign(`/u/${user.username}`) });
+    }
     list.push({ group: "account", label: "sign out", run: signOutNow });
     list.push({ group: "account", label: "delete account", run: openDeleteAccount });
   } else if (signInProviders().length > 0) {
