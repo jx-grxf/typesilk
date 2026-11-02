@@ -37,6 +37,7 @@ Most typing tests start a short animation for every key, so when you type fast e
 | **endless** | Runs until you press `esc` |
 | **train** | Words built around your weakest keys |
 | **daily** | The same 40 words for everyone today; your first try is the one that counts |
+| **race** | Open a room at `/race`, send the link or the six-letter code, and race one friend on the same words. No account needed |
 
 English, German, Spanish and French, with optional punctuation and numbers. Word lists go from the 200 most common words up to 20,000 in English, 10,000 in German and 1,000 in Spanish and French.
 

@@ -3,6 +3,9 @@ import { currentUser, handleAuth, type Provider, type SessionUser } from "./auth
 import { isLanguage, issueTicket, readBoard, submitRun } from "./daily";
 import { clientKey, fail, type Env } from "./http";
 import { handleProfile } from "./profile";
+import { createRace, joinRace } from "./race";
+
+export { RaceRoom } from "./race";
 
 type SignedInRoute = (request: Request, env: Env, user: SessionUser) => Promise<Response>;
 
@@ -42,6 +45,10 @@ async function handleApi(request: Request, env: Env, url: URL): Promise<Response
 
   if (path === "/api/profile") return handleProfile(request, env, url);
 
+  if (path === "/api/race" && method === "POST") return createRace(env);
+  const race = path.match(/^\/api\/race\/([A-Za-z0-9]{1,12})$/);
+  if (race && method === "GET") return joinRace(request, env, url, race[1]!.toUpperCase());
+
   if (!SIGNED_IN_PATHS.has(path)) return fail("not_found", 404);
   const route = SIGNED_IN[`${method} ${path}`];
   const isLogout = path === "/api/logout" && method === "POST";
@@ -55,9 +62,21 @@ async function handleApi(request: Request, env: Env, url: URL): Promise<Response
   return route!(request, env, user);
 }
 
+/** Every /race/CODE is the race page, which reads the code from the address. */
+async function racePage(request: Request, env: Env, url: URL): Promise<Response> {
+  if (request.method !== "GET" && request.method !== "HEAD") return fail("method_not_allowed", 405);
+  if (!/^\/race\/[A-Za-z0-9]{6}\/?$/.test(url.pathname)) return env.ASSETS.fetch(new Request(new URL("/404", url), request));
+  if (!(await env.RATE_LIMIT_READ.limit({ key: clientKey(request) })).success) return fail("rate_limited", 429);
+  const page = await env.ASSETS.fetch(new Request(new URL("/race", url), request));
+  const response = new Response(page.body, page);
+  response.headers.set("X-Robots-Tag", "noindex");
+  return response;
+}
+
 export default {
   async fetch(request, env): Promise<Response> {
     const url = new URL(request.url);
+    if (url.pathname.startsWith("/race/")) return racePage(request, env, url);
     if (!url.pathname.startsWith("/api/")) return env.ASSETS.fetch(request);
     try {
       return await handleApi(request, env, url);

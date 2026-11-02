@@ -42,6 +42,7 @@ export function commands(ctx: CommandContext): Command[] {
   list.push({ group: "test", label: `daily #${dailyNumber()}`, current: settings.mode === "daily", run: () => change({ mode: "daily" }) });
   if (ctx.hasWeakKeys) list.push({ group: "test", label: "train weak keys", run: () => change({ mode: "train" }) });
   list.push({ group: "go to", label: "daily leaderboard", run: () => location.assign("/daily") });
+  list.push({ group: "go to", label: "race a friend", run: () => location.assign("/race") });
   list.push({ group: "go to", label: "profile", run: ctx.showProfile });
   if (currentAccount()) {
     list.push({ group: "account", label: "edit name", run: () => openNames() });
