@@ -244,7 +244,7 @@ export function renderResults(root: HTMLElement, data: ResultData): void {
   const level = levelOf(data.xp);
   const levelUp = data.reward.levelAfter > data.reward.levelBefore;
   const days = data.streakDays === 1 ? "1 day" : `${data.streakDays} days`;
-  xp.innerHTML = `<div class="xp-row"><span>${levelUp ? `Level ${level}, new` : `Level ${level}`}</span><span>${days} streak</span><span>+${data.reward.xpGained} xp</span></div><div class="xp-track"><div class="xp-fill"></div></div>`;
+  xp.innerHTML = `<div class="xp-row"><span>${levelUp ? `Level ${level}, new` : `Level ${level}`}</span><span>${days} streak${data.reward.froze ? ", a freeze covered yesterday" : ""}</span><span>+${data.reward.xpGained} xp</span></div><div class="xp-track"><div class="xp-fill"></div></div>`;
   const fill = xp.querySelector<HTMLElement>(".xp-fill")!;
   fill.style.transform = "scaleX(0)";
   requestAnimationFrame(() => requestAnimationFrame(() => {

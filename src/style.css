@@ -86,6 +86,8 @@ body.show-profile .mini-avatar { background: var(--accent); border-color: var(--
 .flame { width: 13px; height: 16px; align-self: center; fill: none; stroke: var(--muted); stroke-width: 1.4; stroke-linejoin: round; transition: fill var(--fast) ease, stroke var(--fast) ease; }
 /* lit once today's run is in; until then it waits to be kept alive */
 #streak.lit .flame { fill: var(--accent); stroke: var(--accent); }
+/* a dotted outline while a freeze holds the streak over a missed day */
+#streak.frozen .flame { stroke-dasharray: 2 2; }
 #streak.flare .flame { animation: flare 900ms var(--spring, ease); transform-origin: 50% 90%; }
 @keyframes flare { 30% { transform: scale(1.45) rotate(-6deg); } }
 #goal { display: inline-flex; align-items: center; }
