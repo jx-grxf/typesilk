@@ -308,6 +308,7 @@ export class TypingSession {
         setup: daily === null ? setupName(key) : `daily #${daily} · ${settings.language}`,
         badges: outcome.badges,
         daily: outcome.daily,
+        replay: settings.mode === "zen" ? null : { words: [...engine.words], log: { keys: [...this.recorder.log.keys], gaps: [...this.recorder.log.gaps] } },
       });
       if (daily !== null && !failed) showDailyRank(this.resultsEl, daily, settings.language, this.recorder.log);
       document.body.classList.add("show-results");

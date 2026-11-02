@@ -528,6 +528,17 @@ body.show-results #results { opacity: 1; visibility: visible; }
   transition: transform 1100ms var(--ease-out) 250ms;
 }
 
+
+.replay figcaption { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin-bottom: 10px; font-style: italic; color: var(--muted); }
+.replay-controls { display: flex; gap: 22px; }
+.replay-controls kbd { margin-right: 4px; }
+/* three lines tall; the replay scrolls the line being typed into the middle */
+.replay-text { max-height: calc(3 * 1.6em); overflow: hidden; font-size: 1.35rem; line-height: 1.6; color: var(--dim); scroll-behavior: smooth; }
+.replay-word { white-space: nowrap; }
+.replay-text .ok { color: var(--ink); }
+.replay-text .bad { color: var(--accent); }
+.replay-text .extra { opacity: 0.6; }
+.replay-text .at { box-shadow: inset 2px 0 0 var(--accent); }
 .again { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 32px; font-size: 1.5rem; color: var(--muted); }
 .share-row { display: flex; gap: 26px; font-size: 1.15rem; }
 .share { color: var(--muted); font-style: italic; transition: color var(--fast) ease; }
