@@ -86,6 +86,14 @@ function render(root: HTMLElement, data: PublicProfile): void {
   }
   parts.push(records);
 
+  const cta = el("p", "public-cta");
+  const test = el("a", "", "Take the typing test");
+  test.href = "/";
+  const race = el("a", "", `Race ${name}`);
+  race.href = "/race";
+  cta.append(test, race);
+  parts.push(cta);
+
   root.replaceChildren(...parts);
 }
 

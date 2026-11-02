@@ -282,7 +282,8 @@ export function renderResults(root: HTMLElement, data: ResultData): void {
     date: new Date(),
   };
 
-  const parts: HTMLElement[] = [top];
+  // what to do next sits under the number, so nobody has to scroll past the charts to find it
+  const parts: HTMLElement[] = [top, xp, again];
   if (data.badges.length > 0) parts.push(unlocked(data.badges));
   if (data.series.length >= 2) {
     parts.push(buildChart(data.series, {
@@ -302,7 +303,6 @@ export function renderResults(root: HTMLElement, data: ResultData): void {
       point: (i) => `run ${i + 1}`,
     }));
   }
-  parts.push(xp, again);
   parts.forEach((part, i) => {
     part.classList.add("rise");
     part.style.animationDelay = `${i * 60}ms`;

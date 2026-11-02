@@ -1,6 +1,10 @@
+import "@fontsource-variable/jetbrains-mono/wght.css";
+import "./typing.css";
 import { currentAccount, loadAccount } from "./account";
 import { awardBadges, type Badge } from "./badges";
+import { prefersReducedMotion } from "./dom";
 import { TypingEngine } from "./engine";
+import { FlowMeter } from "./flow";
 import { recordRace } from "./profile";
 import { ProfileStore } from "./profile-store";
 import {
@@ -14,6 +18,9 @@ import {
   type ServerMessage,
 } from "./race-protocol";
 import { BACKSPACE, CLEAR_WORD, RunRecorder } from "./replay";
+import { loadSettings } from "./settings";
+import { Sound } from "./sound";
+import { Stage } from "./stage";
 import { LANGUAGES, type Language } from "./words";
 
 const NAME_KEY = "typesilk.raceName";
@@ -28,7 +35,20 @@ let room: RoomState | null = null;
 let words: string[] = [];
 let engine: TypingEngine | null = null;
 const recorder = new RunRecorder();
-let wordSpans: HTMLElement[] = [];
+const settings = loadSettings();
+const sound = new Sound();
+const flow = new FlowMeter();
+const stageRoot = buildStageRoot();
+const stage = new Stage(
+  stageRoot.querySelector<HTMLElement>("#scroller")!,
+  stageRoot.querySelector<HTMLElement>("#words")!,
+  stageRoot.querySelector<HTMLElement>("#caret")!,
+  stageRoot.querySelector<HTMLElement>("#ghost")!,
+  stageRoot.querySelector<HTMLElement>("#flow-line")!,
+);
+const hud = stageRoot.querySelector<HTMLElement>("#hud")!;
+let rafId = 0;
+let lastFrame = 0;
 let sentChars = 0;
 let finishSent = false;
 let progressTimer = 0;
@@ -173,6 +193,7 @@ function receive(message: ServerMessage): void {
     const player = room?.players.find((p) => p.id === message.id);
     if (player) player.chars = message.chars;
     paintTracks();
+    showOpponent();
     return;
   }
   const previous = room;
@@ -188,6 +209,13 @@ function startRound(state: RoomState): void {
   sentChars = 0;
   finishSent = false;
   earned = [];
+  flow.reset();
+  if (!stageRoot.isConnected) status.before(stageRoot);
+  // the stage measures letters when it builds the words, so it has to be visible first
+  stageRoot.hidden = false;
+  stage.reset(words);
+  showOpponent();
+  kick();
 }
 
 const me = (): RacePlayer | undefined => room?.players.find((p) => p.id === room!.you);
@@ -198,68 +226,92 @@ function render(previous: RoomState | null): void {
   main.querySelectorAll(".race-view").forEach((node) => node.remove());
   const view = el("div", "race-view");
   if (room.phase === "lobby") view.append(...lobby());
-  if (room.phase === "countdown") view.append(countdown(), typingArea(), tracks());
-  if (room.phase === "racing") view.append(typingArea(), tracks());
+  const live = room.phase === "countdown" || room.phase === "racing";
+  if (live) view.append(tracks());
   if (room.phase === "done") view.append(...results());
+  stageRoot.hidden = !live;
+  document.body.classList.toggle("racing", live);
+  document.body.classList.add("in-room");
+  if (!stageRoot.isConnected) status.before(stageRoot);
   status.before(view);
+  if (room.phase === "countdown") countdown();
+  if (room.phase === "racing") {
+    clearInterval(countdownTimer);
+    hud.classList.remove("counting");
+    showOpponent();
+    kick();
+  }
   if (room.phase === "racing" && previous?.phase !== "racing") {
     clearInterval(progressTimer);
     progressTimer = window.setInterval(sendProgress, PROGRESS_EVERY_MS);
   }
   if (room.phase !== "racing") clearInterval(progressTimer);
-  if (room.phase === "racing") requestAnimationFrame(follow);
+}
+
+function matchup(state: RoomState): HTMLElement {
+  const line = el("div", "race-matchup");
+  const side = (player: RacePlayer | undefined, waiting: string): HTMLElement => {
+    const node = el("div", "race-side");
+    if (!player) {
+      node.classList.add("empty");
+      node.append(el("b", "", waiting), el("small", "", "send the link"));
+      return node;
+    }
+    node.classList.toggle("is-ready", player.ready);
+    const tags = [player.id === state.you ? "you" : "", player.id === state.host ? "host" : "", player.ready ? "ready" : "not ready"].filter(Boolean);
+    node.append(el("b", "", player.name), el("small", "", tags.join(" · ")));
+    return node;
+  };
+  const mine = state.players.find((p) => p.id === state.you);
+  const other = state.players.find((p) => p.id !== state.you);
+  line.append(side(mine, "you"), el("span", "race-vs", "vs"), side(other, "waiting…"));
+  return line;
 }
 
 function lobby(): HTMLElement[] {
   const state = room!;
   const isHost = state.host === state.you;
-  const parts: HTMLElement[] = [];
 
-  const share = el("section", "race-share");
+  const share = el("div", "race-share");
   const link = `${location.origin}/race/${state.code}`;
-  share.append(el("p", "race-code", state.code));
+  const code = el("p", "race-code", state.code);
+  code.setAttribute("aria-label", `Room code ${state.code.split("").join(" ")}`);
   const copy = button("copy link", () => {
     void navigator.clipboard?.writeText(link).then(() => { copy.textContent = "copied"; }).catch(() => { copy.textContent = link; });
   }, "race-link");
-  share.append(copy);
-  parts.push(share);
+  share.append(code, copy);
 
-  const setup = el("section", "race-setup");
-  const language = el("div", "race-options");
-  for (const value of Object.keys(LANGUAGES) as Language[]) {
-    const option = button(value, () => send({ t: "setup", setup: { ...state.setup, language: value } }), "race-option");
-    option.setAttribute("aria-pressed", String(state.setup.language === value));
-    option.disabled = !isHost;
-    language.append(option);
-  }
-  const length = el("div", "race-options");
-  for (const value of RACE_LENGTHS) {
-    const option = button(`${value} words`, () => send({ t: "setup", setup: { ...state.setup, words: value } }), "race-option");
-    option.setAttribute("aria-pressed", String(state.setup.words === value));
-    option.disabled = !isHost;
-    length.append(option);
-  }
-  setup.append(el("p", "race-note", isHost ? "You set up the race." : "The host sets up the race."), language, length);
-  parts.push(setup);
-
-  const players = el("ol", "race-players");
-  for (const player of state.players) {
-    const row = el("li");
-    row.append(el("b", "", player.name), el("span", "race-note", `${player.id === state.host ? "host · " : ""}${player.ready ? "ready" : "not ready"}`));
-    players.append(row);
-  }
-  if (state.players.length < 2) players.append(el("li", "race-note", "Waiting for someone to join."));
-  parts.push(players);
+  const setup = el("dl", "race-setup");
+  const options = <T,>(label: string, values: readonly T[], current: T, name: (value: T) => string, pick: (value: T) => void): HTMLElement => {
+    const row = el("div");
+    const list = el("dd", "race-options");
+    for (const value of values) {
+      const option = button(name(value), () => pick(value), "race-option");
+      option.setAttribute("aria-pressed", String(current === value));
+      option.disabled = !isHost;
+      list.append(option);
+    }
+    row.append(el("dt", "", label), list);
+    return row;
+  };
+  setup.append(
+    options("language", Object.keys(LANGUAGES) as Language[], state.setup.language, String, (language) => send({ t: "setup", setup: { ...state.setup, language } })),
+    options("length", RACE_LENGTHS, state.setup.words, (n) => `${n} words`, (words) => send({ t: "setup", setup: { ...state.setup, words } })),
+  );
+  if (!isHost) setup.append(el("p", "race-note", "The host picks these."));
 
   const ready = me()?.ready ?? false;
-  const toggle = button(ready ? "not ready" : "ready", () => send({ t: "ready", ready: !ready }), "race-start-button");
-  const hint = el("p", "race-note", "enter toggles ready. The race starts when both are ready.");
-  parts.push(toggle, hint);
-  return parts;
+  const go = el("div", "race-go");
+  go.append(
+    button(ready ? "not ready" : "ready", () => send({ t: "ready", ready: !ready }), "race-start-button"),
+    el("span", "race-note", state.players.length < 2 ? "enter toggles ready; it starts once you're both in and ready" : "enter toggles ready; it starts when you're both ready"),
+  );
+  return [share, matchup(state), setup, go];
 }
 
-function countdown(): HTMLElement {
-  const node = el("p", "race-countdown", "3");
+function countdown(): void {
+  const node = hud;
+  node.classList.add("counting");
   clearInterval(countdownTimer);
   const end = performance.now() + (room!.startsIn ?? 0);
   const tick = (): void => {
@@ -269,47 +321,58 @@ function countdown(): HTMLElement {
   };
   tick();
   countdownTimer = window.setInterval(tick, 100);
-  return node;
 }
 
-function wordHtml(word: string, input: string, active: boolean): string {
-  let html = "";
-  const length = Math.max(word.length, input.length);
-  for (let i = 0; i < length; i++) {
-    const typed = input[i];
-    const target = word[i];
-    const cls = typed === undefined ? "todo" : target === undefined ? "bad extra" : typed === target ? "ok" : "bad";
-    html += `<span class="${cls}${active && i === input.length ? " at" : ""}">${escapeHtml(typed ?? target ?? "")}</span>`;
-  }
-  if (active && input.length >= length) html += '<span class="todo at end"> </span>';
-  return html;
+/** The same stage the test uses: words glide under a still caret, and the other player is the ghost caret. */
+function buildStageRoot(): HTMLElement {
+  const root = el("div", "race-stage");
+  root.innerHTML = `<div id="anchor"><div id="hud"></div></div>
+    <div id="viewport"><div id="scroller"><div id="words"></div><div id="ghost" aria-hidden="true"></div><div id="caret" aria-hidden="true"></div></div></div>
+    <div id="flow-track" aria-hidden="true"><div id="flow-line"></div></div>`;
+  root.hidden = true;
+  return root;
 }
 
-function escapeHtml(text: string): string {
-  return text.replace(/[&<>"]/g, (ch) => `&#${ch.charCodeAt(0)};`);
+function applyLook(): void {
+  const html = document.documentElement;
+  // classic keeps the setup above the text, which a race room doesn't have
+  const layout = settings.layout === "classic" ? "lines" : settings.layout;
+  html.dataset.layout = layout;
+  html.dataset.size = settings.textSize;
+  html.dataset.font = settings.font;
+  html.dataset.caret = settings.caret;
+  stage.layout = layout;
+  stage.caretStyle = settings.caret;
+  stage.letterFx = settings.letterFx && !prefersReducedMotion;
+  stage.setMotion(prefersReducedMotion ? "off" : settings.caretMotion);
+  stageRoot.querySelector<HTMLElement>("#flow-track")!.style.display = settings.flowLine ? "" : "none";
+  sound.enabled = settings.sound;
+  sound.setVolume(settings.volume);
+  if (settings.sound) void sound.use(settings.soundPack);
 }
 
-function typingArea(): HTMLElement {
-  const text = el("div", "race-text");
-  wordSpans = words.map((word, i) => {
-    const span = el("span", "race-word");
-    span.innerHTML = wordHtml(word, engine?.inputs[i] ?? "", room?.phase === "racing" && engine?.wordIndex === i);
-    return span;
-  });
-  text.append(...wordSpans.flatMap((span, i) => (i === 0 ? [span] : [document.createTextNode(" "), span])));
-  return text;
+function kick(): void {
+  if (rafId !== 0) return;
+  lastFrame = performance.now() - 8;
+  rafId = requestAnimationFrame(frame);
 }
 
-function paintWord(index: number): void {
-  const span = wordSpans[index];
-  if (!span || !engine) return;
-  span.innerHTML = wordHtml(words[index] ?? "", engine.inputs[index] ?? "", index === engine.wordIndex);
+function frame(now: number): void {
+  rafId = 0;
+  const dt = Math.min((now - lastFrame) / 1000, 1 / 30);
+  lastFrame = now;
+  flow.update(dt);
+  const moving = stage.update(dt, flow.value);
+  if (room?.phase === "racing" || moving || !flow.settled) rafId = requestAnimationFrame(frame);
 }
 
-function follow(): void {
-  const span = wordSpans[engine?.wordIndex ?? 0];
-  const box = span?.parentElement;
-  if (span && box) box.scrollTop = Math.max(0, span.offsetTop - box.offsetTop - span.offsetHeight);
+function showOpponent(): void {
+  const other = room?.players.find((p) => p.id !== room!.you && !p.left);
+  stage.ghostVisible = other !== undefined;
+  if (!other) return stage.hideGhost();
+  stage.setGhost(other.chars);
+  if (room?.phase === "racing") hud.textContent = `vs ${other.name}`;
+  kick();
 }
 
 function tracks(): HTMLElement {
@@ -349,62 +412,115 @@ function finish(): void {
   finishSent = true;
   sendProgress();
   send({ t: "finish", log: recorder.log });
-  setStatus("Done. The server is checking your run.");
+  hud.textContent = "done";
+  setStatus("The server is checking your run.");
 }
 
 function typeKey(event: KeyboardEvent): void {
   if (room?.phase !== "racing" || !engine || finishSent) return;
   if (event.metaKey || (event.ctrlKey && event.key !== "Backspace")) return;
   const now = performance.now();
-  const before = engine.wordIndex;
   if (event.key === "Backspace") {
     event.preventDefault();
-    const whole = event.ctrlKey || event.altKey;
-    if (engine.backspace(whole).kind === "ignored") return;
-    recorder.record(whole ? CLEAR_WORD : BACKSPACE, now);
+    typeBackspace(event.ctrlKey || event.altKey, event.code, now);
   } else if (event.key === " ") {
     event.preventDefault();
-    const result = engine.space();
-    if (result.kind === "ignored") return;
-    recorder.record(" ", now);
-    if (engine.wordIndex >= words.length) finish();
+    typeSpace(event.code, now);
   } else if ([...event.key].length === 1) {
     event.preventDefault();
-    const result = engine.insert(event.key);
-    if (result.kind === "ignored") return;
-    recorder.record(event.key, now);
-    if (engine.lastWordDone) finish();
+    typeChar(event.key, event.code, now);
   } else {
     return;
   }
-  paintWord(before);
-  if (engine.wordIndex !== before) paintWord(engine.wordIndex);
-  follow();
   paintTracks();
+  kick();
+}
+
+function typeChar(ch: string, code: string, now: number): void {
+  const result = engine!.insert(ch);
+  if (result.kind !== "char") return;
+  recorder.record(ch, now);
+  flow.key(now, result.correct, engine!.streak);
+  sound.key(code);
+  stage.press(!result.correct);
+  if (result.extra) stage.addExtra(result.wordIndex, ch);
+  else if (result.correct) stage.markCorrect(result.wordIndex, result.charIndex);
+  else stage.markWrong(result.wordIndex, result.charIndex);
+  stage.caretTo(engine!.wordIndex, engine!.input.length);
+  if (engine!.lastWordDone) finish();
+}
+
+function typeSpace(code: string, now: number): void {
+  const result = engine!.space();
+  if (result.kind !== "commit") return;
+  recorder.record(" ", now);
+  flow.key(now, result.perfect, engine!.streak);
+  sound.key(code);
+  stage.press(!result.perfect);
+  stage.wordDone(result.wordIndex, result.perfect, result.typedLength);
+  if (engine!.wordIndex >= words.length) return finish();
+  stage.setActive(engine!.wordIndex);
+  stage.caretTo(engine!.wordIndex, 0);
+}
+
+function typeBackspace(whole: boolean, code: string, now: number): void {
+  const before = engine!.input;
+  const result = engine!.backspace(whole);
+  if (result.kind === "ignored") return;
+  recorder.record(whole ? CLEAR_WORD : BACKSPACE, now);
+  sound.key(code);
+  stage.press(false);
+  const wordLength = engine!.word.length;
+  if (result.kind === "delete") {
+    if (result.extra) stage.removeExtra(result.wordIndex);
+    else stage.clearLetter(result.wordIndex, result.charIndex);
+  } else if (result.kind === "clear") {
+    for (let i = before.length - 1; i >= 0; i--) {
+      if (i >= wordLength) stage.removeExtra(result.wordIndex);
+      else stage.clearLetter(result.wordIndex, i);
+    }
+  } else if (result.kind === "back") {
+    stage.wordBack(result.wordIndex);
+    stage.setActive(result.wordIndex);
+  }
+  stage.caretTo(engine!.wordIndex, engine!.input.length);
 }
 
 function results(): HTMLElement[] {
   const state = room!;
   const ranked = [...state.players].sort((a, b) => (a.finish?.place ?? 99) - (b.finish?.place ?? 99));
+  const winner = ranked.find((p) => p.finish?.place === 1);
+  const second = ranked.find((p) => p.finish?.place === 2);
+  const headline = el("div", "race-headline");
+  const title = !winner ? "No counted finish" : winner.id === state.you ? "You won" : `${winner.name} won`;
+  headline.append(el("p", "race-winner", title));
+  if (winner && second) headline.append(el("p", "race-note", `by ${((second.finish!.ms - winner.finish!.ms) / 1000).toFixed(2)} seconds`));
+
   const list = el("ol", "race-results");
   for (const player of ranked) {
     const row = el("li");
+    row.classList.toggle("you", player.id === state.you);
     const finish = player.finish;
-    const place = finish?.place ? (finish.place === 1 ? "won" : `${finish.place}.`) : player.left ? "left" : finish ? "not counted" : "didn't finish";
+    const place = finish?.place ? (finish.place === 1 ? "first" : "second") : player.left ? "left" : finish ? "not counted" : "didn't finish";
     row.append(
       el("span", "race-place", place),
       el("b", "", player.id === state.you ? `${player.name} (you)` : player.name),
-      el("span", "race-figure", finish ? `${Math.round(finish.wpm)} wpm` : "–"),
+      el("span", "race-figure race-wpm", finish ? `${Math.round(finish.wpm)}` : "–"),
       el("span", "race-figure", finish ? `${Math.round(finish.accuracy)}%` : ""),
       el("span", "race-figure", finish ? `${(finish.ms / 1000).toFixed(2)}s` : ""),
     );
     list.append(row);
   }
-  const parts: HTMLElement[] = [list];
+  const parts: HTMLElement[] = [headline, list];
+  if (ranked.some((p) => p.finish && !p.finish.place)) {
+    parts.push(el("p", "race-note", "A run is not counted when the server's replay doesn't finish the text, looks scripted, or is faster than the time since the start."));
+  }
   recordResult(state);
-  if (earned.length > 0) parts.push(el("p", "race-note", `New badge: ${earned.map((badge) => badge.name).join(", ")}.`));
-  if (state.host === state.you) parts.push(button("rematch", () => send({ t: "rematch" }), "race-start-button"), el("p", "race-note", "enter starts a rematch."));
-  else parts.push(el("p", "race-note", "Waiting for the host to start a rematch."));
+  if (earned.length > 0) parts.push(el("p", "race-badge", `New badge: ${earned.map((badge) => badge.name).join(", ")}`));
+  const go = el("div", "race-go");
+  if (state.host === state.you) go.append(button("rematch", () => send({ t: "rematch" }), "race-start-button"), el("span", "race-note", "or press enter"));
+  else go.append(el("span", "race-note", "Waiting for the host to start a rematch."));
+  parts.push(go);
   return parts;
 }
 
@@ -440,6 +556,8 @@ document.addEventListener("keydown", (event) => {
 
 async function boot(): Promise<void> {
   store.watchVisibility();
+  applyLook();
+  await document.fonts.ready;
   const code = (location.pathname.split("/")[2] ?? "").toUpperCase();
   if (!RACE_CODE.test(code)) {
     renderStart();
