@@ -52,6 +52,7 @@ export class TypingSession {
   private lastKeyAt = 0;
   private gaps: number[] = [];
   private samples: number[] = [];
+  private backspaces = 0;
   private trainingKeys: string[] = [];
   private ghostSeries: number[] | null = null;
   private hudText = "";
@@ -140,6 +141,7 @@ export class TypingSession {
     this.recorder.reset();
     if (mode === "daily") prepareTicket(dailyNumber(), settings.language);
     this.samples = [];
+    this.backspaces = 0;
     this.flow.reset();
     this.stage.reset(this.engine.words);
     this.ghostSeries = settings.ghost && !prefersReducedMotion ? (this.store.profile.bests[recordKey(settings)]?.series ?? null) : null;
@@ -282,6 +284,8 @@ export class TypingSession {
       words: engine.wordIndex,
       failed,
       quoteLength: quote ? quoteLength(quote) : null,
+      backspaces: this.backspaces,
+      saidName: engine.inputs.some((input) => input.toLowerCase() === "typesilk"),
     }, localDay());
     this.store.save();
     this.hooks.afterRun(outcome.firstToday);
@@ -405,6 +409,7 @@ export class TypingSession {
     const before = engine.input;
     const result = engine.backspace(whole);
     if (result.kind === "ignored") return;
+    this.backspaces++;
     this.sound.key(code);
     stage.press(false);
     const wordLength = engine.word.length;

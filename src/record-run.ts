@@ -24,6 +24,9 @@ export type FinishedRun = {
   words: number;
   failed: boolean;
   quoteLength: string | null;
+  backspaces: number;
+  /** The site's own name typed as a word somewhere in the run. */
+  saidName: boolean;
 };
 
 export type RunOutcome = {
@@ -70,6 +73,11 @@ export function recordRun(profile: Profile, run: FinishedRun, today = localDay()
       words: run.words,
       finished: !run.failed,
       quoteLength: run.quoteLength,
+      language: run.language,
+      backspaces: run.backspaces,
+      saidName: run.saidName,
+      firstToday,
+      newBest: reward.isBest,
     }
     : null);
 
