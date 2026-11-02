@@ -2,6 +2,7 @@ export type Env = {
   ASSETS: Fetcher;
   DB: D1Database;
   RATE_LIMIT: RateLimit;
+  RATE_LIMIT_READ: RateLimit;
   TICKET_SECRET?: string;
   GITHUB_CLIENT_ID?: string;
   GITHUB_CLIENT_SECRET?: string;
@@ -10,6 +11,17 @@ export type Env = {
 };
 
 const MAX_BODY_BYTES = 128 * 1024;
+
+/** A whole IPv6 /64 belongs to one subscriber, so it counts as one client. */
+export function clientKey(request: Request): string {
+  const ip = request.headers.get("CF-Connecting-IP") ?? "unknown";
+  if (!ip.includes(":") || ip.includes(".")) return ip;
+  const [head = "", tail = ""] = ip.split("::");
+  const front = head.split(":").filter(Boolean);
+  const back = tail.split(":").filter(Boolean);
+  const groups = [...front, ...Array<string>(Math.max(0, 8 - front.length - back.length)).fill("0"), ...back];
+  return `${groups.slice(0, 4).map((group) => group.toLowerCase().replace(/^0+(?=.)/, "")).join(":")}::/64`;
+}
 
 export const json = (body: unknown, status = 200, headers: Record<string, string> = {}): Response =>
   new Response(JSON.stringify(body), {

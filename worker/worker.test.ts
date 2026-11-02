@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { clientKey } from "./http";
 import { isBlocked, validDisplayName, validUsername } from "./names";
 import { signTicket, verifyTicket } from "./ticket";
 
@@ -53,5 +54,25 @@ describe("tickets", () => {
 
   it.each(["", "a.b.c", "!!!.???", 5, null])("rejects malformed %j", async (token) => {
     expect(await verifyTicket(token, "secret")).toBeNull();
+  });
+});
+
+describe("clientKey", () => {
+  const key = (ip?: string) => clientKey(new Request("https://typesilk.com/api/me", ip ? { headers: { "CF-Connecting-IP": ip } } : {}));
+
+  it("keeps IPv4 addresses as they are", () => {
+    expect(key("203.0.113.7")).toBe("203.0.113.7");
+  });
+
+  it("folds one IPv6 /64 into a single client", () => {
+    expect(key("2001:db8:1:2:aaaa:bbbb:cccc:dddd")).toBe(key("2001:db8:1:2::1"));
+    expect(key("2001:DB8:1:2::1")).toBe("2001:db8:1:2::/64");
+    expect(key("2001:db8:1:3::1")).not.toBe(key("2001:db8:1:2::1"));
+  });
+
+  it("handles compressed prefixes and a missing header", () => {
+    expect(key("2001:db8::1")).toBe("2001:db8:0:0::/64");
+    expect(key("::1")).toBe("0:0:0:0::/64");
+    expect(key()).toBe("unknown");
   });
 });

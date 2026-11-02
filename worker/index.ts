@@ -1,7 +1,7 @@
 import { deleteAccount, logout, readMe, updateNames } from "./account";
 import { currentUser, handleAuth, type Provider, type SessionUser } from "./auth";
 import { isLanguage, issueTicket, readBoard, submitRun } from "./daily";
-import { fail, type Env } from "./http";
+import { clientKey, fail, type Env } from "./http";
 import { handleProfile } from "./profile";
 
 type SignedInRoute = (request: Request, env: Env, user: SessionUser) => Promise<Response>;
@@ -18,12 +18,14 @@ async function handleApi(request: Request, env: Env, url: URL): Promise<Response
   const path = url.pathname;
   const method = request.method;
 
-  if (method !== "GET" && method !== "HEAD") {
+  const reading = method === "GET" || method === "HEAD";
+  if (!reading) {
     // a cross-site form could still reach these with a Lax cookie on some flows, the Origin check can't be faked by a page
     if (request.headers.get("Origin") !== url.origin) return fail("forbidden", 403);
-    const limited = await env.RATE_LIMIT.limit({ key: request.headers.get("CF-Connecting-IP") ?? "unknown" });
-    if (!limited.success) return fail("rate_limited", 429);
   }
+  // every read hits D1 or a provider, so reads count too, just against a roomier budget
+  const limited = await (reading ? env.RATE_LIMIT_READ : env.RATE_LIMIT).limit({ key: clientKey(request) });
+  if (!limited.success) return fail("rate_limited", 429);
 
   const auth = path.match(/^\/api\/auth\/(github|google)(\/callback)?$/);
   if (auth && method === "GET") {
@@ -48,6 +50,8 @@ async function handleApi(request: Request, env: Env, url: URL): Promise<Response
   if (isLogout) return logout(request, env);
   const user = await currentUser(request, env);
   if (!user) return fail("signin_required", 401);
+  // a rotating address can't buy a signed-in account more writes
+  if (!(await env.RATE_LIMIT.limit({ key: `user:${user.id}` })).success) return fail("rate_limited", 429);
   return route!(request, env, user);
 }
 
