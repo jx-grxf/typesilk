@@ -3,6 +3,7 @@ import type { CustomTextDialog } from "./custom-text";
 import type { Palette } from "./palette";
 import type { ProfilePage } from "./profile-page";
 import { shareResult } from "./results";
+import { toggleReplay } from "./run-replay";
 import type { TypingSession } from "./session";
 import type { Settings } from "./settings";
 
@@ -68,12 +69,13 @@ export function listenForKeys(ctx: KeyboardContext): void {
     }
     if (session.state === "done") {
       if (event.key === "Enter") void session.restart();
-      // nobody stops typing the instant a run ends, and t, c and s are common letters
+      // nobody stops typing the instant a run ends, and t, c, s and r are common letters
       if (!session.shortcutsReady(event.timeStamp)) return;
       const plain = !event.ctrlKey && !event.metaKey && !event.altKey;
       if (key === "t" && plain) ctx.change({ mode: "train" });
       if (key === "c" && plain) void shareResult("copy");
       if (key === "s" && plain) void shareResult("save");
+      if (key === "r" && plain) toggleReplay();
       return;
     }
     if (session.state === "busy") return;

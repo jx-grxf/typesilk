@@ -297,3 +297,8 @@ void loadAccount().then((reached) => {
   else if (signin === "blocked") openSignIn("This account is blocked from the board.");
   else if (user && !user.username) openNames(entryParams.get("name") ?? "");
 });
+
+// the dev server serves modules that change on every save, so only the built site works offline
+if ("serviceWorker" in navigator && import.meta.env.PROD) {
+  window.addEventListener("load", () => void navigator.serviceWorker.register("/sw.js").catch(() => undefined));
+}

@@ -9,6 +9,8 @@ const run = (overrides: Partial<FinishedRun> = {}): FinishedRun => ({
   mode: "time",
   language: "english",
   daily: null,
+  backspaces: 2,
+  saidName: false,
   wpm: 70,
   rawWpm: 75,
   accuracy: 97,
