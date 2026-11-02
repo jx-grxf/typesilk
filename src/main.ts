@@ -13,11 +13,12 @@ import { dailyNumber } from "./daily";
 import { $, prefersReducedMotion, withTransition } from "./dom";
 import { listenForKeys } from "./keyboard";
 import { Palette } from "./palette";
+import { levelOf } from "./profile";
 import { ProfilePage } from "./profile-page";
 import { ProfileStore } from "./profile-store";
 import { QUOTE_LENGTHS } from "./quotes";
 import { TypingSession } from "./session";
-import { loadSettings, MODES, saveSettings, type Mode, type Settings } from "./settings";
+import { loadSettings, MODES, saveSettings, shownTheme, type Mode, type Settings } from "./settings";
 import { Sound } from "./sound";
 import { applySpringTokens } from "./spring";
 import { renderTopBar } from "./top-bar";
@@ -80,6 +81,7 @@ const customText = new CustomTextDialog(
 
 const palette = new Palette($("palette"), $<HTMLInputElement>("palette-input"), $("palette-list"), $("palette-hl"), () => commands({
   settings,
+  level: levelOf(store.profile.xp),
   hasWeakKeys: session.weakKeys.length > 0,
   change,
   restart: () => void session.restart(),
@@ -110,7 +112,7 @@ function openPalette(): void {
 }
 
 function applySettings(): void {
-  root.dataset.theme = settings.theme;
+  root.dataset.theme = shownTheme(settings.theme, levelOf(store.profile.xp));
   root.dataset.size = settings.textSize;
   root.dataset.layout = settings.layout;
   root.dataset.font = settings.font;
@@ -242,7 +244,7 @@ async function boot(): Promise<void> {
   version.textContent = `v${__APP_VERSION__}`;
   version.href = `https://github.com/jx-grxf/typesilk/releases/tag/v${__APP_VERSION__}`;
   buildControls();
-  segments.push(...buildPanel($("panel-body"), settings, change, profileReset));
+  segments.push(...buildPanel($("panel-body"), settings, change, profileReset, () => levelOf(store.profile.xp)));
   applySettings();
   renderTopBar(store.profile, settings);
   await session.fontsReady();
@@ -273,6 +275,8 @@ store.onChange(() => {
   // badges for totals that only add up across devices, earned quietly like the ones at boot
   if (awardBadges(store.profile, null).length > 0) store.save();
   renderTopBar(store.profile, settings);
+  // a synced profile can bring the level a saved theme needs
+  root.dataset.theme = shownTheme(settings.theme, levelOf(store.profile.xp));
   profilePage.refresh();
 });
 onBeforeSignOut(() => store.flush());

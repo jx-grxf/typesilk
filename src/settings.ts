@@ -8,8 +8,18 @@ export const MODES = ["time", "words", "quote", "zen", "custom", "perfect", "end
 /** The daily lives in the header, not in the mode bar. */
 export type Mode = (typeof MODES)[number] | "daily";
 export const GOALS = [0, 100, 300, 500, 1000] as const;
-export const THEMES = ["noir", "paper", "forest", "klein"] as const;
+export const THEMES = ["noir", "paper", "forest", "klein", "ash", "plum", "sepia", "void", "rosso"] as const;
 export type Theme = (typeof THEMES)[number];
+/** Themes past the first four open up as you level. */
+export const THEME_LEVELS: Partial<Record<Theme, number>> = { ash: 5, plum: 10, sepia: 15, void: 20, rosso: 30 };
+
+export const themeLevel = (theme: Theme): number => THEME_LEVELS[theme] ?? 1;
+
+/** The theme to draw: a saved theme the level doesn't reach yet, say on a fresh device, falls back to noir. */
+export const shownTheme = (theme: Theme, level: number): Theme => (themeLevel(theme) <= level ? theme : "noir");
+
+export const themesOpenedBetween = (before: number, after: number): Theme[] =>
+  THEMES.filter((theme) => themeLevel(theme) > before && themeLevel(theme) <= after);
 export const LAYOUTS = ["tape", "lines", "classic"] as const;
 export type Layout = (typeof LAYOUTS)[number];
 export type TextSize = "s" | "m" | "l";

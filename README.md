@@ -71,7 +71,7 @@ Everything is stored in your browser and typing never needs an account. typesilk
   </tr>
 </table>
 
-Four themes (noir, paper, forest, klein), three text sizes and a switch for every effect. `prefers-reduced-motion` is respected. The command palette reaches every setting without the mouse and previews themes while you move over them.
+Four themes from the start (noir, paper, forest, klein) and five more that open up at level 5, 10, 15, 20 and 30 (ash, plum, sepia, void, rosso), three text sizes and a switch for every effect. `prefers-reduced-motion` is respected. The command palette reaches every setting without the mouse and previews themes while you move over them.
 
 <img src="docs/settings.png" alt="Settings panel with hairline rows" width="100%">
 
