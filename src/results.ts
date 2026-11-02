@@ -1,8 +1,10 @@
-import { Spring } from "./spring";
 import { medal, type Badge } from "./badges";
 import { copyCard, saveCard, type CardData } from "./card";
 import { renderHeatmap } from "./heatmap";
 import { levelOf, levelProgress, type RunReward } from "./profile";
+import type { RunLog } from "./replay";
+import { buildReplay } from "./run-replay";
+import { Spring } from "./spring";
 import type { KeyStats } from "./training";
 import type { Language } from "./words";
 
@@ -30,6 +32,8 @@ export type ResultData = {
   /** Set on the daily: whether this was the first try, and what that first try was. */
   daily: { number: number; first: boolean; firstWpm: number | null } | null;
   badges: Badge[];
+  /** The text and every key of the run; null in zen, where there is no text to replay against. */
+  replay: { words: string[]; log: RunLog } | null;
 };
 
 function unlocked(badges: Badge[]): HTMLElement {
@@ -250,7 +254,7 @@ export function renderResults(root: HTMLElement, data: ResultData): void {
   const level = levelOf(data.xp);
   const levelUp = data.reward.levelAfter > data.reward.levelBefore;
   const days = data.streakDays === 1 ? "1 day" : `${data.streakDays} days`;
-  xp.innerHTML = `<div class="xp-row"><span>${levelUp ? `Level ${level}, new` : `Level ${level}`}</span><span>${days} streak</span><span>+${data.reward.xpGained} xp</span></div><div class="xp-track"><div class="xp-fill"></div></div>`;
+  xp.innerHTML = `<div class="xp-row"><span>${levelUp ? `Level ${level}, new` : `Level ${level}`}</span><span>${days} streak${data.reward.froze ? ", a freeze covered yesterday" : ""}</span><span>+${data.reward.xpGained} xp</span></div><div class="xp-track"><div class="xp-fill"></div></div>`;
   const fill = xp.querySelector<HTMLElement>(".xp-fill")!;
   fill.style.transform = "scaleX(0)";
   requestAnimationFrame(() => requestAnimationFrame(() => {
@@ -285,6 +289,7 @@ export function renderResults(root: HTMLElement, data: ResultData): void {
       point: (i) => `second ${i + 1}`,
     }));
   }
+  if (data.replay && data.replay.log.keys.length > 0) parts.push(buildReplay(data.replay.words, data.replay.log));
   parts.push(coach, renderHeatmap(data.keys, data.language));
   if (data.progress.length >= 3) {
     parts.push(buildChart(data.progress, {

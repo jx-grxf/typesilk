@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { applyRun, emptyProfile, levelOf, levelProgress, nextStreak, type RunResult } from "./profile";
+import { applyRun, emptyProfile, levelOf, levelProgress, nextStreak, pendingFreeze, type RunResult } from "./profile";
 import { createWordSource } from "./words";
 
 const run = (wpm: number, overrides: Partial<RunResult> = {}): RunResult => ({
@@ -52,7 +52,8 @@ describe("nextStreak", () => {
     expect(nextStreak(withDay("2026-10-30", 4), "2026-10-30")).toBe(4);
     expect(nextStreak(withDay("2026-10-30", 4), "2026-10-31")).toBe(5);
     expect(nextStreak(withDay("2026-10-31", 4), "2026-11-01")).toBe(5);
-    expect(nextStreak(withDay("2026-10-28", 4), "2026-10-30")).toBe(1);
+    expect(nextStreak(withDay("2026-10-28", 4), "2026-10-30")).toBe(5);
+    expect(nextStreak(withDay("2026-10-27", 4), "2026-10-30")).toBe(1);
   });
 });
 
@@ -84,3 +85,41 @@ describe("createWordSource", () => {
     expect(rich).toMatch(/^[A-Z0-9]/);
   });
 });
+
+describe("streak freeze", () => {
+  const typedOn = (days: string[]) => {
+    const profile = emptyProfile();
+    const rewards = days.map((day) => applyRun(profile, run(80), day));
+    return { profile, rewards };
+  };
+
+  it("carries the streak over one missed day", () => {
+    const { profile, rewards } = typedOn(["2026-11-02", "2026-11-03", "2026-11-05"]);
+    expect(profile.streakDays).toBe(3);
+    expect(profile.frozen).toEqual(["2026-11-04"]);
+    expect(rewards.at(-1)?.froze).toBe(true);
+  });
+
+  it("allows one freeze per week", () => {
+    const { profile } = typedOn(["2026-11-02", "2026-11-04", "2026-11-06"]);
+    expect(profile.streakDays).toBe(1);
+    expect(profile.frozen).toEqual(["2026-11-03"]);
+  });
+
+  it("allows a new freeze in the next week", () => {
+    const { profile } = typedOn(["2026-11-02", "2026-11-04", "2026-11-05", "2026-11-06", "2026-11-07", "2026-11-08", "2026-11-10"]);
+    expect(profile.streakDays).toBe(7);
+    expect(profile.frozen).toEqual(["2026-11-03", "2026-11-09"]);
+  });
+
+  it("does not cover two missed days", () => {
+    const { profile } = typedOn(["2026-11-02", "2026-11-05"]);
+    expect(profile.streakDays).toBe(1);
+    expect(profile.frozen).toEqual([]);
+  });
+
+  it("has nothing to hold when there was no streak", () => {
+    expect(pendingFreeze(emptyProfile(), "2026-11-05")).toBeNull();
+  });
+});
+

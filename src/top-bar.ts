@@ -1,6 +1,6 @@
 import { dailyKey, dailyNumber } from "./daily";
 import { $ } from "./dom";
-import { levelOf, levelProgress, localDay, type Profile } from "./profile";
+import { levelOf, levelProgress, localDay, pendingFreeze, type Profile } from "./profile";
 import type { Settings } from "./settings";
 
 /** Level, streak flame, words-per-day goal and the daily link above the test. `flare` relights the flame. */
@@ -11,15 +11,19 @@ export function renderTopBar(profile: Profile, settings: Settings, flare = false
   const today = localDay();
   const yesterday = localDay(new Date(Date.now() - 86400000));
   const typedToday = profile.lastDay === today;
-  const alive = typedToday || profile.lastDay === yesterday;
+  const freeze = typedToday ? null : pendingFreeze(profile, today);
+  const alive = typedToday || profile.lastDay === yesterday || freeze !== null;
 
   const streak = $("streak");
   streak.hidden = !(alive && profile.streakDays > 0);
   streak.querySelector("b")!.textContent = String(profile.streakDays);
   streak.classList.toggle("lit", typedToday);
+  streak.classList.toggle("frozen", freeze !== null);
   streak.title = typedToday
     ? `${profile.streakDays}-day streak, today is in`
-    : `${profile.streakDays}-day streak, type today to keep it`;
+    : freeze
+      ? `${profile.streakDays}-day streak, frozen over yesterday. Type today to keep it`
+      : `${profile.streakDays}-day streak, type today to keep it`;
   if (flare && typedToday) {
     streak.classList.remove("flare");
     void streak.offsetWidth;
